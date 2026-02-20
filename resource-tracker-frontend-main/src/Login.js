@@ -45,20 +45,6 @@ function Login() {
         setLoginError(true);
       });
 
-      localStorage.setItem("employeeid", "1");
-  localStorage.setItem("permissionid", "1");
-  localStorage.setItem("firstName", "Dev");
-  localStorage.setItem("lastName", "User");
-  localStorage.setItem("resourceName", "Developer");
-
-  setLoginSuccess(true);
-  };
-
-  if (loginSuccess) {
-    navigate("/manageresources");
-
-  };
-
   if (loginSuccess) {
     navigate("/manageresources");
   }
