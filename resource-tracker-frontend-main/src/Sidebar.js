@@ -5,29 +5,34 @@ function Sidebar()
     const [sidebarofuser,setSidebarofuser]=useState([]);
     const navigate=useNavigate();
     let permission1=[
-        {title :' Candidate Resources', path:'/manageresources'},
-        {title :'Current job Openings', path:'/current_openings'},
-        {title :'Manage Reports', path:'/manageprojects'}
+        {title :' MANAGE CANDIDATES', path:'/manageresources'},
+        {title :'CURRENT JOB OPENINGS', path:'/current_openings'},
+        {title :'MANAGE PROJECTS', path:'/manageprojects'},
+        {title :'APPLIED CANDIDATES', path:'/applied-candidates'}
     ]
     let permission2=[
-        {title :'Manage Resources', path:'/manageresources'},
-        {title :'Current job Openings', path:'/current_openings'},
-        {title :'Manage Reports', path:'/manageprojects'}
+        {title :'MANAGE RESOURCES', path:'/manageresources'},
+        {title :'CURRENT JOB OPENINGS', path:'/current_openings'},
+        {title :'MANAGE PROJECTS', path:'/manageprojects'},
+        {title :'APPLIED CANDIDATES', path:'/applied-candidates'}
     ]
     let permission3=[
         {title :'My Profile', path:'/manageresources'},
-        {title :'Current job Openings', path:'/current_openings'},
+        {title :'CURRENT JOB OPENINGS', path:'/current_openings'},
         {title :'My Projects', path:'/manageprojects'},
-        {title :'Applied Openings', path:'/manageresources'}
+        {title :'Applied Openings', path:'/manageresources'},
+        {title :'APPLIED CANDIDATES', path:'/applied-candidates'}
     ]
     let permission4=[
-        {title :'Manage Resources', path:'/manageresources'},
-        {title :'Current job Openings', path:'/current_openings'},
-        {title :'Manage Reports', path:'/manageprojects'}
+        {title :'MANAGE RESOURCES', path:'/manageresources'},
+        {title :'CURRENT JOB OPENINGS', path:'/current_openings'},
+        {title :'MANAGE PROJECTS', path:'/manageprojects'},
+        {title :'APPLIED CANDIDATES', path:'/applied-candidates'}
     ]
     let permission5=[
-        {title :'Current job Openings', path:'/current_openings'},
-        {title :'Manage Reports', path:'/manageprojects'}
+        {title :'CURRENT JOB OPENINGS', path:'/current_openings'},
+        {title :'MANAGE PROJECTS', path:'/manageprojects'},
+        {title :'APPLIED CANDIDATES', path:'/applied-candidates'}
     ]
     useEffect(() =>
     {

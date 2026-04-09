@@ -20,35 +20,33 @@ function Login() {
     if (name === "password") setPassword(value);
   };
 
-  const login = () => {
-    const payload = {
-      email: userName,
-      password: password,
-    };
+const login = () => {
+  const payload = {
+    email: userName,
+    password: password,
+  };
 
-    axios
-    //  .post("https://resourcetracker.gotracrat.in:8098/api/v1/user/login", payload)
+  axios
     .post("http://localhost:8098/api/v1/user/login", payload)
-      .then((res) => {
-        if (res.status === 200) {
-            console.log(res.data);
-          localStorage.setItem("employeeid", res.data.id);
-          localStorage.setItem("permissionid", res.data.permission.id);
-          localStorage.setItem("firstName",res.data.firstName);
-          localStorage.setItem("lastName",res.data.lastName);
-          localStorage.setItem("resourceName",res.data.resourceName);
-          //localStorage.setItem("employeeid",res.data.id);
-          setLoginSuccess(true);
-        }
-      })
-      .catch(() => {
-        setLoginError(true);
-      });
+    .then((res) => {
+      if (res.status === 200) {
+        console.log(res.data);
+        localStorage.setItem("employeeid", res.data.id);
+        localStorage.setItem("permissionid", res.data.permission.id);
+        localStorage.setItem("firstName", res.data.firstName);
+        localStorage.setItem("lastName", res.data.lastName);
+        localStorage.setItem("resourceName", res.data.resourceName);
+        setLoginSuccess(true);
+      }
+    })
+    .catch(() => {
+      setLoginError(true);
+    });
 
   if (loginSuccess) {
     navigate("/manageresources");
   }
-
+}; // ✅ IMPORTANT: close function here
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-400 to-yellow-400 p-1 sm:p-2 md:p-4">
   <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden">
