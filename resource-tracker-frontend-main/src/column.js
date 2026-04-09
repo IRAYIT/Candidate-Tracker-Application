@@ -22,7 +22,11 @@ export const OPENINGCOLUMNS = [{
   id: 'status',
   header: 'STATUS',
   accessorKey: 'status'
-}
+},
+    {
+    header: "LOCATION",       
+    accessorKey: "location",
+  }
 ]
 
 export const MANAGERESOURCECOLUMNS = [
