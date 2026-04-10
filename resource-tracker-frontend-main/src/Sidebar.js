@@ -60,7 +60,7 @@ function Sidebar()
     },[])
     
       return (
-    <div className="p-4 flex flex-col text-gray-900">
+   <div className="p-4 flex flex-col text-gray-900 h-full min-h-screen">
       <p className="text-lg font-bold text-yellow-500 mb-4">CANDIDATE TRACKER</p>
 
       {sidebarofuser.map((item, ind) => (
