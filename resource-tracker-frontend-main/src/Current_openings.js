@@ -121,48 +121,47 @@ const [loading,setLoading]=useState(false);
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
-                      <td className="px-6 py-4 text-sm flex flex-wrap gap-2">
-                        <button
-                          onClick={() => {
-                            navigate("/resource_view");
-                            localStorage.setItem("id", `${row.original.id}`);
-                          }}
-                          className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                        >
-                          Apply
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate("/view_opening");
-                            localStorage.setItem("opening_id", row.original.id);
-                          }}
-                          className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                        >
-                          View
-                        </button>
-                        {permissionid == 1 && (
-  <>
+<td className="px-2 py-4 text-sm">
+  <div className="grid grid-cols-2 gap-2 w-[110px] mt-1">
     <button
-      className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-      onClick={() => navigate("/edit_opening")}
+      onClick={() => {
+        navigate("/resource_view");
+        localStorage.setItem("id", `${row.original.id}`);
+      }}
+      className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
     >
-      Edit
+      Apply
     </button>
-
     <button
-      className="px-3 py-1 rounded border text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
-    onClick={() => {
-  setSelectedOpeningId(row.original.id);
-  setShowDeleteModal(true);
-}}
-
+      onClick={() => {
+        navigate("/view_opening");
+        localStorage.setItem("opening_id", row.original.id);
+      }}
+      className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
     >
-      Delete
+      View
     </button>
-  </>
-)}
-
-                      </td>
+    {permissionid == 1 && (
+      <>
+        <button
+          className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+          onClick={() => navigate("/edit_opening")}
+        >
+          Edit
+        </button>
+        <button
+          className="px-2 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
+          onClick={() => {
+            setSelectedOpeningId(row.original.id);
+            setShowDeleteModal(true);
+          }}
+        >
+          Delete
+        </button>
+      </>
+    )}
+  </div>
+</td>
                     </tr>
                   ))}
                 </tbody>

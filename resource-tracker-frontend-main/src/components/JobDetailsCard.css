@@ -1,0 +1,66 @@
+.jd-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+.jd-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb, #facc15);
+}
+
+.jd-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.jd-card__title-group { display: flex; flex-direction: column; gap: 6px; }
+.jd-card__tag { font-size: 0.72rem; color: #2563eb; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+.jd-card__title { font-size: 1.6rem; font-weight: 800; color: #1e3a5f; line-height: 1.2; }
+.jd-card__meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-bottom: 20px; }
+.jd-meta-item { display: flex; align-items: center; gap: 6px; }
+.jd-meta-item__text { font-size: 0.84rem; color: #4b5563; font-weight: 500; }
+
+.jd-card__description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.75;
+  margin-bottom: 20px;
+  border-left: 3px solid #facc15;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border-radius: 0 8px 8px 0;
+}
+
+.jd-card__skills { display: flex; flex-direction: column; gap: 10px; }
+.jd-card__skills-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }
+.jd-card__skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.job-badge--accent { background: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; font-weight: 600; }
+.job-badge--green  { background: #f0fdf4 !important; color: #16a34a !important; border: 1px solid #bbf7d0 !important; font-weight: 600; }
+
+@media (max-width: 600px) {
+  .jd-card { padding: 20px 16px; }
+  .jd-card__title { font-size: 1.3rem; }
+  .jd-card__header { flex-direction: column; }
+}
+
+.jd-card__description ul {
+  list-style-type: disc;
+}
+
+.jd-card__description li {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.75;
+}

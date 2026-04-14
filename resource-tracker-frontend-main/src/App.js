@@ -21,6 +21,9 @@ import EditProfile from './EditProfile';
 import SendEmail from './SendEmail';
 import EmailAll from './EmailAll';
 import Attachments from './Attachments';
+import ApplicationPage from './pages/ApplicationPage';
+import AppliedCandidates from './AppliedCandidates';
+import CandidateView from './CandidateView';
 function App() {
   return (
     
@@ -47,6 +50,9 @@ function App() {
         <Route path='/sendemail' element={<SendEmail/>}></Route>
         <Route path='/emailall' element={<EmailAll/>}></Route>
         <Route path='/attachments' element={<Attachments/>}></Route>
+        <Route path='/apply/:publicUrlKey' element={<ApplicationPage/>}></Route>
+        <Route path="/candidate-view" element={<CandidateView />} />
+        <Route path="/applied-candidates" element={<AppliedCandidates />} />
       </Routes>
       </BrowserRouter>
   );
