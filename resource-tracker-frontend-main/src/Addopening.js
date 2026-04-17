@@ -40,8 +40,6 @@ const SKILL_OPTIONS = [
   "Design Patterns", "System Design", "DevSecOps", "SonarQube",
 ];
 
-
-
 // ─── SkillTagInput ────────────────────────────────────────────────────────────
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
@@ -210,8 +208,6 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
         padding: '32px', maxWidth: '480px', width: '90%',
         boxShadow: '0 25px 50px rgba(0,0,0,0.25)'
       }}>
-
-        {/* Success icon */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <div style={{
             width: '64px', height: '64px', borderRadius: '50%',
@@ -221,16 +217,12 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
             ✅
           </div>
         </div>
-
-        {/* Title */}
         <h2 style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>
           Opening Created Successfully!
         </h2>
         <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '0.85rem', marginBottom: '24px' }}>
           Share this link with candidates on LinkedIn, Naukri, Indeed, or any platform.
         </p>
-
-        {/* URL Box */}
         <div style={{
           background: '#f9fafb', border: '2px solid #facc15', borderRadius: '8px',
           padding: '12px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'
@@ -247,13 +239,9 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
             {copied ? '✓ Copied!' : 'Copy'}
           </button>
         </div>
-
-        {/* Hint */}
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '24px' }}>
           📋 Copy the link and post it on LinkedIn, Naukri, Indeed, WhatsApp, or email.
         </p>
-
-        {/* Buttons */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <button onClick={onGoToOpenings} style={{
             padding: '10px 24px', backgroundColor: '#2563eb', color: 'white',
@@ -270,7 +258,6 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
             Add Another
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -302,6 +289,7 @@ function Addopening() {
   const [loading, setLoading]               = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [createdPublicUrl, setCreatedPublicUrl] = useState('');
+  const [currency, setCurrency]             = useState('INR');
 
   const navigate = useNavigate();
 
@@ -329,6 +317,7 @@ function Addopening() {
     setPaymenttype(''); setTechnology(''); setExperience('');
     setEmploymenttype('Freelancing'); setSkills(''); setLocation('');
     setStatus(''); setDescription(''); setCustomTech('');
+    setCurrency('INR');
     setStartdate(new Date());
     const d = new Date(); d.setFullYear(d.getFullYear() + 1);
     setEnddate(d);
@@ -345,7 +334,7 @@ function Addopening() {
     const payload = {
       name:           openingname,
       hours:          hours,
-      payment:        payment,
+      payment:        `${payment} ${currency}`,
       paymentType:    paymenttype,
       shiftTimings:   shifttimings,
       startDate:      startdate,
@@ -463,11 +452,36 @@ function Addopening() {
                       className={`border-2 p-2 rounded w-full ${errors.shifttimings ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.shifttimings && <p className="text-red-600 text-sm mt-1">{errors.shifttimings}</p>}
                   </div>
+
+                  {/* ── Payment Field ── */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Payment <span className="text-pink-800">*</span></label>
-                    <input type="text" value={payment} placeholder="Enter payment"
-                      onChange={(e) => { setPayment(e.target.value); if (errors.payment) setErrors(prev => ({ ...prev, payment: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`} />
+                    <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
+                      <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"
+                        style={{ borderRight: '2px solid #facc15' }}
+                      >
+                        <option value="INR">₹ INR</option>
+                        <option value="SEK">kr SEK</option>
+                        <option value="USD">$ USD</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={payment}
+                        placeholder="Amount"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (/^\d*$/.test(val)) {
+                            setPayment(val);
+                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
+                          }
+                        }}
+                        className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
+                        style={{ boxShadow: 'none' }}
+                      />
+                    </div>
                     {errors.payment && <p className="text-red-600 text-sm mt-1">{errors.payment}</p>}
                   </div>
                 </div>
@@ -542,18 +556,18 @@ function Addopening() {
                       error={errors.skills} />
                     {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}
                   </div>
-             <div className="w-full md:w-[48%]">
-    <label className="font-semibold mb-1">Location <span className="text-pink-800">*</span></label>
-    <select value={location}
-      onChange={(e) => { setLocation(e.target.value); if (errors.location) setErrors(prev => ({ ...prev, location: '' })); }}
-      className={`border-2 p-2 rounded w-full ${errors.location ? 'border-red-500' : 'border-yellow-400'}`}>
-      <option value="">Select Location</option>
-      <option value="India">India</option>
-      <option value="Sweden">Sweden</option>
-      <option value="USA">USA</option>
-    </select>
-    {errors.location && <p className="text-red-600 text-sm mt-1">{errors.location}</p>}
-</div>
+                  <div className="w-full md:w-[48%]">
+                    <label className="font-semibold mb-1">Location <span className="text-pink-800">*</span></label>
+                    <select value={location}
+                      onChange={(e) => { setLocation(e.target.value); if (errors.location) setErrors(prev => ({ ...prev, location: '' })); }}
+                      className={`border-2 p-2 rounded w-full ${errors.location ? 'border-red-500' : 'border-yellow-400'}`}>
+                      <option value="">Select Location</option>
+                      <option value="India">India</option>
+                      <option value="Sweden">Sweden</option>
+                      <option value="USA">USA</option>
+                    </select>
+                    {errors.location && <p className="text-red-600 text-sm mt-1">{errors.location}</p>}
+                  </div>
                 </div>
 
                 {/* Status */}

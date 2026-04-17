@@ -122,8 +122,8 @@ const [loading,setLoading]=useState(false);
                         </td>
                       ))}
 <td className="px-2 py-4 text-sm">
-  <div className="grid grid-cols-2 gap-2 w-[110px] mt-1">
-    <button
+  <div className="flex flex-row gap-2 mt-1">
+    {/* <button
       onClick={() => {
         navigate("/resource_view");
         localStorage.setItem("id", `${row.original.id}`);
@@ -131,7 +131,7 @@ const [loading,setLoading]=useState(false);
       className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
     >
       Apply
-    </button>
+    </button> */}
     <button
       onClick={() => {
         navigate("/view_opening");
