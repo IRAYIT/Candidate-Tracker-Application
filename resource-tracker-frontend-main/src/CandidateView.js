@@ -131,7 +131,7 @@ function CandidateView() {
                     <label className="font-semibold block text-gray-700 mb-1">Expected Salary</label>
                     <input
                       type="text"
-                      value={candidate.expectedSalary ? `₹${candidate.expectedSalary.toLocaleString()}` : ""}
+                      value={candidate.expectedSalary ? `${candidate.expectedSalaryCurrency || '₹'}${candidate.expectedSalary.toLocaleString()}` : ""}
                       disabled
                       className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
                     />

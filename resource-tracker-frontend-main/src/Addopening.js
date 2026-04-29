@@ -471,13 +471,13 @@ function Addopening() {
                         type="text"
                         value={payment}
                         placeholder="Amount"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (/^\d*$/.test(val)) {
-                            setPayment(val);
-                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
-                          }
-                        }}
+onChange={(e) => {
+  const val = e.target.value;
+  if (/^[a-zA-Z0-9]*$/.test(val)) {
+    setPayment(val);
+    if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
+  }
+}}
                         className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
                         style={{ boxShadow: 'none' }}
                       />

@@ -7,7 +7,21 @@ const INITIAL_STATE = {
   location: '', experience: '', expectedSalary: '',
   languagesKnown: '', noticePeriod: '', visaStatus: '',
   applicationStatus: 'APPLIED', employmentType: '', source: '',
+  phoneDialCode: '+91',
+  expectedSalaryCurrency: '₹',
 };
+
+const PHONE_COUNTRIES = [
+  { code: '+91', flag: '🇮🇳', label: '+91' },
+  { code: '+46', flag: '🇸🇪', label: '+46' },
+  { code: '+1',  flag: '🇺🇸', label: '+1'  },
+];
+
+const CURRENCIES = [
+  { symbol: '₹', label: '₹ INR' },
+  { symbol: 'kr', label: 'kr SEK' },
+  { symbol: '$',  label: '$ USD'  },
+];
 
 const SKILL_OPTIONS = [
   "Java", "Spring Boot", "Spring MVC", "Spring Security", "Spring Cloud",
@@ -302,10 +316,11 @@ function ApplicationForm({ publicUrlKey }) {
       firstName:         form.firstName,
       lastName:          form.lastName,
       email:             form.email,
-      phone:             form.phone,
+      phone: `${form.phoneDialCode} ${form.phone}`,
       location:          form.location,
       experience:        form.experience,
-      expectedSalary:    form.expectedSalary,
+     expectedSalary: form.expectedSalary,
+     expectedSalaryCurrency: form.expectedSalaryCurrency,
       languagesKnown:    form.languagesKnown,
       noticePeriod:      form.noticePeriod,
       visaStatus:        form.visaStatus,
@@ -378,11 +393,26 @@ function ApplicationForm({ publicUrlKey }) {
             onChange={handleChange} placeholder="you@example.com" />
         </Field>
 
-        <Field label="Phone Number" required error={errors.phone}>
-          <input className={`af-input ${errors.phone ? 'af-input--error' : ''}`}
-            type="tel" name="phone" value={form.phone}
-            onChange={handleChange} placeholder="+91 98765 43210" />
-        </Field>
+<Field label="Phone Number" required error={errors.phone}>
+  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
+       className={errors.phone ? 'af-input--error' : ''}>
+    <select
+      name="phoneDialCode"
+      value={form.phoneDialCode}
+      onChange={handleChange}
+      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 8px',
+               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+      {PHONE_COUNTRIES.map(c => (
+        <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
+      ))}
+    </select>
+    <input
+      className="af-input"
+      style={{ border: 'none', borderRadius: 0, flex: 1 }}
+      type="tel" name="phone" value={form.phone}
+      onChange={handleChange} placeholder="98765 43210" />
+  </div>
+</Field>
 
         <Field label="Current Location" required error={errors.location}>
           <input className={`af-input ${errors.location ? 'af-input--error' : ''}`}
@@ -408,11 +438,35 @@ function ApplicationForm({ publicUrlKey }) {
             onChange={handleChange} placeholder="e.g. 3" min="0" />
         </Field>
 
-        <Field label="Expected Salary (₹/month)" required error={errors.expectedSalary}>
-          <input className={`af-input ${errors.expectedSalary ? 'af-input--error' : ''}`}
-            type="number" name="expectedSalary" value={form.expectedSalary}
-            onChange={handleChange} placeholder="e.g. 50000" min="0" />
-        </Field>
+      <Field label="Expected Salary" required error={errors.expectedSalary}>
+  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
+       className={errors.expectedSalary ? 'af-input--error' : ''}>
+    <select
+      name="expectedSalaryCurrency"
+      value={form.expectedSalaryCurrency}
+      onChange={handleChange}
+      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
+               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+      {CURRENCIES.map(c => (
+        <option key={c.symbol} value={c.symbol}>{c.label}</option>
+      ))}
+    </select>
+    <input
+      className="af-input"
+      style={{ border: 'none', borderRadius: 0, flex: 1 }}
+      type="text"
+      name="expectedSalary"
+      value={form.expectedSalary}
+      onChange={(e) => {
+        const val = e.target.value;
+        if (/^[a-zA-Z0-9]*$/.test(val)) {
+          handleChange({ target: { name: 'expectedSalary', value: val } });
+        }
+      }}
+      placeholder="50000"
+    />
+  </div>
+</Field>
 
         <Field label="Notice Period (days)" required error={errors.noticePeriod}>
           <input className={`af-input ${errors.noticePeriod ? 'af-input--error' : ''}`}

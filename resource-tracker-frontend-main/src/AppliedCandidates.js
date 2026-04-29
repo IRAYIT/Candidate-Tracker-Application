@@ -182,8 +182,10 @@ function AppliedCandidates() {
                           <td className="px-6 py-4 text-sm">{c.firstName}</td>
                           <td className="px-6 py-4 text-sm">{c.lastName}</td>
                           <td className="px-6 py-4 text-sm">{c.email}</td>
-                          <td className="px-6 py-4 text-sm">{c.experience} yrs</td>
-                          <td className="px-6 py-4 text-sm">₹{c.expectedSalary?.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm">{c.experience} yrs</td>                        
+                          <td className="px-6 py-4 text-sm">
+                          {c.expectedSalaryCurrency || '₹'}{c.expectedSalary?.toLocaleString()}
+                          </td>
                           <td className="px-6 py-4 text-sm">{c.languagesKnown || "—"}</td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase ${statusBadge(c.applicationStatus)}`}>

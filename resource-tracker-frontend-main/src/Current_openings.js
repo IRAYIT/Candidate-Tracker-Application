@@ -143,12 +143,15 @@ const [loading,setLoading]=useState(false);
     </button>
     {permissionid == 1 && (
       <>
-        <button
-          className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-          onClick={() => navigate("/edit_opening")}
-        >
-          Edit
-        </button>
+       <button
+  className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+  onClick={() => {
+    localStorage.setItem("opening_id", row.original.id);  // ✅ ADD THIS
+    navigate("/edit_opening");
+  }}
+>
+  Edit
+</button>
         <button
           className="px-2 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
           onClick={() => {

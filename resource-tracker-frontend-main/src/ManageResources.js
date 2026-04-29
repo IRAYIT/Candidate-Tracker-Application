@@ -304,7 +304,7 @@ const [selectedOpeningId, setSelectedOpeningId] = useState(null);
       }}
     >
       <h2 className="text-lg font-semibold text-blue-700 mb-4">Confirm Deletion</h2>
-      <p className="text-gray-700 mb-6">Are you sure you want to delete this opening?</p>
+      <p className="text-gray-700 mb-6">Are you sure you want to delete this Resource?</p>
       <div className="flex justify-center gap-4">
         <button
           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
