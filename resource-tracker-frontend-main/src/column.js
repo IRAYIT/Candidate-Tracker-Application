@@ -1,32 +1,30 @@
-export const OPENINGCOLUMNS = [{
-  id: 'name',
-  header: 'OPENING NAME',
-  accessorKey: 'name'
-},
-{
-  id: 'technology',
-  header: 'TECHNOLOGY',
-  accessorKey: 'technology'
-},
-{
-  id: 'skill',
-  header: 'SKILL',
-  accessorKey: 'skill'
-},
-{
-  id: 'experience',
-  header: 'EXPERIENCE',
-  accessorKey: 'experience'
-},
-{
-  id: 'status',
-  header: 'STATUS',
-  accessorKey: 'status'
-},
-    {
-    header: "LOCATION",       
-    accessorKey: "location",
+export const OPENINGCOLUMNS = [
+  { id: 'name',          header: 'OPENING NAME', accessorKey: 'name'          },
+  { id: 'skill',         header: 'SKILL',        accessorKey: 'skill'         },
+  { id: 'experience',    header: 'EXPERIENCE',   accessorKey: 'experience'    },
+  { id: 'status',        header: 'STATUS',       accessorKey: 'status'        },
+  { id: 'createdByName', header: 'RECRUITER',    accessorKey: 'createdByName' },
+  { id: 'location',      header: 'LOCATION',     accessorKey: 'location'      },
+  {
+  id: 'candidateCount',
+  header: 'APPLIED',
+  accessorKey: 'candidateCount',
+  cell: ({ row, getValue }) => {
+    const count = getValue();
+    return (
+      <span
+        onClick={() => {
+          localStorage.setItem("filter_opening_id", row.original.id);
+          localStorage.setItem("filter_opening_name", row.original.name);
+          window.location.href = "/applied-candidates";
+        }}
+        className="cursor-pointer text-blue-600 font-semibold hover:underline"
+      >
+        {count}
+      </span>
+    );
   }
+}
 ]
 
 export const MANAGERESOURCECOLUMNS = [

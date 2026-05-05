@@ -8,40 +8,29 @@ function Header()
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef(null);
     const navigate=useNavigate();
-    useEffect(() =>
-    {
-        let temp_permissionid=localStorage.getItem("permissionid");
-        let temp_firstname=localStorage.getItem("firstName");
-        let temp_lastname=localStorage.getItem("lastName");
-        setResourcename(`${temp_firstname} ${temp_lastname}`);
-        if(temp_permissionid==="1")
-        {
-            setRole("Admin");
-        }
-        else if(temp_permissionid==="2")
-        {
-            setRole("Manager");
-        }
-        else if(temp_permissionid==="3")
-        {
-            setRole("Employee");
-        }
-        else if(temp_permissionid==="4")
-        {
-            setRole("HR");
-        }
-        else
-        {
-            setRole("Applicant");
-        }
-        const handleClickOutside = (event) => {
+useEffect(() => {
+    const temp_permissionid = localStorage.getItem("permissionid");
+    const temp_firstname = localStorage.getItem("firstName");
+    const temp_lastname = localStorage.getItem("lastName");
+    setResourcename(`${temp_firstname} ${temp_lastname}`);
+
+    // Updated mapping: 1=Admin, 2=HR, 3=Manager, 4=Employee
+    const roleMap = {
+        "1": "Admin",
+        "2": "HR",
+        "3": "Manager",
+        "4": "Employee",
+    };
+    setRole(roleMap[temp_permissionid] ?? "Applicant");
+
+    const handleClickOutside = (event) => {
         if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
+            setIsOpen(false);
         }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    },[]);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
     const toggleMenu = () => setIsOpen(!isOpen);
     return(
   <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-400 to-yellow-400 shadow">

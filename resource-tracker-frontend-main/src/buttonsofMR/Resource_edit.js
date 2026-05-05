@@ -558,7 +558,7 @@ function Resource_edit() {
 
                 {/* Experience + Status */}
                 <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
+                  <div className="w-full">
                     <label className="font-semibold mb-1">Experience *</label>
                     <input
                       type="text"
@@ -568,7 +568,7 @@ function Resource_edit() {
                     />
                     {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
-                  <div className="w-full md:w-[48%]">
+                  {/* <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Status *</label>
                     <input
                       type="text"
@@ -577,7 +577,7 @@ function Resource_edit() {
                       className="border-2 border-yellow-400 p-2 rounded w-full"
                     />
                     {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Attachments */}

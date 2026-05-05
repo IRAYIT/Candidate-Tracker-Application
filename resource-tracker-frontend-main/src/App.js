@@ -24,6 +24,7 @@ import Attachments from './Attachments';
 import ApplicationPage from './pages/ApplicationPage';
 import AppliedCandidates from './AppliedCandidates';
 import CandidateView from './CandidateView';
+import TrackApplication from "./pages/Track/TrackApplication";
 function App() {
   return (
     
@@ -53,6 +54,7 @@ function App() {
         <Route path='/apply/:publicUrlKey' element={<ApplicationPage/>}></Route>
         <Route path="/candidate-view" element={<CandidateView />} />
         <Route path="/applied-candidates" element={<AppliedCandidates />} />
+        <Route path="/track" element={<TrackApplication />} />
       </Routes>
       </BrowserRouter>
   );

@@ -37,6 +37,11 @@ function Resource_view() {
     }
   }, []);
 
+  // Parse skills string into array
+  const skillsArray = resData?.skill
+    ? resData.skill.split(",").map(s => s.trim()).filter(Boolean)
+    : [];
+
   return (
 <div className="min-h-screen flex">
   <aside className="w-64 bg-gradient-to-b from-blue-500 to-yellow-400 min-h-screen">
@@ -84,9 +89,19 @@ function Resource_view() {
                 <input type="text" value={resData.technology} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
               </div>
 
+              {/* Skill field rendered as chips/badges */}
               <div className="w-full md:w-[48%]">
-                <label className="font-semibold block text-gray-700 mb-1">Skill</label>
-                <input type="text" value={resData.skill} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
+                <label className="font-semibold block text-gray-700 mb-1">Skill *</label>
+                <div className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 min-h-[38px] flex flex-wrap gap-2">
+                  {skillsArray.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center bg-white border border-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -102,20 +117,19 @@ function Resource_view() {
               </div>
             </div>
 
+            {/* Employment Role takes full width */}
             <div className="flex flex-wrap gap-4 justify-between">
-               <div className="w-full md:w-[48%]">
+              <div className="w-full">
                 <label className="font-semibold block text-gray-700 mb-1">Employment Role</label>
                 <input type="text" value={role} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
               </div>
-              <div className="w-full md:w-[48%]">
+              {/* <div className="w-full md:w-[48%]">
                 <label className="font-semibold block text-gray-700 mb-1">Status</label>
                 <input type="text" value={resData.status} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
-              </div>
-
-             
+              </div> */}
             </div>
 
-            <div className="flex flex-wrap gap-4 justify-between">
+            {/* <div className="flex flex-wrap gap-4 justify-between">
               <div className="w-full md:w-[48%]">
                 <label className="font-semibold block text-gray-700 mb-1">Start Date</label>
                 <input type="text" value={new Date(resData.startDate).toISOString().split("T")[0]} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
@@ -124,7 +138,7 @@ function Resource_view() {
                 <label className="font-semibold block text-gray-700 mb-1">End Date</label>
                 <input type="text" value={new Date(resData.endDate).toISOString().split("T")[0]} disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
               </div>
-            </div>
+            </div> */}
           </div>
         )}
 

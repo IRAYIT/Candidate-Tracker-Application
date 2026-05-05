@@ -37,6 +37,7 @@ const login = () => {
         localStorage.setItem("lastName", res.data.lastName);
         localStorage.setItem("resourceName", res.data.resourceName);
         setLoginSuccess(true);
+        navigate("/manageresources"); // ✅ navigate immediately after setting data
       }
     })
     .catch(() => {

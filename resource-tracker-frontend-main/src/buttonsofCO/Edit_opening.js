@@ -1,10 +1,193 @@
 import Header from "../Header";
 import Sidebar from "../Sidebar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import axios from "axios";
 
+// ─── Skill Options ────────────────────────────────────────────────────────────
+const SKILL_OPTIONS = [
+  "Java", "Spring Boot", "Spring MVC", "Spring Security", "Spring Cloud",
+  "Hibernate", "JPA", "JDBC", "Maven", "Gradle", "JUnit", "Mockito",
+  "Microservices", "REST API", "SOAP", "Apache Kafka", "RabbitMQ",
+  "C#", ".NET", "ASP.NET", "ASP.NET Core", "Entity Framework", "LINQ",
+  "WPF", "WCF", "Blazor", "NUnit", "SignalR",
+  "JavaScript", "TypeScript", "React", "Angular", "Vue.js", "Next.js",
+  "Nuxt.js", "Redux", "MobX", "HTML", "CSS", "Sass", "Tailwind CSS",
+  "Bootstrap", "Material UI", "Ant Design", "jQuery", "Webpack", "Vite",
+  "Node.js", "Express.js", "NestJS", "FastAPI", "Django", "Flask",
+  "Python", "Ruby on Rails", "PHP", "Laravel", "Go", "Golang",
+  "Rust", "Kotlin", "Scala", "Groovy",
+  "Android", "iOS", "Swift", "Objective-C", "React Native", "Flutter",
+  "Dart", "Xamarin", "Ionic",
+  "SQL", "MySQL", "PostgreSQL", "SQL Server", "Oracle", "SQLite",
+  "MongoDB", "Redis", "Elasticsearch", "Cassandra", "DynamoDB",
+  "Firebase", "Neo4j", "CouchDB", "MariaDB",
+  "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform",
+  "Ansible", "Jenkins", "GitHub Actions", "GitLab CI/CD", "CI/CD",
+  "Linux", "Bash", "Shell Scripting", "Nginx", "Apache",
+  "Prometheus", "Grafana", "ELK Stack", "Splunk",
+  "Selenium", "TestNG", "Cypress", "Playwright", "Jest",
+  "Postman", "Swagger", "JMeter", "LoadRunner", "Appium",
+  "Manual Testing", "Automation Testing", "Performance Testing",
+  "API Testing", "UAT",
+  "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch",
+  "Scikit-learn", "Pandas", "NumPy", "Power BI", "Tableau",
+  "Data Analysis", "Data Science", "Big Data", "Apache Spark",
+  "Hadoop", "Hive", "Airflow", "dbt",
+  "Git", "GitHub", "GitLab", "Bitbucket", "JIRA", "Confluence",
+  "Agile", "Scrum", "Kanban", "GraphQL", "gRPC",
+  "WebSockets", "OAuth", "JWT", "Microservices Architecture",
+  "Design Patterns", "System Design", "DevSecOps", "SonarQube",
+];
+
+// ─── SkillTagInput ────────────────────────────────────────────────────────────
+function SkillTagInput({ value, onChange, error }) {
+  const [inputValue, setInputValue] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // ✅ Fixed: depends on [value] so it loads existing skills from API
+  useEffect(() => {
+    if (value && selectedSkills.length === 0) {
+      const arr = value.split(',').map(s => s.trim()).filter(Boolean);
+      setSelectedSkills(arr);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    onChange(selectedSkills.join(', '));
+  }, [selectedSkills]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+        setHighlightedIndex(-1);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredOptions = SKILL_OPTIONS.filter(
+    skill =>
+      skill.toLowerCase().includes(inputValue.toLowerCase()) &&
+      !selectedSkills.includes(skill)
+  );
+
+  const showOtherOption =
+    inputValue.trim().length > 0 &&
+    !SKILL_OPTIONS.some(s => s.toLowerCase() === inputValue.trim().toLowerCase()) &&
+    !selectedSkills.includes(inputValue.trim());
+
+  const allOptions = showOtherOption ? [...filteredOptions, '__OTHER__'] : filteredOptions;
+
+  const addSkill = (skill) => {
+    if (!selectedSkills.includes(skill)) {
+      setSelectedSkills(prev => [...prev, skill]);
+    }
+    setInputValue('');
+    setShowDropdown(false);
+    setHighlightedIndex(-1);
+    inputRef.current?.focus();
+  };
+
+  const removeSkill = (skill) => {
+    setSelectedSkills(prev => prev.filter(s => s !== skill));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = (highlightedIndex + 1) % allOptions.length;
+      setHighlightedIndex(nextIndex);
+      document.getElementById(`skill-option-${nextIndex}`)?.scrollIntoView({ block: 'nearest' });
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevIndex = (highlightedIndex - 1 + allOptions.length) % allOptions.length;
+      setHighlightedIndex(prevIndex);
+      document.getElementById(`skill-option-${prevIndex}`)?.scrollIntoView({ block: 'nearest' });
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && allOptions[highlightedIndex]) {
+        const selected = allOptions[highlightedIndex];
+        if (selected === '__OTHER__') addSkill(inputValue.trim());
+        else addSkill(selected);
+        setHighlightedIndex(-1);
+      } else if (inputValue.trim()) {
+        addSkill(inputValue.trim());
+      }
+    }
+    if (e.key === 'Backspace' && !inputValue && selectedSkills.length > 0) {
+      removeSkill(selectedSkills[selectedSkills.length - 1]);
+    }
+  };
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div
+        className={`border-2 rounded p-2 flex flex-wrap items-center gap-2 cursor-text min-h-[42px] ${error ? 'border-red-500' : 'border-yellow-400'}`}
+        onClick={() => { setShowDropdown(true); inputRef.current?.focus(); }}
+      >
+        {selectedSkills.map(skill => (
+          <span key={skill} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300">
+            {skill}
+            <button type="button" onClick={(e) => { e.stopPropagation(); removeSkill(skill); }}
+              className="text-gray-400 hover:text-red-500 font-bold leading-none cursor-pointer ml-1">×</button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          placeholder={selectedSkills.length === 0 ? "Search and add skills..." : ""}
+          onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
+          onFocus={() => setShowDropdown(true)}
+          onKeyDown={handleKeyDown}
+          className="outline-none text-sm bg-transparent border-none focus:ring-0 focus:outline-none"
+          style={{ width: selectedSkills.length === 0 ? '100%' : '0px', minWidth: selectedSkills.length === 0 ? '150px' : '0px' }}
+        />
+        {selectedSkills.length > 0 && (
+          <button type="button"
+            onClick={(e) => { e.stopPropagation(); setShowDropdown(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+            className="w-6 h-6 rounded-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold text-base flex items-center justify-center cursor-pointer flex-shrink-0">+</button>
+        )}
+      </div>
+      {selectedSkills.length > 0 && showDropdown && (
+        <input type="text" value={inputValue} placeholder="Search skills..."
+          onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
+          onKeyDown={handleKeyDown} autoFocus
+          className="mt-1 w-full border-2 border-yellow-400 rounded p-2 text-sm outline-none" />
+      )}
+      {showDropdown && allOptions.length > 0 && (
+        <ul ref={dropdownRef} className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto mt-1" style={{ maxHeight: '180px' }}>
+          {allOptions.map((skill, index) => (
+            <li key={skill} id={`skill-option-${index}`}
+              onMouseDown={(e) => { e.preventDefault(); if (skill === '__OTHER__') addSkill(inputValue.trim()); else addSkill(skill); setHighlightedIndex(-1); }}
+              onMouseEnter={() => setHighlightedIndex(index)}
+              onMouseLeave={() => setHighlightedIndex(-1)}
+              className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                skill === '__OTHER__'
+                  ? highlightedIndex === index ? 'bg-yellow-100 text-blue-700 font-semibold border-t border-gray-200' : 'text-blue-600 font-semibold border-t border-gray-200 hover:bg-yellow-50'
+                  : highlightedIndex === index ? 'bg-yellow-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-yellow-50'
+              }`}>
+              {skill === '__OTHER__' ? `+ Add "${inputValue.trim()}" as custom skill` : skill}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Edit_opening Component ──────────────────────────────────────────────
 function Edit_opening() {
   const [openingname, setOpeningname] = useState('');
   const [hours, setHours] = useState('');
@@ -16,7 +199,7 @@ function Edit_opening() {
   const [employmenttype, setEmploymenttype] = useState('');
   const [skills, setSkills] = useState('');
   const [status, setStatus] = useState('');
-  const [description, setDescription] = useState(''); // ✅ Added description
+  const [description, setDescription] = useState('');
   const [startdate, setStartdate] = useState(new Date());
   const [enddate, setEnddate] = useState(() => {
     const oneYearLater = new Date();
@@ -27,9 +210,10 @@ function Edit_opening() {
   const [openingId, setOpeningId] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [publicUrlKey, setPublicUrlKey] = useState('');
+  const [openingLocation, setOpeningLocation] = useState('');
+  const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
 
-  // ✅ FIX 1: Use numeric userId from localStorage, not name
-const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,13 +229,14 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
         setPaymenttype(res.data.paymentType);
         setStartdate(new Date(res.data.startDate));
         setEnddate(new Date(res.data.endDate));
-        setDescription(res.data.description || ''); // ✅ Load description
+        setDescription(res.data.description || '');
         setSkills(res.data.skill);
         setEmploymenttype(res.data.employmentType);
         setExperience(res.data.experience);
         setStatus(res.data.status);
+        setPublicUrlKey(res.data.publicUrlKey || '');
+        setOpeningLocation(res.data.location || '');
 
-        // Handle "Other" technology
         const techOptions = ['JAVA','DOTNET','TESTING','ANGULAR','REACTJS','AWS DEVOPS','AZURE DEVOPS','SQL DEVELOPER'];
         if (res.data.technology && !techOptions.includes(res.data.technology)) {
           setTechnology('Other');
@@ -89,8 +274,6 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
     setLoading(true);
 
     const finalTech = technology === 'Other' ? customTech : technology;
-
-    // ✅ FIX 1: Pass integer IDs for createdBy/updatedBy, not name strings
     const payload = {
       id: openingId,
       name: openingname,
@@ -101,15 +284,17 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
       startDate: startdate.toISOString(),
       endDate: enddate.toISOString(),
       skill: skills,
+      location: openingLocation,
       technology: finalTech,
       experience: experience,
       employmentType: employmenttype,
       status: status,
-      description: description,         // ✅ FIX 3: Include description in payload
+      description: description,
+      publicUrlKey: publicUrlKey,
       createdAt: new Date().toISOString(),
-      createdBy: creatorId,             // ✅ FIX 1: integer user ID
+      createdBy: creatorId,
       updatedAt: new Date().toISOString(),
-      updatedBy: creatorId,             // ✅ FIX 1: integer user ID
+      updatedBy: creatorId,
     };
 
     axios
@@ -146,6 +331,7 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
               </div>
             ) : (
               <div className="space-y-6">
+
                 {/* Row 1: Opening Name + Hours */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
@@ -259,9 +445,11 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Skills <span className="text-pink-800">*</span></label>
-                    <input type="text" value={skills} placeholder="Enter skills"
-                      onChange={(e) => { setSkills(e.target.value); setErrors(prev => ({ ...prev, skills: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                    <SkillTagInput
+                      value={skills}
+                      onChange={(val) => { setSkills(val); setErrors(prev => ({ ...prev, skills: '' })); }}
+                      error={errors.skills}
+                    />
                     {errors.skills && <p className="text-red-600 text-sm">{errors.skills}</p>}
                   </div>
 
@@ -305,7 +493,7 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
                   </div>
                 </div>
 
-                {/* ✅ FIX 3: Description field (full width) */}
+                {/* Description */}
                 <div className="w-full">
                   <label className="font-semibold mb-1">Description</label>
                   <textarea
@@ -327,7 +515,6 @@ const [creatorId] = useState(Number(localStorage.getItem("employeeid")));
               >
                 Back
               </button>
-              {/* ✅ FIX 2: Button now correctly says "Save" since user is already editing */}
               <button
                 onClick={editopening}
                 className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer"
