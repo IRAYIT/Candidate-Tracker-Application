@@ -4,11 +4,11 @@ import './ApplicationForm.css';
 
 const INITIAL_STATE = {
   firstName: '', lastName: '', email: '', phone: '',
-  location: '', experience: '', expectedSalary: '',
+  location: '', experience: '',currentSalary: '', expectedSalary: '',
   languagesKnown: '', noticePeriod: '', visaStatus: '',
   applicationStatus: 'APPLIED', employmentType: '', source: '',
   phoneDialCode: '+91',
-  expectedSalaryCurrency: '₹',
+  expectedSalaryCurrency: '₹',currentSalaryCurrency: '₹',
 };
 
 const PHONE_COUNTRIES = [
@@ -296,6 +296,7 @@ function ApplicationForm({ publicUrlKey }) {
     if (!form.phone.trim())         e.phone          = 'Phone is required.';
     if (!form.location.trim())      e.location       = 'Location is required.';
     if (form.experience === '')     e.experience     = 'Experience is required.';
+    if (form.currentSalary === '')  e.currentSalary  = 'Current salary is required.';
     if (form.expectedSalary === '') e.expectedSalary = 'Expected salary is required.';
     if (form.noticePeriod === '')   e.noticePeriod   = 'Notice period is required.';
     if (!resume)                    e.resume         = 'Please upload your resume.';
@@ -319,6 +320,8 @@ function ApplicationForm({ publicUrlKey }) {
       phone: `${form.phoneDialCode} ${form.phone}`,
       location:          form.location,
       experience:        form.experience,
+      currentSalary:     form.currentSalary,
+     currentSalaryCurrency: form.currentSalaryCurrency,
      expectedSalary: form.expectedSalary,
      expectedSalaryCurrency: form.expectedSalaryCurrency,
       languagesKnown:    form.languagesKnown,
@@ -432,11 +435,38 @@ function ApplicationForm({ publicUrlKey }) {
       {/* ── Professional Details ── */}
       <div className="af-section-title">Professional Details</div>
       <div className="af-grid">
-        <Field label="Years of Experience" required error={errors.experience}>
-          <input className={`af-input ${errors.experience ? 'af-input--error' : ''}`}
-            type="number" name="experience" value={form.experience}
-            onChange={handleChange} placeholder="e.g. 3" min="0" />
-        </Field>
+       
+       <Field label="Current Salary" required error={errors.currentSalary}>
+  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
+       className={errors.currentSalary ? 'af-input--error' : ''}>
+    <select
+      name="currentSalaryCurrency"
+      value={form.currentSalaryCurrency}
+      onChange={handleChange}
+      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
+               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+      {CURRENCIES.map(c => (
+        <option key={c.symbol} value={c.symbol}>{c.label}</option>
+      ))}
+    </select>
+    <input
+      className="af-input"
+      style={{ border: 'none', borderRadius: 0, flex: 1 }}
+      type="text"
+      name="currentSalary"
+      value={form.currentSalary}
+      onChange={(e) => {
+        const val = e.target.value;
+        if (/^[a-zA-Z0-9]*$/.test(val)) {
+          handleChange({ target: { name: 'currentSalary', value: val } });
+        }
+      }}
+      placeholder="50000"
+    />
+  </div>
+</Field>
+
+
 
       <Field label="Expected Salary" required error={errors.expectedSalary}>
   <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
@@ -468,6 +498,14 @@ function ApplicationForm({ publicUrlKey }) {
   </div>
 </Field>
 
+
+ <Field label="Years of Experience" required error={errors.experience}>
+          <input className={`af-input ${errors.experience ? 'af-input--error' : ''}`}
+            type="number" name="experience" value={form.experience}
+            onChange={handleChange} placeholder="e.g. 3" min="0" />
+        </Field>
+
+
         <Field label="Notice Period (days)" required error={errors.noticePeriod}>
           <input className={`af-input ${errors.noticePeriod ? 'af-input--error' : ''}`}
             type="number" name="noticePeriod" value={form.noticePeriod}
@@ -482,7 +520,18 @@ function ApplicationForm({ publicUrlKey }) {
           </select>
         </Field>
 
-        <Field label="Skills" error={errors.languagesKnown} hint="Search and select your skills">
+
+        <Field label="How did you hear about us?" error={errors.source}>
+          <select className="af-input" name="source" value={form.source} onChange={handleChange}>
+            <option value="">Select source</option>
+            {['LinkedIn', 'Naukri', 'Indeed', 'Company Website', 'Referral', 'Other'].map(s =>
+              <option key={s} value={s}>{s}</option>)}
+          </select>
+        </Field>
+      </div>
+
+
+      <Field label="Skills" error={errors.languagesKnown} hint="Search and select your skills">
           <SkillTagInput
             value={form.languagesKnown}
             onChange={(val) => {
@@ -493,14 +542,6 @@ function ApplicationForm({ publicUrlKey }) {
           />
         </Field>
 
-        <Field label="How did you hear about us?" error={errors.source}>
-          <select className="af-input" name="source" value={form.source} onChange={handleChange}>
-            <option value="">Select source</option>
-            {['LinkedIn', 'Naukri', 'Indeed', 'Company Website', 'Referral', 'Other'].map(s =>
-              <option key={s} value={s}>{s}</option>)}
-          </select>
-        </Field>
-      </div>
 
       {/* ── Documents ── */}
       <div className="af-section-title">Documents</div>

@@ -116,17 +116,18 @@ function CandidateView() {
                   </div>
                 </div>
 
-                {/* Row 3 - Experience / Expected Salary */}
+                {/* Row 3 - Current Salary / Expected Salary */}
                 <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Experience (Years)</label>
+                   <div className="w-full md:w-[48%]">
+                    <label className="font-semibold block text-gray-700 mb-1">Current Salary</label>
                     <input
                       type="text"
-                      value={candidate.experience ?? ""}
+                      value={candidate.currentSalary ? `${candidate.currentSalaryCurrency || '₹'}${candidate.currentSalary.toLocaleString()}` : ""}
                       disabled
                       className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
                     />
                   </div>
+                 
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Expected Salary</label>
                     <input
@@ -137,6 +138,18 @@ function CandidateView() {
                     />
                   </div>
                 </div>
+
+                 {/* Row 4  - Experience}
+                <div className="flex flex-wrap gap-4 justify-between">
+                  bled<div className="w-full md:w-[48%]">
+                    <label className="font-semibold block text-gray-700 mb-1">Experience (Years)</label>
+                    <input
+                      type="text"
+                      value={candidate.experience ?? ""}
+                      disa
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
+                    />
+                  </div>
 
                 {/* Row 4 - Skills / Location */}
                 <div className="flex flex-wrap gap-4 justify-between">
