@@ -5,15 +5,16 @@ import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
 
 const BASE_URL = "http://localhost:8098/api/public/apply";
-
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "HIRED"];
 
 function AppliedCandidates() {
+  const [permissionid, setPermissionid] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filterOpeningName, setFilterOpeningName] = useState("");
+const [filterOpeningId, setFilterOpeningId] = useState(null);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-
   const [editModal, setEditModal] = useState({ open: false, candidateId: null, currentStatus: "" });
   const [newStatus, setNewStatus] = useState("");
   const [editLoading, setEditLoading] = useState(false);
@@ -21,9 +22,36 @@ function AppliedCandidates() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchCandidates();
-  }, []);
+useEffect(() => {
+    const temp_permissionid = localStorage.getItem("permissionid");
+    setPermissionid(temp_permissionid);
+
+    const openingId = localStorage.getItem("filter_opening_id");
+    const openingName = localStorage.getItem("filter_opening_name");
+
+    if (openingId) {
+        setFilterOpeningId(openingId);
+        setFilterOpeningName(openingName);
+        fetchCandidatesByOpening(openingId);   // ← filtered
+    } else {
+        fetchCandidates();                     // ← all candidates
+    }
+}, []);
+
+const fetchCandidatesByOpening = async (openingId) => {
+    try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`http://localhost:8098/api/public/apply/byOpening/${openingId}`);
+        if (!res.ok) throw new Error("Failed to fetch candidates");
+        const data = await res.json();
+        setCandidates(data);
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+};
 
   const fetchCandidates = async () => {
     try {
@@ -114,12 +142,32 @@ function AppliedCandidates() {
         <Sidebar />
       </aside>
 
-      {/* Main content — explicitly capped so it never pushes the sidebar */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col" style={{ maxWidth: "calc(100% - 256px)" }}>
-        {/* Header */}
         <header className="border-b border-gray-200 bg-white">
           <Header />
         </header>
+
+{filterOpeningName && (
+    <div className="flex items-center justify-between mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-md">
+        <span className="text-sm text-gray-700">
+            Showing candidates for: <span className="text-blue-600 font-semibold">{filterOpeningName}</span>
+        </span>
+        <button
+            onClick={() => {
+                localStorage.removeItem("filter_opening_id");
+                localStorage.removeItem("filter_opening_name");
+                setFilterOpeningName("");
+                setFilterOpeningId(null);
+                fetchCandidates();
+            }}
+            className="text-xs text-red-500 hover:underline cursor-pointer ml-4"
+        >
+            ✕ Clear Filter
+        </button>
+    </div>
+)}
+
 
         <main className="flex-1 bg-gray-50 p-6 overflow-x-auto">
           {/* Search bar */}
@@ -159,10 +207,7 @@ function AppliedCandidates() {
                     <tr>
                       {["First Name", "Last Name", "Email", "Experience", "Expected Salary", "Skills", "Status", "Actions"].map(
                         (h) => (
-                          <th
-                            key={h}
-                            className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider"
-                          >
+                          <th key={h} className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
                             {h}
                           </th>
                         )
@@ -182,9 +227,9 @@ function AppliedCandidates() {
                           <td className="px-6 py-4 text-sm">{c.firstName}</td>
                           <td className="px-6 py-4 text-sm">{c.lastName}</td>
                           <td className="px-6 py-4 text-sm">{c.email}</td>
-                          <td className="px-6 py-4 text-sm">{c.experience} yrs</td>                        
+                          <td className="px-6 py-4 text-sm">{c.experience} yrs</td>
                           <td className="px-6 py-4 text-sm">
-                          {c.expectedSalaryCurrency || '₹'}{c.expectedSalary?.toLocaleString()}
+                            {c.expectedSalaryCurrency || "₹"}{c.expectedSalary?.toLocaleString()}
                           </td>
                           <td className="px-6 py-4 text-sm">{c.languagesKnown || "—"}</td>
                           <td className="px-6 py-4 text-sm">
@@ -194,24 +239,35 @@ function AppliedCandidates() {
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <div className="flex gap-2 flex-nowrap">
+
+                              {/* View — all roles */}
                               <button
                                 onClick={() => handleView(c.id)}
-                                className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+                                className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
                               >
                                 View
                               </button>
-                              <button
-                                onClick={() => openEditModal(c)}
-                                className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => setDeleteModal({ open: true, candidateId: c.id })}
-                                className="px-3 py-1 rounded border text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
-                              >
-                                Delete
-                              </button>
+
+                              {/* Edit — Admin (1), HR (2), Manager (3) */}
+                              {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                                <button
+                                  onClick={() => openEditModal(c)}
+                                  className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                              )}
+
+                              {/* Delete — Admin only (1) */}
+                              {permissionid === "1" && (
+                                <button
+                                  onClick={() => setDeleteModal({ open: true, candidateId: c.id })}
+                                  className="px-3 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              )}
+
                             </div>
                           </td>
                         </tr>
@@ -230,61 +286,51 @@ function AppliedCandidates() {
         </main>
       </div>
 
-     {/* ── EDIT STATUS MODAL ── */}
-{editModal.open && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden" }}
-  >
-    <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
-
-      {/* Modal Header */}
-     <div className="bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 px-6 py-5">
-        {/* <button
-          className="absolute top-3 right-4 text-white hover:text-blue-200 text-xl leading-none"
-          onClick={() => setEditModal({ open: false, candidateId: null, currentStatus: "" })}
+      {/* Edit Status Modal */}
+      {editModal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden" }}
         >
-          ✕
-        </button> */}
-        <h2 className="text-xl font-bold text-white tracking-wide">Update Status</h2>
-        <p className="text-blue-100 text-sm mt-1">
-          Change the application stage for this candidate
-        </p>
-      </div>
-
-      {/* Modal Body */}
-      <div className="px-6 py-5">
-        <label className="text-xs text-gray-400 uppercase font-semibold tracking-wide mb-2 block">New Status</label>
-        <select
-          value={newStatus}
-          onChange={(e) => setNewStatus(e.target.value)}
-          className="w-full mt-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <div className="flex gap-3 mt-8">
-          <button
-            onClick={handleStatusUpdate}
-            disabled={editLoading}
-            className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer text-sm"
-          >
-            {editLoading ? "Saving…" : "Save"}
-          </button>
-          <button
-            onClick={() => setEditModal({ open: false, candidateId: null, currentStatus: "" })}
-            className="flex-1 border border-gray-300 text-gray-600 rounded-md px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
-          >
-            Cancel
-          </button>
+          <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 px-6 py-5">
+              <h2 className="text-xl font-bold text-white tracking-wide">Update Status</h2>
+              <p className="text-blue-100 text-sm mt-1">Change the application stage for this candidate</p>
+            </div>
+            <div className="px-6 py-5">
+              <label className="text-xs text-gray-400 uppercase font-semibold tracking-wide mb-2 block">
+                New Status
+              </label>
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                className="w-full mt-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={handleStatusUpdate}
+                  disabled={editLoading}
+                  className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer text-sm"
+                >
+                  {editLoading ? "Saving…" : "Save"}
+                </button>
+                <button
+                  onClick={() => setEditModal({ open: false, candidateId: null, currentStatus: "" })}
+                  className="flex-1 border border-gray-300 text-gray-600 rounded-md px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-    </div>
-  </div>
-)}
-
-      {/* ── DELETE CONFIRM MODAL ── */}
+      {/* Delete Confirm Modal */}
       {deleteModal.open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
