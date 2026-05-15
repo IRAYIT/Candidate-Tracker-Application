@@ -60,6 +60,12 @@ const SKILL_OPTIONS = [
   "Design Patterns", "System Design", "DevSecOps", "SonarQube",
 ];
 
+const PHONE_COUNTRIES = [
+  { code: '+91', flag: '🇮🇳', label: '+91' },
+  { code: '+46', flag: '🇸🇪', label: '+46' },
+  { code: '+1',  flag: '🇺🇸', label: '+1'  },
+];
+
 // ─── SkillTagInput Component ──────────────────────────────────────────────────
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
@@ -289,6 +295,7 @@ function Resource_edit() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneDialCode, setPhoneDialCode] = useState('+91');
   const [errors, setErrors] = useState('');
   const [technology, setTechnology] = useState("");
   const [skill, setSkill] = useState("");
@@ -321,7 +328,17 @@ function Resource_edit() {
           setFirstName(data.firstName || "");
           setLastName(data.lastName || "");
           setEmail(data.email || "");
-          setPhone(data.phone || "");
+
+          // ── Parse saved phone: split dial code from number ──
+          const rawPhone = data.phone || "";
+          const matchedCountry = PHONE_COUNTRIES.find(c => rawPhone.startsWith(c.code));
+          if (matchedCountry) {
+            setPhoneDialCode(matchedCountry.code);
+            setPhone(rawPhone.replace(matchedCountry.code, '').trim());
+          } else {
+            setPhone(rawPhone);
+          }
+
           setTechnology(data.technology || "");
           setSkill(data.skill || "");
           setEmploymenttype(data.employmentType || "");
@@ -383,7 +400,7 @@ function Resource_edit() {
         technology: finalTechnology,
         experience,
         employmentType: employmenttype,
-        phone,
+        phone: `${phoneDialCode} ${phone}`,
         email,
         client: isClient,
         status,
@@ -407,7 +424,7 @@ function Resource_edit() {
         .put("http://localhost:8098/api/v1/resource/update/upload", formData)
         .then(() => { navigate('/manageresources'); })
         .catch(() => {})
-        .finally(() => {});
+        .finally(() => { setLoading(false); });
     }
   };
 
@@ -435,7 +452,7 @@ function Resource_edit() {
                 {/* Resource Name + First Name */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Resource Name *</label>
+                    <label className="font-semibold mb-1 block">Resource Name *</label>
                     <input
                       type="text"
                       value={resourceName}
@@ -444,7 +461,7 @@ function Resource_edit() {
                     />
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">First Name *</label>
+                    <label className="font-semibold mb-1 block">First Name *</label>
                     <input
                       type="text"
                       value={firstName}
@@ -458,7 +475,7 @@ function Resource_edit() {
                 {/* Last Name + Email */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Last Name *</label>
+                    <label className="font-semibold mb-1 block">Last Name *</label>
                     <input
                       type="text"
                       value={lastName}
@@ -468,7 +485,7 @@ function Resource_edit() {
                     {errors.lastName && <p className="text-red-600 text-sm">{errors.lastName}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Email *</label>
+                    <label className="font-semibold mb-1 block">Email *</label>
                     <input
                       type="email"
                       value={email}
@@ -479,20 +496,45 @@ function Resource_edit() {
                   </div>
                 </div>
 
-                {/* Phone + Skills (Tag Input) */}
+                {/* Phone (with dial code dropdown) + Skills */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Phone *</label>
-                    <input
-                      type="text"
-                      value={phone}
-                      onChange={(e) => { setPhone(e.target.value); setErrors(prev => ({ ...prev, phone: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
-                    {errors.phone && <p className="text-red-600 text-sm">{errors.phone}</p>}
+                    <label className="font-semibold mb-1 block">Phone *</label>
+                    <div
+                      className={`flex border-2 rounded overflow-hidden ${
+                        errors.phone ? 'border-red-500' : 'border-yellow-400'
+                      }`}
+                    >
+                      {/* Country dial code dropdown */}
+                      <select
+                        value={phoneDialCode}
+                        onChange={(e) => setPhoneDialCode(e.target.value)}
+                        className="bg-gray-50 border-r-2 border-yellow-400 px-2 py-2 text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                      >
+                        {PHONE_COUNTRIES.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.flag} {country.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Phone number input */}
+                      <input
+                        type="text"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          setErrors(prev => ({ ...prev, phone: '' }));
+                        }}
+                        placeholder="Enter phone number"
+                        className="flex-1 p-2 text-sm outline-none bg-white"
+                      />
+                    </div>
+                    {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
                   </div>
+
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Skill *</label>
+                    <label className="font-semibold mb-1 block">Skill *</label>
                     <SkillTagInput
                       value={skill}
                       onChange={(val) => { setSkill(val); setErrors(prev => ({ ...prev, skill: '' })); }}
@@ -505,7 +547,7 @@ function Resource_edit() {
                 {/* Technology + Employment Type */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Technology *</label>
+                    <label className="font-semibold mb-1 block">Technology *</label>
                     <select
                       value={technology}
                       onChange={(e) => {
@@ -516,7 +558,7 @@ function Resource_edit() {
                       }}
                       className="border-2 border-yellow-400 p-2 rounded w-full"
                     >
-                      <option value="">{technology}</option>
+                      <option value="">{technology || '-- Select Technology --'}</option>
                       <option value="JAVA">JAVA</option>
                       <option value="DOTNET">DOTNET</option>
                       <option value="TESTING">TESTING</option>
@@ -539,7 +581,7 @@ function Resource_edit() {
                     {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Employment Type *</label>
+                    <label className="font-semibold mb-1 block">Employment Type *</label>
                     <select
                       value={employmenttype}
                       onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmentType: '' })); }}
@@ -556,10 +598,10 @@ function Resource_edit() {
                   </div>
                 </div>
 
-                {/* Experience + Status */}
+                {/* Experience */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full">
-                    <label className="font-semibold mb-1">Experience *</label>
+                    <label className="font-semibold mb-1 block">Experience *</label>
                     <input
                       type="text"
                       value={experience}
@@ -568,21 +610,11 @@ function Resource_edit() {
                     />
                     {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
-                  {/* <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Status *</label>
-                    <input
-                      type="text"
-                      value={status}
-                      onChange={(e) => { setStatus(e.target.value); setErrors(prev => ({ ...prev, status: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
-                    {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
-                  </div> */}
                 </div>
 
                 {/* Attachments */}
                 <div>
-                  <label className="font-semibold mb-1">Attachments *</label>
+                  <label className="font-semibold mb-1 block">Attachments *</label>
                   <input
                     type="file"
                     multiple
@@ -619,3 +651,4 @@ function Resource_edit() {
 }
 
 export default Resource_edit;
+
