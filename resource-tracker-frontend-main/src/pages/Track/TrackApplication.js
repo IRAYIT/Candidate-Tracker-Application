@@ -2,7 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:8098"; // 👉 Change to your backend URL
+const API_BASE = "http://localhost:8098";
+
+// ─── Company Name by Country ──────────────────────────────────────────────────
+const COMPANY_BY_COUNTRY = {
+  "India":  "I-Ray IT Solutions",
+  "Sweden": "I-Ray IT Solutions AB",
+  "USA":    "I-Ray IT Solutions INC",
+};
+
+function getCompanyName(country) {
+  return COMPANY_BY_COUNTRY[country] || "I-Ray IT Solutions";
+}
 
 // ─── Status Metadata ──────────────────────────────────────────────────────────
 const STATUS_META = {
@@ -27,7 +38,7 @@ const STATUS_META = {
     step: 3,
   },
   REJECTED: {
-    label: "Not Progressing",
+    label: "Rejected",
     desc: "Thank you for your interest. After careful consideration, we have decided to move forward with other candidates. We encourage you to apply again in the future.",
     step: -1,
   },
@@ -75,7 +86,7 @@ function Timeline({ status }) {
             </svg>
           </div>
           <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#b91c1c", marginTop: 6 }}>
-            Closed
+            Rejected
           </span>
         </div>
       </div>
@@ -92,7 +103,6 @@ function Timeline({ status }) {
             display: "flex", flexDirection: "column", alignItems: "center",
             flex: 1, minWidth: 60, position: "relative",
           }}>
-            {/* Connector line */}
             {i < STEPS.length - 1 && (
               <div style={{
                 position: "absolute", top: 13, left: "50%",
@@ -100,7 +110,6 @@ function Timeline({ status }) {
                 background: done ? "#1e4adb" : "#e2ddd9", zIndex: 0,
               }} />
             )}
-            {/* Dot */}
             <div style={{
               width: 26, height: 26, borderRadius: "50%", zIndex: 1,
               border: `2px solid ${done || current ? "#1e4adb" : "#e2ddd9"}`,
@@ -121,7 +130,6 @@ function Timeline({ status }) {
                 </svg>
               )}
             </div>
-            {/* Label */}
             <span style={{
               fontSize: "0.68rem",
               fontWeight: done || current ? 600 : 500,
@@ -172,31 +180,50 @@ function StatusBadge({ status }) {
   );
 }
 
+// ─── Full-page Spinner (shown during auto-fetch from email link) ──────────────
+function PageSpinner() {
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", gap: 16,
+      minHeight: 220,
+    }}>
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+        stroke="#1e4adb" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+          <animateTransform attributeName="transform" type="rotate"
+            from="0 12 12" to="360 12 12" dur="0.7s" repeatCount="indefinite" />
+        </path>
+      </svg>
+      <span style={{ fontSize: "0.88rem", color: "#6b6360", fontWeight: 500 }}>
+        Fetching your application status…
+      </span>
+    </div>
+  );
+}
+
 // ─── Main TrackApplication Component ─────────────────────────────────────────
 function TrackApplication() {
-  const [token,      setToken]      = useState("");
-  const [inputFocus, setInputFocus] = useState(false);
-  const [data,       setData]       = useState(null);
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState("");
+  // If URL already has ?token=, start in loading state so entry card never flashes
+  const urlToken = new URLSearchParams(window.location.search).get("token") || "";
+
+  const [token,          setToken]          = useState(urlToken);
+  const [inputFocus,     setInputFocus]     = useState(false);
+  const [data,           setData]           = useState(null);
+  const [loading,        setLoading]        = useState(false);
+  const [initialLoading, setInitialLoading] = useState(!!urlToken); // ← true from frame 1 if token in URL
+  const [error,          setError]          = useState("");
 
   const navigate = useNavigate();
 
-  // Auto-fill token from URL query param (?token=xxx)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("token");
-    if (t) {
-      setToken(t);
-      doFetch(t);
-    }
-  }, []);
-
-  const doFetch = useCallback(async (overrideToken) => {
+  const doFetch = useCallback(async (overrideToken, isAuto = false) => {
     const t = (overrideToken ?? token).trim();
     if (!t) { setError("Please enter your tracking ID."); return; }
 
-    setLoading(true);
+    // Auto-fetch (from email link) uses initialLoading so entry card never flashes
+    if (isAuto) setInitialLoading(true);
+    else        setLoading(true);
+
     setError("");
     setData(null);
 
@@ -211,15 +238,23 @@ function TrackApplication() {
     } catch (err) {
       setError(err.message || "Unable to fetch status. Please try again.");
     } finally {
+      setInitialLoading(false);
       setLoading(false);
     }
   }, [token]);
+
+  // Auto-fetch on mount if token was in URL
+  useEffect(() => {
+    if (urlToken) doFetch(urlToken, true);
+  }, []);
 
   const handleReset = () => {
     setData(null);
     setError("");
     setToken("");
   };
+
+  const companyName = getCompanyName(data?.country);
 
   return (
     <div style={{
@@ -234,13 +269,11 @@ function TrackApplication() {
       position: "relative",
     }}>
 
-      {/* Google Fonts */}
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet"
       />
 
-      {/* Background glow */}
       <div style={{
         position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
         background:
@@ -268,19 +301,29 @@ function TrackApplication() {
               fontFamily: "'DM Serif Display', serif",
               fontSize: "1.2rem", color: "#1a1614", letterSpacing: "-0.02em",
             }}>
-              I-Ray IT Solutions
+              {companyName}
             </span>
           </a>
         </div>
 
-        {/* ── Entry Card (shown when no data yet) ── */}
-        {!data && (
+        {/* ── Auto-fetch spinner: entry card is completely hidden during this ── */}
+        {initialLoading && (
+          <div style={{
+            background: "#fff", borderRadius: 14,
+            border: "1px solid #e2ddd9",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          }}>
+            <PageSpinner />
+          </div>
+        )}
+
+        {/* ── Entry Card: hidden while auto-fetching OR after data loads ── */}
+        {!initialLoading && !data && (
           <div style={{
             background: "#fff", borderRadius: 14,
             border: "1px solid #e2ddd9",
             boxShadow: "0 4px 24px rgba(0,0,0,0.08)", overflow: "hidden",
           }}>
-            {/* Card Header */}
             <div style={{ padding: "32px 32px 24px", borderBottom: "1px solid #e2ddd9" }}>
               <h1 style={{
                 fontFamily: "'DM Serif Display', serif",
@@ -294,10 +337,7 @@ function TrackApplication() {
               </p>
             </div>
 
-            {/* Card Body */}
             <div style={{ padding: 32 }}>
-
-              {/* Token Input */}
               <div style={{ marginBottom: 20 }}>
                 <label style={{
                   display: "block", fontSize: "0.8rem", fontWeight: 600,
@@ -340,7 +380,6 @@ function TrackApplication() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 onClick={() => doFetch()}
                 disabled={loading}
@@ -377,7 +416,6 @@ function TrackApplication() {
                 )}
               </button>
 
-              {/* Error Message */}
               {error && (
                 <div style={{
                   display: "flex", alignItems: "center", gap: 8,
@@ -399,14 +437,13 @@ function TrackApplication() {
           </div>
         )}
 
-        {/* ── Result Card (shown after successful fetch) ── */}
+        {/* ── Result Card ── */}
         {data && (
           <div style={{
             background: "#fff", borderRadius: 14,
             border: "1px solid #e2ddd9",
             boxShadow: "0 4px 24px rgba(0,0,0,0.08)", overflow: "hidden",
           }}>
-            {/* Result Header */}
             <div style={{ padding: "32px 32px 24px", borderBottom: "1px solid #e2ddd9" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{
@@ -434,16 +471,10 @@ function TrackApplication() {
               </div>
             </div>
 
-            {/* Result Body */}
             <div style={{ padding: 32 }}>
-
-              {/* Timeline */}
               <Timeline status={data.status} />
-
-              {/* Status Badge */}
               <StatusBadge status={data.status} />
 
-              {/* Job info chip */}
               {data.jobTitle && (
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <div style={{
@@ -459,10 +490,26 @@ function TrackApplication() {
                     </svg>
                     {data.jobTitle}
                   </div>
+
+                  {data.country && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "7px 12px", background: "#f5f2ee",
+                      border: "1px solid #e2ddd9", borderRadius: 8,
+                      fontSize: "0.8rem", color: "#6b6360",
+                    }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                        stroke="#1e4adb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                      </svg>
+                      {data.country}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Action links */}
               <div style={{ display: "flex", gap: 20, marginTop: 24, alignItems: "center" }}>
                 <button
                   onClick={handleReset}
@@ -479,20 +526,7 @@ function TrackApplication() {
                   </svg>
                   Track another application
                 </button>
-
-                {/* <button
-                  onClick={() => navigate("/")}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    fontSize: "0.82rem", color: "#6b6360", fontWeight: 500,
-                    background: "none", border: "none", padding: 0, cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Go to Home
-                </button> */}
               </div>
-
             </div>
           </div>
         )}

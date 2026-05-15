@@ -233,7 +233,7 @@ function Edit_opening() {
         setSkills(res.data.skill);
         setEmploymenttype(res.data.employmentType);
         setExperience(res.data.experience);
-        setStatus(res.data.status);
+        setStatus(res.data.status === 'TERMINATED' ? 'TERMINATED' : 'ACTIVE');
         setPublicUrlKey(res.data.publicUrlKey || '');
         setOpeningLocation(res.data.location || '');
 
@@ -461,8 +461,8 @@ function Edit_opening() {
                       className="border-2 border-yellow-400 p-2 rounded w-full"
                     >
                       <option value="">Select status</option>
-                      <option value="Open">OPEN</option>
-                      <option value="Close">CLOSE</option>
+                     <option value="ACTIVE">OPEN</option>
+                     <option value="TERMINATED">CLOSE</option>
                     </select>
                     {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
                   </div>

@@ -33,11 +33,11 @@ function Current_openings() {
     document.body.style.overflow = showDeleteModal ? "hidden" : "auto";
   }, [showDeleteModal]);
 
-  const getAllOpenings = async () => {
+const getAllOpenings = async () => {
     const res = await axios.get(`http://localhost:8098/api/v1/openings`);
-    setOpenings(res.data);
-  };
-
+    const activeOnly = res.data.filter(o => o.status === 'ACTIVE');  // ← add this
+    setOpenings(activeOnly);
+};
   const columns = useMemo(() => OPENINGCOLUMNS, []);
   const data = useMemo(() => openings, [openings]);
 

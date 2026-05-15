@@ -310,7 +310,7 @@ function Addresource() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+useEffect(() => {
     axios.get('http://localhost:8098/api/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
