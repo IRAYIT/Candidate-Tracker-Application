@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import axios from "axios";
+import { ClipLoader } from "react-spinners";
 
 function SendEmail() {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    setEmail(localStorage.getItem("emp_email"));
-  }, []);
+    const stateEmail = location.state?.email;
+    if (stateEmail) {
+      setEmail(stateEmail);
+    } else {
+      setEmail(localStorage.getItem("emp_email") || '');
+    }
+  }, [location.state]);
 
   const sendmail = () => {
     if (message !== '' && subject !== '') {
@@ -21,14 +29,19 @@ function SendEmail() {
         email,
         emailBody: message,
         subject,
-        isTrue: true,
+        isTrue: false,
       };
+      setSending(true);
       axios
         .post("http://localhost:8098/api/v1/resource/sendEmail", payload)
         .then(() => {
+          setSending(false);
           navigate('/manageresources');
         })
-        .catch((err) => setError("Failed to send email. Please try again."));
+        .catch((err) => {
+          setSending(false);
+          setError("Failed to send email. Please try again.");
+        });
     } else {
       setError('All fields are mandatory');
     }
@@ -92,15 +105,24 @@ function SendEmail() {
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   onClick={() => navigate('/manageresources')}
-                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded"
+                  disabled={sending}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded disabled:opacity-50"
                 >
                   Back
                 </button>
                 <button
                   onClick={sendmail}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  disabled={sending}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-70 flex items-center gap-2"
                 >
-                  Send
+                  {sending ? (
+                    <>
+                      <ClipLoader size={16} color="#ffffff" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send"
+                  )}
                 </button>
               </div>
             </div>

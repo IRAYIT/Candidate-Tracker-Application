@@ -60,10 +60,12 @@ useEffect(() => {
               <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer" onClick={() =>navigate('/editprofile')}>
                 Edit Profile
               </button>
-              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
+              {/* <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
                 Change Picture
-              </button>
-              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
+              </button> */}
+              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer"
+                onClick={() => navigate('/forgotpassword')}  
+              >
                 Change Password
               </button>
               <button className="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 font-semibold cursor-pointer" onClick={() =>navigate('/')}>
