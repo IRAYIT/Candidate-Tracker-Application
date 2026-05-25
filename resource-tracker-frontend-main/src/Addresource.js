@@ -304,7 +304,6 @@ function Addresource() {
   const [searchTerm, setSearchTerm] = useState('');
   const [employeeList, setEmployeeList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [candidateSource, setCandidateSource] = useState('');
   const [permissionid, setPermissionId] = useState('');
   const [employeeId, setEmployeeId] = useState('');
 
@@ -350,15 +349,14 @@ useEffect(() => {
     if (!email?.trim()) newErrors.email = 'Email is required.';
     if (!phone?.trim()) {
       newErrors.phone = 'Mobile is required.';
-    } else if (!/^\d{10}$/.test(phone.trim())) {
-      newErrors.phone = 'Mobile must be exactly 10 digits.';
+    }  else if (!/^\d{7,15}$/.test(phone.trim())) {
+  newErrors.phone = 'Mobile must be between 7 and 15 digits.';
     }
     if (!skill?.trim()) newErrors.skill = 'Skills are required.';
     if (!technology?.trim()) newErrors.technology = 'Technology is required.';
     if (!employmentType?.trim()) newErrors.employmentType = 'Employment type is required.';
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = 'Valid experience is required.';
-    if (!candidateSource?.trim()) newErrors.candidateSource = 'Candidate source is required.';
     if (!file || file.length === 0) newErrors.file = 'Resume file is required.';
     if (!comments?.trim()) newErrors.comments = 'Comments are required.';
     if (!status) newErrors.status = 'Status is required.';
@@ -466,7 +464,6 @@ useEffect(() => {
       updatedBy: 'parasuram',
       client: isClient,
       resourceType: '',
-      candidateSource,
     };
 
     if (permissionid === '2' && selectedRole === 'Employee') {
@@ -723,22 +720,7 @@ useEffect(() => {
                   </div>
                 )}
 
-                {/* Candidate Source */}
-                <div className="flex flex-col mt-4">
-                  <label className="font-semibold mb-1 block">Candidate Source <span className="text-pink-800">*</span></label>
-                  <select
-                    value={candidateSource}
-                    onChange={(e) => { setCandidateSource(e.target.value); if (errors.candidateSource) setErrors(prev => ({ ...prev, candidateSource: '' })); }}
-                    className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.candidateSource ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
-                  >
-                    <option value="">-- Select Source --</option>
-                    <option value="EXISTING">Existing Candidate</option>
-                    <option value="NEW">New Candidate</option>
-                  </select>
-                  {errors.candidateSource && <p className="text-red-600 text-sm mt-1">{errors.candidateSource}</p>}
-                </div>
-
-                {/* Resume Upload */}
+                 {/* Resume Upload */}
                 <div>
                   <label className="font-semibold mb-1 block">Upload Resume <span className="text-pink-800">*</span></label>
                   <input

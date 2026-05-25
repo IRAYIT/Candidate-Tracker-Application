@@ -115,6 +115,17 @@ function Resource_view() {
                   </div>
                 </div>
 
+                {/* Row 6: Comments — read-only, matching Addresource style */}
+                <div>
+                <label className="font-semibold block text-gray-700 mb-1">Comments</label>
+                 <textarea
+                    value={resData.comments || ""}
+                     disabled
+                      rows={3}
+                       className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm resize-none cursor-default"
+                 />
+                </div>
+
                 {/* Buttons */}
                 <div className="flex gap-4 p-4 items-center justify-center mt-8">
                   <button onClick={() => navigate("/manageresources")} className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer">
@@ -124,7 +135,6 @@ function Resource_view() {
                     Edit
                   </button>
                 </div>
-
               </div>
             )}  {/* ✅ Moved closing )} to here, after buttons */}
 

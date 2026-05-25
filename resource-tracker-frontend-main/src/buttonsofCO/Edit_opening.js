@@ -51,7 +51,6 @@ function SkillTagInput({ value, onChange, error }) {
   const dropdownRef = useRef(null);
   const containerRef = useRef(null);
 
-  // ✅ Fixed: depends on [value] so it loads existing skills from API
   useEffect(() => {
     if (value && selectedSkills.length === 0) {
       const arr = value.split(',').map(s => s.trim()).filter(Boolean);
@@ -193,6 +192,7 @@ function Edit_opening() {
   const [hours, setHours] = useState('');
   const [shifttimings, setShifttimings] = useState('');
   const [payment, setPayment] = useState('');
+  const [currency, setCurrency] = useState('INR');
   const [paymenttype, setPaymenttype] = useState('');
   const [technology, setTechnology] = useState('');
   const [experience, setExperience] = useState('');
@@ -216,6 +216,20 @@ function Edit_opening() {
 
   const navigate = useNavigate();
 
+  // ── Parse stored payment string "500 INR" → amount + currency ──────────────
+  const parsePayment = (raw) => {
+    if (!raw) return { amount: '', curr: 'INR' };
+    const parts = raw.trim().split(' ');
+    const knownCurrencies = ['INR', 'SEK', 'USD'];
+    if (parts.length >= 2 && knownCurrencies.includes(parts[parts.length - 1])) {
+      return {
+        amount: parts.slice(0, parts.length - 1).join(' '),
+        curr: parts[parts.length - 1],
+      };
+    }
+    return { amount: raw, curr: 'INR' };
+  };
+
   useEffect(() => {
     let openingid = localStorage.getItem("opening_id");
     axios
@@ -225,7 +239,12 @@ function Edit_opening() {
         setOpeningname(res.data.name);
         setHours(res.data.hours);
         setShifttimings(res.data.shiftTimings);
-        setPayment(res.data.payment);
+
+        // Parse payment into amount + currency
+        const { amount, curr } = parsePayment(res.data.payment);
+        setPayment(amount);
+        setCurrency(curr);
+
         setPaymenttype(res.data.paymentType);
         setStartdate(new Date(res.data.startDate));
         setEnddate(new Date(res.data.endDate));
@@ -237,7 +256,7 @@ function Edit_opening() {
         setPublicUrlKey(res.data.publicUrlKey || '');
         setOpeningLocation(res.data.location || '');
 
-        const techOptions = ['JAVA','DOTNET','TESTING','ANGULAR','REACTJS','AWS DEVOPS','AZURE DEVOPS','SQL DEVELOPER'];
+        const techOptions = ['JAVA', 'DOTNET', 'TESTING', 'ANGULAR', 'REACTJS', 'AWS DEVOPS', 'AZURE DEVOPS', 'SQL DEVELOPER'];
         if (res.data.technology && !techOptions.includes(res.data.technology)) {
           setTechnology('Other');
           setCustomTech(res.data.technology);
@@ -249,20 +268,20 @@ function Edit_opening() {
 
   const validateFields = () => {
     const newErrors = {};
-    if (!openingname?.trim()) newErrors.openingname = "Opening name is required.";
-    if (!hours?.toString().trim()) newErrors.hours = "Hours are required.";
-    if (!shifttimings?.trim()) newErrors.shifttimings = "Shift timings are required.";
-    if (!payment?.toString().trim()) newErrors.payment = "Payment is required.";
-    if (!paymenttype?.trim()) newErrors.paymenttype = "Payment type is required.";
-    if (!technology?.trim()) newErrors.technology = "Technology is required.";
+    if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
+    if (!hours?.toString().trim()) newErrors.hours        = "Hours are required.";
+    if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";
+    if (!payment?.toString().trim()) newErrors.payment    = "Payment is required.";
+    if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";
+    if (!technology?.trim())     newErrors.technology     = "Technology is required.";
     if (technology === 'Other' && !customTech?.trim()) newErrors.technology = "Please enter custom technology.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = "Valid experience is required.";
     if (!employmenttype?.trim()) newErrors.employmenttype = "Employment type is required.";
-    if (!skills?.trim()) newErrors.skills = "Skills are required.";
-    if (!status?.trim()) newErrors.status = "Status is required.";
-    if (!startdate) newErrors.startdate = "Start date is required.";
-    if (!enddate) newErrors.enddate = "End date is required.";
+    if (!skills?.trim())         newErrors.skills         = "Skills are required.";
+    if (!status?.trim())         newErrors.status         = "Status is required.";
+    if (!startdate)              newErrors.startdate      = "Start date is required.";
+    if (!enddate)                newErrors.enddate        = "End date is required.";
     return newErrors;
   };
 
@@ -274,11 +293,12 @@ function Edit_opening() {
     setLoading(true);
 
     const finalTech = technology === 'Other' ? customTech : technology;
+
     const payload = {
       id: openingId,
       name: openingname,
       hours: hours,
-      payment: payment,
+      payment: `${payment} ${currency}`,   // same format as Addopening
       paymentType: paymenttype,
       shiftTimings: shifttimings,
       startDate: startdate.toISOString(),
@@ -299,7 +319,7 @@ function Edit_opening() {
 
     axios
       .put("http://localhost:8098/api/v1/openings", payload)
-      .then((res) => {
+      .then(() => {
         navigate('/current_openings');
       })
       .catch((err) => {
@@ -338,7 +358,7 @@ function Edit_opening() {
                     <label className="font-semibold mb-1">Opening Name <span className="text-pink-800">*</span></label>
                     <input type="text" value={openingname} placeholder="Enter name"
                       onChange={(e) => { setOpeningname(e.target.value); setErrors(prev => ({ ...prev, openingname: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                      className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.openingname && <p className="text-red-600 text-sm">{errors.openingname}</p>}
                   </div>
 
@@ -346,27 +366,51 @@ function Edit_opening() {
                     <label className="font-semibold mb-1">Hours <span className="text-pink-800">*</span></label>
                     <input type="text" value={hours} placeholder="Enter hours"
                       onChange={(e) => { setHours(e.target.value); setErrors(prev => ({ ...prev, hours: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                      className={`border-2 p-2 rounded w-full ${errors.hours ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.hours && <p className="text-red-600 text-sm">{errors.hours}</p>}
                   </div>
                 </div>
 
-                {/* Row 2: Shift Timings + Payment */}
+                {/* Row 2: Shift Timings + Payment (with currency dropdown) */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Shift Timings <span className="text-pink-800">*</span></label>
                     <input type="text" value={shifttimings} placeholder="Enter timings"
                       onChange={(e) => { setShifttimings(e.target.value); setErrors(prev => ({ ...prev, shifttimings: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                      className={`border-2 p-2 rounded w-full ${errors.shifttimings ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.shifttimings && <p className="text-red-600 text-sm">{errors.shifttimings}</p>}
                   </div>
 
+                  {/* ── Payment with currency dropdown — same as Addopening ── */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Payment <span className="text-pink-800">*</span></label>
-                    <input type="text" value={payment} placeholder="Enter payment"
-                      onChange={(e) => { setPayment(e.target.value); setErrors(prev => ({ ...prev, payment: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
-                    {errors.payment && <p className="text-red-600 text-sm">{errors.payment}</p>}
+                    <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
+                      <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"
+                        style={{ borderRight: '2px solid #facc15' }}
+                      >
+                        <option value="INR">₹ INR</option>
+                        <option value="SEK">kr SEK</option>
+                        <option value="USD">$ USD</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={payment}
+                        placeholder="Amount"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (/^[a-zA-Z0-9]*$/.test(val)) {
+                            setPayment(val);
+                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
+                          }
+                        }}
+                        className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
+                        style={{ boxShadow: 'none' }}
+                      />
+                    </div>
+                    {errors.payment && <p className="text-red-600 text-sm mt-1">{errors.payment}</p>}
                   </div>
                 </div>
 
@@ -376,7 +420,7 @@ function Edit_opening() {
                     <label className="font-semibold mb-1">Payment Type <span className="text-pink-800">*</span></label>
                     <input type="text" value={paymenttype} placeholder="Enter type"
                       onChange={(e) => { setPaymenttype(e.target.value); setErrors(prev => ({ ...prev, paymenttype: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                      className={`border-2 p-2 rounded w-full ${errors.paymenttype ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.paymenttype && <p className="text-red-600 text-sm">{errors.paymenttype}</p>}
                   </div>
 
@@ -385,7 +429,7 @@ function Edit_opening() {
                     <select
                       value={technology}
                       onChange={(e) => { setTechnology(e.target.value); setErrors(prev => ({ ...prev, technology: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
+                      className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
                     >
                       <option value="">Select technology</option>
                       <option value="JAVA">JAVA</option>
@@ -400,13 +444,11 @@ function Edit_opening() {
                     </select>
                     {technology === 'Other' && (
                       <div className="p-2">
-                        <input
-                          type="text"
+                        <input type="text"
                           className="border-2 border-yellow-400 p-2 rounded w-full"
                           placeholder="Enter custom technology"
                           value={customTech}
-                          onChange={(e) => setCustomTech(e.target.value)}
-                        />
+                          onChange={(e) => setCustomTech(e.target.value)} />
                       </div>
                     )}
                     {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
@@ -419,7 +461,7 @@ function Edit_opening() {
                     <label className="font-semibold mb-1">Experience <span className="text-pink-800">*</span></label>
                     <input type="text" value={experience} placeholder="Enter experience"
                       onChange={(e) => { setExperience(e.target.value); setErrors(prev => ({ ...prev, experience: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full" />
+                      className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
 
@@ -428,7 +470,7 @@ function Edit_opening() {
                     <select
                       value={employmenttype}
                       onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmenttype: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
+                      className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}
                     >
                       <option value="">Select employment type</option>
                       <option value="Freelancing">Freelancing</option>
@@ -458,11 +500,11 @@ function Edit_opening() {
                     <select
                       value={status}
                       onChange={(e) => { setStatus(e.target.value); setErrors(prev => ({ ...prev, status: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
+                      className={`border-2 p-2 rounded w-full ${errors.status ? 'border-red-500' : 'border-yellow-400'}`}
                     >
                       <option value="">Select status</option>
-                     <option value="ACTIVE">OPEN</option>
-                     <option value="TERMINATED">CLOSE</option>
+                      <option value="ACTIVE">OPEN</option>
+                      <option value="TERMINATED">CLOSE</option>
                     </select>
                     {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
                   </div>
@@ -476,7 +518,7 @@ function Edit_opening() {
                       type="date"
                       value={startdate instanceof Date && !isNaN(startdate) ? startdate.toISOString().split('T')[0] : ''}
                       onChange={(e) => { setStartdate(new Date(e.target.value)); setErrors(prev => ({ ...prev, startdate: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
+                      className={`border-2 p-2 rounded w-full ${errors.startdate ? 'border-red-500' : 'border-yellow-400'}`}
                     />
                     {errors.startdate && <p className="text-red-600 text-sm">{errors.startdate}</p>}
                   </div>
@@ -487,7 +529,7 @@ function Edit_opening() {
                       type="date"
                       value={enddate instanceof Date && !isNaN(enddate) ? enddate.toISOString().split('T')[0] : ''}
                       onChange={(e) => { setEnddate(new Date(e.target.value)); setErrors(prev => ({ ...prev, enddate: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
+                      className={`border-2 p-2 rounded w-full ${errors.enddate ? 'border-red-500' : 'border-yellow-400'}`}
                     />
                     {errors.enddate && <p className="text-red-600 text-sm">{errors.enddate}</p>}
                   </div>

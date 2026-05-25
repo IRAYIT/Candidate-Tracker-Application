@@ -780,7 +780,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <Field label="Employment Type" error={errors.employmentType}>
           <select className="af-input" name="employmentType" value={form.employmentType} onChange={handleChange}>
             <option value="">Select type</option>
-            {['Full-Time', 'Part-Time', 'Freelancing', 'Contract', 'Internship'].map(t =>
+            {['Full-Time', 'Part-Time', 'Freelancing', 'Consultant', 'Internship'].map(t =>
               <option key={t} value={t}>{t}</option>)}
           </select>
         </Field>

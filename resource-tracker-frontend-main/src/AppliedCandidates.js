@@ -12,7 +12,7 @@ function AppliedCandidates() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterOpeningName, setFilterOpeningName] = useState("");
-const [filterOpeningId, setFilterOpeningId] = useState(null);
+  const [filterOpeningId, setFilterOpeningId] = useState(null);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [editModal, setEditModal] = useState({ open: false, candidateId: null, currentStatus: "" });
@@ -69,14 +69,14 @@ const fetchCandidatesByOpening = async (openingId) => {
   };
 
   const filtered = candidates.filter((c) => {
-    const q = search.toLowerCase();
-    return (
-      c.firstName?.toLowerCase().includes(q) ||
-      c.lastName?.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.languagesKnown?.toLowerCase().includes(q)
-    );
-  });
+  const q = search.toLowerCase();
+  return (
+    c.firstName?.toLowerCase().includes(q) ||
+    c.lastName?.toLowerCase().includes(q) ||
+    c.email?.toLowerCase().includes(q) ||
+    c.skills?.toLowerCase().includes(q)           // add skills search
+  );
+});
 
   const handleView = (candidateId) => {
     localStorage.setItem("view_candidate_id", candidateId);
@@ -231,7 +231,7 @@ const fetchCandidatesByOpening = async (openingId) => {
                           <td className="px-6 py-4 text-sm">
                             {c.expectedSalaryCurrency || "₹"}{c.expectedSalary?.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 text-sm">{c.languagesKnown || "—"}</td>
+                          <td className="px-6 py-4 text-sm">{c.skills || c.skillSet || "—"}</td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase ${statusBadge(c.applicationStatus)}`}>
                               {c.applicationStatus}
