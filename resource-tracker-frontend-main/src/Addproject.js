@@ -25,27 +25,163 @@ const SKILL_OPTIONS = [
   "Agile","Scrum","Kanban","GraphQL","gRPC","OAuth","JWT","Design Patterns","System Design","SonarQube",
 ];
 
+// ─── Technology → suggested skills map (expanded) ─────────────────────────────
 const TECHNOLOGY_SKILLS = {
-  JAVA:           ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
-  DOTNET:         [".NET Core","ASP.NET","C#","Entity Framework","LINQ","Blazor","SignalR"],
-  TESTING:        ["Manual Testing","Selenium","Cypress","JMeter","Playwright","Postman","TestNG","Appium"],
-  ANGULAR:        ["Angular","TypeScript","RxJS","NgRx","HTML","CSS","Material UI"],
-  REACTJS:        ["React","Redux","JavaScript","TypeScript","Tailwind CSS","Next.js","Vite"],
-  "AWS DEVOPS":   ["AWS","Docker","Kubernetes","Jenkins","Terraform","Ansible","GitHub Actions","Linux"],
-  "AZURE DEVOPS": ["Azure","CI/CD","Terraform","GitHub Actions","Docker","Kubernetes"],
-  "SQL DEVELOPER":["SQL","PL/SQL","MySQL","PostgreSQL","Oracle","SQL Server","MongoDB"],
+  // Java
+  "JAVA":                      ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
+  "JAVA FULLSTACK":            ["Core Java","Spring Boot","React","Angular","REST API","JPA","Maven","HTML","CSS","JavaScript"],
+  "JAVA FULLSTACK ANGULAR":    ["Core Java","Spring Boot","Angular","TypeScript","REST API","JPA","HTML","CSS","Maven"],
+  "JAVA FULLSTACK REACT":      ["Core Java","Spring Boot","React","JavaScript","TypeScript","REST API","JPA","Redux","Maven"],
+  "JAVA SPRING BOOT":          ["Spring Boot","Spring MVC","Spring Security","JPA","Hibernate","REST API","Maven","JUnit"],
+  "JAVA MICROSERVICES":        ["Microservices","Spring Boot","Spring Cloud","Apache Kafka","Docker","Kubernetes","REST API","JPA"],
+
+  // .NET
+  "DOTNET":                    [".NET Core","ASP.NET","C#","Entity Framework","LINQ","Blazor","SignalR"],
+  "DOTNET FULLSTACK":          ["C#","ASP.NET Core","React","Angular","Entity Framework","LINQ","HTML","CSS","JavaScript"],
+  "DOTNET FULLSTACK ANGULAR":  ["C#","ASP.NET Core","Angular","TypeScript","Entity Framework","REST API","HTML","CSS"],
+  "DOTNET FULLSTACK REACT":    ["C#","ASP.NET Core","React","JavaScript","TypeScript","Entity Framework","Redux","HTML","CSS"],
+  "DOTNET CORE":               ["ASP.NET Core","C#","Entity Framework","LINQ","REST API","SignalR","NUnit"],
+
+  // Python
+  "PYTHON":                    ["Python","Django","Flask","FastAPI","REST API","Pandas","NumPy","PostgreSQL"],
+  "PYTHON FULLSTACK":          ["Python","Django","React","Angular","REST API","HTML","CSS","JavaScript","PostgreSQL"],
+  "PYTHON FULLSTACK ANGULAR":  ["Python","Django","Angular","TypeScript","REST API","HTML","CSS","PostgreSQL"],
+  "PYTHON FULLSTACK REACT":    ["Python","Django","React","JavaScript","TypeScript","REST API","Redux","PostgreSQL"],
+  "PYTHON DJANGO":             ["Python","Django","REST API","PostgreSQL","Celery","Redis","HTML","CSS"],
+  "PYTHON FASTAPI":            ["Python","FastAPI","REST API","PostgreSQL","SQLAlchemy","Docker","Pydantic"],
+  "PYTHON FLASK":              ["Python","Flask","REST API","SQLAlchemy","PostgreSQL","HTML","CSS","Jinja2"],
+
+  // Node.js
+  "NODE FULLSTACK":            ["Node.js","Express.js","JavaScript","TypeScript","MongoDB","REST API","HTML","CSS"],
+  "NODE FULLSTACK ANGULAR":    ["Node.js","Express.js","Angular","TypeScript","MongoDB","REST API","HTML","CSS"],
+  "NODE FULLSTACK REACT":      ["Node.js","Express.js","React","JavaScript","TypeScript","MongoDB","Redux","REST API"],
+  "MERN":                      ["MongoDB","Express.js","React","Node.js","JavaScript","TypeScript","Redux","REST API","HTML","CSS"],
+  "MEAN":                      ["MongoDB","Express.js","Angular","Node.js","TypeScript","REST API","RxJS","HTML","CSS"],
+  "MEVN":                      ["MongoDB","Express.js","Vue.js","Node.js","JavaScript","REST API","Vuex","HTML","CSS"],
+
+  // Frontend
+  "ANGULAR":                   ["Angular","TypeScript","RxJS","NgRx","HTML","CSS","Material UI"],
+  "REACTJS":                   ["React","Redux","JavaScript","TypeScript","Tailwind CSS","Next.js","Vite"],
+  "VUEJS":                     ["Vue.js","JavaScript","TypeScript","Vuex","HTML","CSS","Nuxt.js"],
+  "NEXTJS":                    ["Next.js","React","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
+  "NUXTJS":                    ["Nuxt.js","Vue.js","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
+  "FRONTEND":                  ["HTML","CSS","JavaScript","TypeScript","React","Angular","Vue.js","Bootstrap","Tailwind CSS"],
+
+  // Mobile
+  "ANDROID":                   ["Android","Kotlin","Java","REST API","Firebase","SQLite","Jetpack Compose"],
+  "IOS SWIFT":                 ["iOS","Swift","Objective-C","Xcode","REST API","Firebase","SwiftUI","CoreData"],
+  "REACT NATIVE":              ["React Native","JavaScript","TypeScript","React","Redux","REST API","Firebase"],
+  "FLUTTER":                   ["Flutter","Dart","REST API","Firebase","SQLite","Provider","Riverpod"],
+
+  // Database & Data
+  "SQL DEVELOPER":             ["SQL","PL/SQL","MySQL","PostgreSQL","Oracle","SQL Server","MongoDB"],
+  "DATA ENGINEER":             ["Python","Apache Spark","Hadoop","Airflow","dbt","PostgreSQL","AWS","GCP","SQL"],
+  "DATA SCIENCE":              ["Python","Machine Learning","Pandas","NumPy","Scikit-learn","TensorFlow","Tableau","Power BI"],
+  "ML AI":                     ["Machine Learning","Deep Learning","TensorFlow","PyTorch","Scikit-learn","Python","Pandas","NumPy"],
+  "POWER BI":                  ["Power BI","Tableau","DAX","SQL","Excel","Data Analysis","Python"],
+
+  // DevOps & Cloud
+  "AWS DEVOPS":                ["AWS","Docker","Kubernetes","Jenkins","Terraform","Ansible","GitHub Actions","Linux"],
+  "AZURE DEVOPS":              ["Azure","CI/CD","Terraform","GitHub Actions","Docker","Kubernetes","PowerShell"],
+  "GCP DEVOPS":                ["GCP","Docker","Kubernetes","Terraform","CI/CD","Linux","GitHub Actions"],
+  "DEVOPS":                    ["Docker","Kubernetes","Jenkins","Terraform","Ansible","Linux","Bash","CI/CD","GitHub Actions"],
+  "CLOUD ARCHITECT":           ["AWS","Azure","GCP","Terraform","Docker","Kubernetes","Microservices Architecture","System Design"],
+
+  // Testing
+  "TESTING":                   ["Manual Testing","Selenium","Cypress","JMeter","Playwright","Postman","TestNG","Appium"],
+  "AUTOMATION TESTING":        ["Selenium","Cypress","Playwright","TestNG","JUnit","Appium","Jest","Postman"],
+  "PERFORMANCE TESTING":       ["JMeter","LoadRunner","Gatling","Postman","API Testing","Performance Testing"],
+  "API TESTING":               ["Postman","Swagger","REST API","Selenium","TestNG","API Testing","JWT"],
 };
 
-const TECHNOLOGY_OPTIONS = [
-  { value: "JAVA",          label: "JAVA" },
-  { value: "DOTNET",        label: "DOTNET" },
-  { value: "TESTING",       label: "TESTING" },
-  { value: "ANGULAR",       label: "ANGULAR" },
-  { value: "REACTJS",       label: "REACTJS" },
-  { value: "AWS DEVOPS",    label: "AWS DEVOPS" },
-  { value: "AZURE DEVOPS",  label: "AZURE DEVOPS" },
-  { value: "SQL DEVELOPER", label: "SQL DEVELOPER" },
-  { value: "Other",         label: "Other" },
+// ─── Technology options for the dropdown (grouped) ────────────────────────────
+const TECHNOLOGY_GROUPS = [
+  {
+    label: "Java Ecosystem",
+    options: [
+      { value: "JAVA",                   label: "Java" },
+      { value: "JAVA FULLSTACK ANGULAR", label: "Java Full Stack + Angular" },
+      { value: "JAVA FULLSTACK REACT",   label: "Java Full Stack + React" },
+      { value: "JAVA SPRING BOOT",       label: "Java + Spring Boot" },
+    ],
+  },
+  {
+    label: ".NET Ecosystem",
+    options: [
+      { value: "DOTNET",                   label: "ASP.NET" },
+      { value: "DOTNET FULLSTACK ANGULAR", label: "ASP.NET Full Stack + Angular" },
+      { value: "DOTNET FULLSTACK REACT",   label: "ASP.NET Full Stack + React" },
+    ],
+  },
+  {
+    label: "Python Ecosystem",
+    options: [
+      { value: "PYTHON",                   label: "Python" },
+      { value: "PYTHON FULLSTACK ANGULAR", label: "Python Full Stack + Angular" },
+      { value: "PYTHON FULLSTACK REACT",   label: "Python Full Stack + React" },
+      { value: "PYTHON DJANGO",            label: "Python + Django" },
+      { value: "PYTHON FASTAPI",           label: "Python + FastAPI" },
+      { value: "PYTHON FLASK",             label: "Python + Flask" },
+    ],
+  },
+  {
+    label: "Node.js Ecosystem",
+    options: [
+      { value: "NODE FULLSTACK ANGULAR", label: "Node.js Full Stack + Angular" },
+      { value: "NODE FULLSTACK REACT",   label: "Node.js Full Stack + React" },
+      { value: "MERN",                   label: "MERN Stack (MongoDB, Express, React, Node)" },
+      { value: "MEAN",                   label: "MEAN Stack (MongoDB, Express, Angular, Node)" },
+      { value: "MEVN",                   label: "MEVN Stack (MongoDB, Express, Vue, Node)" },
+    ],
+  },
+  {
+    label: "Frontend",
+    options: [
+      { value: "ANGULAR",  label: "Angular" },
+      { value: "REACTJS",  label: "React.js" },
+      { value: "VUEJS",    label: "Vue.js" },
+      { value: "NEXTJS",   label: "Next.js" },
+      { value: "NUXTJS",   label: "Nuxt.js" },
+    ],
+  },
+  {
+    label: "Mobile Development",
+    options: [
+      { value: "ANDROID",      label: "Android" },
+      { value: "IOS SWIFT",    label: "iOS (Swift)" },
+      { value: "REACT NATIVE", label: "React Native" },
+      { value: "FLUTTER",      label: "Flutter" },
+    ],
+  },
+  {
+    label: "Database & Data Engineering",
+    options: [
+      { value: "SQL DEVELOPER", label: "SQL Developer" },
+      { value: "DATA ENGINEER", label: "Data Engineer" },
+      { value: "DATA SCIENCE",  label: "Data Science" },
+      { value: "ML AI",         label: "Machine Learning / AI" },
+      { value: "POWER BI",      label: "Power BI / Tableau" },
+    ],
+  },
+  {
+    label: "DevOps & Cloud",
+    options: [
+      { value: "AWS DEVOPS",      label: "AWS DevOps" },
+      { value: "AZURE DEVOPS",    label: "Azure DevOps" },
+      { value: "GCP DEVOPS",      label: "GCP DevOps" },
+      { value: "DEVOPS",          label: "DevOps (General)" },
+      { value: "CLOUD ARCHITECT", label: "Cloud Architect" },
+    ],
+  },
+  {
+    label: "Testing",
+    options: [
+      { value: "TESTING",             label: "Manual Testing" },
+      { value: "AUTOMATION TESTING",  label: "Automation Testing" },
+      { value: "PERFORMANCE TESTING", label: "Performance Testing" },
+      { value: "API TESTING",         label: "API Testing" },
+    ],
+  },
 ];
 
 const ROLE_LABELS = ["Backend","Frontend","Testing","DevOps","Database","Mobile","AI/ML","Full Stack","Other"];
@@ -72,7 +208,6 @@ function groupResources(list) {
 }
 
 // ─── Hook: smart dropdown direction ──────────────────────────────────────────
-// Returns "up" if there isn't enough space below the trigger, else "down"
 function useDropdownDirection(triggerRef, open) {
   const [direction, setDirection] = useState("down");
   useEffect(() => {
@@ -157,7 +292,6 @@ function SkillTagInput({ selected, onChange, technology, error }) {
         )}
       </div>
 
-      {/* Smart direction dropdown */}
       {open && options.length > 0 && (
         <ul
           className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto"
@@ -305,8 +439,6 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
 // ─── RoleCard ─────────────────────────────────────────────────────────────────
 function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
-  // ✅ fetchResources receives tech/customTech/skills as direct arguments
-  // — never reads from role closure to avoid stale state
   const fetchResources = useCallback(async (tech, customTech, skills) => {
     const effectiveTech = tech === "Other" ? customTech.trim() : tech;
     if (!effectiveTech || skills.length === 0) return;
@@ -323,7 +455,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     }
   }, [index, onUpdate]);
 
-  // ✅ When technology changes — clear everything, no fetch yet (no skills)
   const handleTechChange = (tech) => {
     onUpdate(index, {
       technology: tech,
@@ -334,22 +465,16 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     });
   };
 
-  // ✅ When skills change — pass CURRENT tech directly, not from closure
-  // role.technology IS safe to read here since it's a prop (not setState result)
   const handleSkillChange = (newSkills) => {
-    // Update skills in state first
     onUpdate(index, { skills: newSkills });
-    // Pass role.technology directly — it's the current prop value, not stale
     const tech = role.technology;
     const customTech = role.customTech;
     const effectiveTech = tech === "Other" ? customTech.trim() : tech;
-    // Only fetch if we have both technology and at least one skill
     if (effectiveTech && newSkills.length > 0) {
       fetchResources(tech, customTech, newSkills);
     }
   };
 
-  // ✅ When custom tech loses focus — fetch if we have skills
   const handleCustomTechBlur = () => {
     const customTech = role.customTech.trim();
     if (customTech && role.skills.length > 0) {
@@ -361,19 +486,17 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     <div className={`border-2 rounded-lg overflow-visible ${roleError ? "border-red-400" : "border-yellow-400"}`}>
 
       {/* Card Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 rounded-t-lg">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-400 to-yellow-400 rounded-t-lg">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded-full bg-white text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
             {index + 1}
           </div>
           <div className="flex flex-col min-w-0">
-            {/* Technology name — main title */}
             <span className="font-bold text-white text-sm leading-tight">
               {role.technology
                 ? (role.technology === "Other" ? role.customTech || "Custom Technology" : role.technology)
                 : `Role ${index + 1} — Not configured`}
             </span>
-            {/* Role label — shown below technology as a badge */}
             {role.roleLabel && (
               <span className="mt-1 inline-flex">
                 <span className="text-xs font-semibold bg-white text-blue-700 px-2 py-0.5 rounded-full">
@@ -381,7 +504,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
                 </span>
               </span>
             )}
-            {/* Placeholder when role label not set yet */}
             {!role.roleLabel && (
               <span className="text-xs text-blue-100 opacity-70 mt-0.5">No role type selected</span>
             )}
@@ -402,10 +524,10 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
         </div>
       </div>
 
-      {/* Card Body — all fields stacked full-width for clarity */}
+      {/* Card Body */}
       <div className="p-4 bg-white space-y-4">
 
-        {/* Row 1: Role Type + Technology — side by side */}
+        {/* Row 1: Role Type + Technology */}
         <div className="flex flex-wrap gap-4 justify-between">
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Role Type</label>
@@ -418,11 +540,20 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
-            <select value={role.technology}
+            <select
+              value={role.technology}
               onChange={(e) => handleTechChange(e.target.value)}
-              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}>
+              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}
+            >
               <option value="">Select Technology</option>
-              {TECHNOLOGY_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              {TECHNOLOGY_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value="Other">Other (Custom)</option>
             </select>
             {roleError?.technology && <p className="text-red-600 text-sm mt-1">{roleError.technology}</p>}
             {role.technology === "Other" && (
@@ -438,7 +569,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
         </div>
 
-        {/* Row 2: Skills — full width so dropdown has room */}
+        {/* Row 2: Skills */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Skills <span className="text-pink-800">*</span>
@@ -453,7 +584,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           {roleError?.skills && <p className="text-red-600 text-sm mt-1">{roleError.skills}</p>}
         </div>
 
-        {/* Row 3: Assign Developers — full width so dropdown has room */}
+        {/* Row 3: Assign Developers */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Assign Developers <span className="text-pink-800">*</span>
@@ -572,7 +703,7 @@ function Addproject() {
           <div className="max-w-5xl mx-auto my-8 p-8 bg-white rounded-lg shadow-md">
 
             {/* Page Header */}
-            <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-6 shadow">
+            <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-400 to-yellow-400 mb-6 shadow">
               Add Project
             </h2>
 
@@ -652,7 +783,6 @@ function Addproject() {
                       <input type="number" value={amount} readOnly
                         className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-500 cursor-not-allowed" />
                     </div>
-                    {/* {amount && <p className="text-green-600 text-xs mt-1 font-medium">= Buffer + Developer allocation</p>} */}
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
@@ -670,7 +800,7 @@ function Addproject() {
 
                 {/* ── Team Assignment ── */}
                 <div>
-                  <h3 className="text-xl font-bold p-4 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-4 shadow flex items-center justify-between">
+                  <h3 className="text-xl font-bold p-4 text-gray-900 rounded-t bg-gradient-to-r from-blue-400 to-yellow-400 mb-4 shadow flex items-center justify-between">
                     <span>Team Assignment</span>
                     {roles.reduce((s, r) => s + r.selectedResourceIds.length, 0) > 0 && (
                       <span className="text-sm font-semibold bg-white text-blue-700 px-3 py-1 rounded-full">

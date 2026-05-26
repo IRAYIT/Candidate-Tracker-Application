@@ -6,26 +6,26 @@ export const OPENINGCOLUMNS = [
   { id: 'createdByName', header: 'RECRUITER',    accessorKey: 'createdByName' },
   { id: 'location',      header: 'LOCATION',     accessorKey: 'location'      },
   {
-  id: 'candidateCount',
-  header: 'APPLIED',
-  accessorKey: 'candidateCount',
-  cell: ({ row, getValue }) => {
-    const count = getValue();
-    return (
-      <span
-        onClick={() => {
-          localStorage.setItem("filter_opening_id", row.original.id);
-          localStorage.setItem("filter_opening_name", row.original.name);
-          window.location.href = "/applied-candidates";
-        }}
-        className="cursor-pointer text-blue-600 font-semibold hover:underline"
-      >
-        {count}
-      </span>
-    );
+    id: 'candidateCount',
+    header: 'APPLIED',
+    accessorKey: 'candidateCount',
+    cell: ({ row, getValue }) => {
+      const count = getValue();
+      return (
+        <span
+          onClick={() => {
+            localStorage.setItem("filter_opening_id", row.original.id);
+            localStorage.setItem("filter_opening_name", row.original.name);
+            window.location.href = "/applied-candidates";
+          }}
+          className="cursor-pointer text-blue-600 font-semibold hover:underline"
+        >
+          {count}
+        </span>
+      );
+    }
   }
-}
-]
+];
 
 export const MANAGERESOURCECOLUMNS = [
   {
@@ -62,19 +62,24 @@ export const PROJECTCOLUMNS = [
     accessorKey: 'name',
   },
   {
-    id: 'developer',
-    header: 'DEVELOPER',
-    accessorFn: (row) => row.resourceDto?.resourceName || 'N/A',
-  },
-  {
     id: 'technology',
     header: 'TECHNOLOGY',
-    accessorKey: 'technology',
+    accessorFn: (row) => {
+      const techs = (row.projectRoles || [])
+        .map((r) => r.technology)
+        .filter(Boolean);
+      return [...new Set(techs)].join(', ') || 'N/A';
+    },
   },
   {
-    id: 'skills',
-    header: 'SKILLS',
-    accessorKey: 'skills',
+    id: 'developers',
+    header: 'DEVELOPERS',
+    accessorFn: (row) => {
+      const names = (row.projectRoles || [])
+        .flatMap((r) => r.resourceNames || [])
+        .filter(Boolean);
+      return [...new Set(names)].join(', ') || 'N/A';
+    },
   },
   {
     id: 'status',

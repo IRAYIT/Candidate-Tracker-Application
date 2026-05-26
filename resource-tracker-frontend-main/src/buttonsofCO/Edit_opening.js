@@ -41,6 +41,22 @@ const SKILL_OPTIONS = [
   "Design Patterns", "System Design", "DevSecOps", "SonarQube",
 ];
 
+// ─── All known predefined technology values (used to detect "Other") ──────────
+const PREDEFINED_TECH_VALUES = [
+  "JAVA", "JAVA FULLSTACK", "JAVA FULLSTACK ANGULAR", "JAVA FULLSTACK REACT",
+  "JAVA SPRING BOOT", "JAVA MICROSERVICES",
+  "DOTNET", "DOTNET FULLSTACK", "DOTNET FULLSTACK ANGULAR", "DOTNET FULLSTACK REACT", "DOTNET CORE",
+  "PYTHON", "PYTHON FULLSTACK", "PYTHON FULLSTACK ANGULAR", "PYTHON FULLSTACK REACT",
+  "PYTHON DJANGO", "PYTHON FASTAPI", "PYTHON FLASK",
+  "NODE FULLSTACK", "NODE FULLSTACK ANGULAR", "NODE FULLSTACK REACT",
+  "MERN", "MEAN", "MEVN",
+  "ANGULAR", "REACTJS", "VUEJS", "NEXTJS", "NUXTJS", "FRONTEND",
+  "ANDROID", "IOS SWIFT", "REACT NATIVE", "FLUTTER",
+  "SQL DEVELOPER", "DATA ENGINEER", "DATA SCIENCE", "ML AI", "POWER BI",
+  "AWS DEVOPS", "AZURE DEVOPS", "GCP DEVOPS", "DEVOPS", "CLOUD ARCHITECT",
+  "TESTING", "AUTOMATION TESTING", "PERFORMANCE TESTING", "API TESTING",
+];
+
 // ─── SkillTagInput ────────────────────────────────────────────────────────────
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
@@ -87,18 +103,14 @@ function SkillTagInput({ value, onChange, error }) {
   const allOptions = showOtherOption ? [...filteredOptions, '__OTHER__'] : filteredOptions;
 
   const addSkill = (skill) => {
-    if (!selectedSkills.includes(skill)) {
-      setSelectedSkills(prev => [...prev, skill]);
-    }
+    if (!selectedSkills.includes(skill)) setSelectedSkills(prev => [...prev, skill]);
     setInputValue('');
     setShowDropdown(false);
     setHighlightedIndex(-1);
     inputRef.current?.focus();
   };
 
-  const removeSkill = (skill) => {
-    setSelectedSkills(prev => prev.filter(s => s !== skill));
-  };
+  const removeSkill = (skill) => setSelectedSkills(prev => prev.filter(s => s !== skill));
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
@@ -222,10 +234,7 @@ function Edit_opening() {
     const parts = raw.trim().split(' ');
     const knownCurrencies = ['INR', 'SEK', 'USD'];
     if (parts.length >= 2 && knownCurrencies.includes(parts[parts.length - 1])) {
-      return {
-        amount: parts.slice(0, parts.length - 1).join(' '),
-        curr: parts[parts.length - 1],
-      };
+      return { amount: parts.slice(0, parts.length - 1).join(' '), curr: parts[parts.length - 1] };
     }
     return { amount: raw, curr: 'INR' };
   };
@@ -240,7 +249,6 @@ function Edit_opening() {
         setHours(res.data.hours);
         setShifttimings(res.data.shiftTimings);
 
-        // Parse payment into amount + currency
         const { amount, curr } = parsePayment(res.data.payment);
         setPayment(amount);
         setCurrency(curr);
@@ -256,8 +264,8 @@ function Edit_opening() {
         setPublicUrlKey(res.data.publicUrlKey || '');
         setOpeningLocation(res.data.location || '');
 
-        const techOptions = ['JAVA', 'DOTNET', 'TESTING', 'ANGULAR', 'REACTJS', 'AWS DEVOPS', 'AZURE DEVOPS', 'SQL DEVELOPER'];
-        if (res.data.technology && !techOptions.includes(res.data.technology)) {
+        // ── Detect if saved technology is predefined or custom ──
+        if (res.data.technology && !PREDEFINED_TECH_VALUES.includes(res.data.technology)) {
           setTechnology('Other');
           setCustomTech(res.data.technology);
         } else {
@@ -268,20 +276,20 @@ function Edit_opening() {
 
   const validateFields = () => {
     const newErrors = {};
-    if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
-    if (!hours?.toString().trim()) newErrors.hours        = "Hours are required.";
-    if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";
-    if (!payment?.toString().trim()) newErrors.payment    = "Payment is required.";
-    if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";
-    if (!technology?.trim())     newErrors.technology     = "Technology is required.";
+    if (!openingname?.trim())          newErrors.openingname    = "Opening name is required.";
+    if (!hours?.toString().trim())     newErrors.hours          = "Hours are required.";
+    if (!shifttimings?.trim())         newErrors.shifttimings   = "Shift timings are required.";
+    if (!payment?.toString().trim())   newErrors.payment        = "Payment is required.";
+    if (!paymenttype?.trim())          newErrors.paymenttype    = "Payment type is required.";
+    if (!technology?.trim())           newErrors.technology     = "Technology is required.";
     if (technology === 'Other' && !customTech?.trim()) newErrors.technology = "Please enter custom technology.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = "Valid experience is required.";
-    if (!employmenttype?.trim()) newErrors.employmenttype = "Employment type is required.";
-    if (!skills?.trim())         newErrors.skills         = "Skills are required.";
-    if (!status?.trim())         newErrors.status         = "Status is required.";
-    if (!startdate)              newErrors.startdate      = "Start date is required.";
-    if (!enddate)                newErrors.enddate        = "End date is required.";
+    if (!employmenttype?.trim())       newErrors.employmenttype = "Employment type is required.";
+    if (!skills?.trim())               newErrors.skills         = "Skills are required.";
+    if (!status?.trim())               newErrors.status         = "Status is required.";
+    if (!startdate)                    newErrors.startdate      = "Start date is required.";
+    if (!enddate)                      newErrors.enddate        = "End date is required.";
     return newErrors;
   };
 
@@ -297,8 +305,8 @@ function Edit_opening() {
     const payload = {
       id: openingId,
       name: openingname,
-      hours: hours,
-      payment: `${payment} ${currency}`,   // same format as Addopening
+      hours,
+      payment: `${payment} ${currency}`,
       paymentType: paymenttype,
       shiftTimings: shifttimings,
       startDate: startdate.toISOString(),
@@ -306,11 +314,11 @@ function Edit_opening() {
       skill: skills,
       location: openingLocation,
       technology: finalTech,
-      experience: experience,
+      experience,
       employmentType: employmenttype,
-      status: status,
-      description: description,
-      publicUrlKey: publicUrlKey,
+      status,
+      description,
+      publicUrlKey,
       createdAt: new Date().toISOString(),
       createdBy: creatorId,
       updatedAt: new Date().toISOString(),
@@ -319,13 +327,8 @@ function Edit_opening() {
 
     axios
       .put("http://localhost:8098/api/v1/openings", payload)
-      .then(() => {
-        navigate('/current_openings');
-      })
-      .catch((err) => {
-        console.error("Edit failed:", err);
-        setLoading(false);
-      });
+      .then(() => navigate('/current_openings'))
+      .catch((err) => { console.error("Edit failed:", err); setLoading(false); });
   };
 
   return (
@@ -361,7 +364,6 @@ function Edit_opening() {
                       className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.openingname && <p className="text-red-600 text-sm">{errors.openingname}</p>}
                   </div>
-
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Hours <span className="text-pink-800">*</span></label>
                     <input type="text" value={hours} placeholder="Enter hours"
@@ -371,7 +373,7 @@ function Edit_opening() {
                   </div>
                 </div>
 
-                {/* Row 2: Shift Timings + Payment (with currency dropdown) */}
+                {/* Row 2: Shift Timings + Payment */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Shift Timings <span className="text-pink-800">*</span></label>
@@ -381,24 +383,17 @@ function Edit_opening() {
                     {errors.shifttimings && <p className="text-red-600 text-sm">{errors.shifttimings}</p>}
                   </div>
 
-                  {/* ── Payment with currency dropdown — same as Addopening ── */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Payment <span className="text-pink-800">*</span></label>
                     <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <select
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
+                      <select value={currency} onChange={(e) => setCurrency(e.target.value)}
                         className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"
-                        style={{ borderRight: '2px solid #facc15' }}
-                      >
+                        style={{ borderRight: '2px solid #facc15' }}>
                         <option value="INR">₹ INR</option>
                         <option value="SEK">kr SEK</option>
                         <option value="USD">$ USD</option>
                       </select>
-                      <input
-                        type="text"
-                        value={payment}
-                        placeholder="Amount"
+                      <input type="text" value={payment} placeholder="Amount"
                         onChange={(e) => {
                           const val = e.target.value;
                           if (/^[a-zA-Z0-9]*$/.test(val)) {
@@ -407,8 +402,7 @@ function Edit_opening() {
                           }
                         }}
                         className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
-                        style={{ boxShadow: 'none' }}
-                      />
+                        style={{ boxShadow: 'none' }} />
                     </div>
                     {errors.payment && <p className="text-red-600 text-sm mt-1">{errors.payment}</p>}
                   </div>
@@ -424,24 +418,92 @@ function Edit_opening() {
                     {errors.paymenttype && <p className="text-red-600 text-sm">{errors.paymenttype}</p>}
                   </div>
 
+                  {/* ── Technology (expanded grouped dropdown) ── */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Technology <span className="text-pink-800">*</span></label>
                     <select
                       value={technology}
-                      onChange={(e) => { setTechnology(e.target.value); setErrors(prev => ({ ...prev, technology: '' })); }}
+                      onChange={(e) => {
+                        setTechnology(e.target.value);
+                        if (e.target.value !== 'Other') setCustomTech('');
+                        setErrors(prev => ({ ...prev, technology: '' }));
+                      }}
                       className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
                     >
                       <option value="">Select technology</option>
-                      <option value="JAVA">JAVA</option>
-                      <option value="DOTNET">DOTNET</option>
-                      <option value="TESTING">TESTING</option>
-                      <option value="ANGULAR">ANGULAR</option>
-                      <option value="REACTJS">REACTJS</option>
-                      <option value="AWS DEVOPS">AWS DEVOPS</option>
-                      <option value="AZURE DEVOPS">AZURE DEVOPS</option>
-                      <option value="SQL DEVELOPER">SQL DEVELOPER</option>
-                      <option value="Other">Other</option>
+
+                      <optgroup label="Java Ecosystem">
+                        <option value="JAVA">Java</option>
+                        <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
+                        <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
+                        <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
+                      </optgroup>
+
+                      <optgroup label=".NET Ecosystem">
+                        <option value="DOTNET">ASP.NET</option>
+                        <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
+                        <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
+                      </optgroup>
+
+                      <optgroup label="Python Ecosystem">
+                        <option value="PYTHON">Python</option>
+                        <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
+                        <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
+                        <option value="PYTHON DJANGO">Python + Django</option>
+                        <option value="PYTHON FASTAPI">Python + FastAPI</option>
+                        <option value="PYTHON FLASK">Python + Flask</option>
+                      </optgroup>
+
+                      <optgroup label="Node.js Ecosystem">
+                        <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
+                        <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
+                        <option value="MERN">MERN Stack (MongoDB, Express, React, Node)</option>
+                        <option value="MEAN">MEAN Stack (MongoDB, Express, Angular, Node)</option>
+                        <option value="MEVN">MEVN Stack (MongoDB, Express, Vue, Node)</option>
+                      </optgroup>
+
+                      <optgroup label="Frontend">
+                        <option value="ANGULAR">Angular</option>
+                        <option value="REACTJS">React.js</option>
+                        <option value="VUEJS">Vue.js</option>
+                        <option value="NEXTJS">Next.js</option>
+                        <option value="NUXTJS">Nuxt.js</option>
+                        <option value="FRONTEND">Frontend (HTML / CSS / JS)</option>
+                      </optgroup>
+
+                      <optgroup label="Mobile Development">
+                        <option value="ANDROID">Android</option>
+                        <option value="IOS SWIFT">iOS (Swift)</option>
+                        <option value="REACT NATIVE">React Native</option>
+                        <option value="FLUTTER">Flutter</option>
+                      </optgroup>
+
+                      <optgroup label="Database &amp; Data Engineering">
+                        <option value="SQL DEVELOPER">SQL Developer</option>
+                        <option value="DATA ENGINEER">Data Engineer</option>
+                        <option value="DATA SCIENCE">Data Science</option>
+                        <option value="ML AI">Machine Learning / AI</option>
+                        <option value="POWER BI">Power BI / Tableau</option>
+                      </optgroup>
+
+                      <optgroup label="DevOps &amp; Cloud">
+                        <option value="AWS DEVOPS">AWS DevOps</option>
+                        <option value="AZURE DEVOPS">Azure DevOps</option>
+                        <option value="GCP DEVOPS">GCP DevOps</option>
+                        <option value="DEVOPS">DevOps (General)</option>
+                        <option value="CLOUD ARCHITECT">Cloud Architect</option>
+                      </optgroup>
+
+                      <optgroup label="Testing">
+                        <option value="TESTING">Manual Testing</option>
+                        <option value="AUTOMATION TESTING">Automation Testing</option>
+                        <option value="PERFORMANCE TESTING">Performance Testing</option>
+                        <option value="API TESTING">API Testing</option>
+                      </optgroup>
+
+                      <option value="Other">Other (Custom)</option>
                     </select>
+
                     {technology === 'Other' && (
                       <div className="p-2">
                         <input type="text"
@@ -467,11 +529,9 @@ function Edit_opening() {
 
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Employment Type <span className="text-pink-800">*</span></label>
-                    <select
-                      value={employmenttype}
+                    <select value={employmenttype}
                       onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmenttype: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}
-                    >
+                      className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}>
                       <option value="">Select employment type</option>
                       <option value="Freelancing">Freelancing</option>
                       <option value="Consultant">Consultant</option>
@@ -497,11 +557,9 @@ function Edit_opening() {
 
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Status <span className="text-pink-800">*</span></label>
-                    <select
-                      value={status}
+                    <select value={status}
                       onChange={(e) => { setStatus(e.target.value); setErrors(prev => ({ ...prev, status: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.status ? 'border-red-500' : 'border-yellow-400'}`}
-                    >
+                      className={`border-2 p-2 rounded w-full ${errors.status ? 'border-red-500' : 'border-yellow-400'}`}>
                       <option value="">Select status</option>
                       <option value="ACTIVE">OPEN</option>
                       <option value="TERMINATED">CLOSE</option>
@@ -514,23 +572,19 @@ function Edit_opening() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">Start Date <span className="text-pink-800">*</span></label>
-                    <input
-                      type="date"
+                    <input type="date"
                       value={startdate instanceof Date && !isNaN(startdate) ? startdate.toISOString().split('T')[0] : ''}
                       onChange={(e) => { setStartdate(new Date(e.target.value)); setErrors(prev => ({ ...prev, startdate: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.startdate ? 'border-red-500' : 'border-yellow-400'}`}
-                    />
+                      className={`border-2 p-2 rounded w-full ${errors.startdate ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.startdate && <p className="text-red-600 text-sm">{errors.startdate}</p>}
                   </div>
 
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1">End Date <span className="text-pink-800">*</span></label>
-                    <input
-                      type="date"
+                    <input type="date"
                       value={enddate instanceof Date && !isNaN(enddate) ? enddate.toISOString().split('T')[0] : ''}
                       onChange={(e) => { setEnddate(new Date(e.target.value)); setErrors(prev => ({ ...prev, enddate: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.enddate ? 'border-red-500' : 'border-yellow-400'}`}
-                    />
+                      className={`border-2 p-2 rounded w-full ${errors.enddate ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.enddate && <p className="text-red-600 text-sm">{errors.enddate}</p>}
                   </div>
                 </div>
@@ -538,31 +592,20 @@ function Edit_opening() {
                 {/* Description */}
                 <div className="w-full">
                   <label className="font-semibold mb-1">Description</label>
-                  <textarea
-                    value={description}
-                    placeholder="Enter job description"
+                  <textarea value={description} placeholder="Enter job description"
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="border-2 border-yellow-400 p-2 rounded w-full resize-none"
-                  />
+                    className="border-2 border-yellow-400 p-2 rounded w-full resize-none" />
                 </div>
 
               </div>
             )}
 
             <div className="flex gap-4 p-4 items-center justify-center mt-8">
-              <button
-                onClick={() => navigate('/current_openings')}
-                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer"
-              >
-                Back
-              </button>
-              <button
-                onClick={editopening}
-                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer"
-              >
-                Save
-              </button>
+              <button onClick={() => navigate('/current_openings')}
+                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer">Back</button>
+              <button onClick={editopening}
+                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer">Save</button>
             </div>
 
           </div>

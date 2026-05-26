@@ -213,9 +213,7 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
             width: '64px', height: '64px', borderRadius: '50%',
             backgroundColor: '#dcfce7', display: 'flex',
             alignItems: 'center', justifyContent: 'center', fontSize: '28px'
-          }}>
-            ✅
-          </div>
+          }}>✅</div>
         </div>
         <h2 style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>
           Opening Created Successfully!
@@ -247,16 +245,12 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
             padding: '10px 24px', backgroundColor: '#2563eb', color: 'white',
             borderRadius: '12px', fontWeight: '600', fontSize: '0.9rem',
             border: 'none', cursor: 'pointer'
-          }}>
-            Go to Openings
-          </button>
+          }}>Go to Openings</button>
           <button onClick={onClose} style={{
             padding: '10px 24px', backgroundColor: 'white', color: '#374151',
             borderRadius: '12px', fontWeight: '600', fontSize: '0.9rem',
             border: '2px solid #d1d5db', cursor: 'pointer'
-          }}>
-            Add Another
-          </button>
+          }}>Add Another</button>
         </div>
       </div>
     </div>
@@ -278,12 +272,6 @@ function Addopening() {
   const [status, setStatus]                 = useState('');
   const [description, setDescription]       = useState('');
   const [creatorId]                         = useState(Number(localStorage.getItem("employeeid")));
-  const [startdate, setStartdate]           = useState(new Date());
-  const [enddate, setEnddate]               = useState(() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() + 1);
-    return d;
-  });
   const [customTech, setCustomTech]         = useState('');
   const [errors, setErrors]                 = useState({});
   const [loading, setLoading]               = useState(false);
@@ -307,8 +295,6 @@ function Addopening() {
     if (!skills?.trim())         newErrors.skills         = "Skills are required.";
     if (!location?.trim())       newErrors.location       = "Location is required.";
     if (!status?.trim())         newErrors.status         = "Status is required.";
-    if (!startdate)              newErrors.startdate      = "Start date is required.";
-    if (!enddate)                newErrors.enddate        = "End date is required.";
     return newErrors;
   };
 
@@ -318,9 +304,6 @@ function Addopening() {
     setEmploymenttype('Freelancing'); setSkills(''); setLocation('');
     setStatus(''); setDescription(''); setCustomTech('');
     setCurrency('INR');
-    setStartdate(new Date());
-    const d = new Date(); d.setFullYear(d.getFullYear() + 1);
-    setEnddate(d);
     setErrors({});
   };
 
@@ -331,14 +314,19 @@ function Addopening() {
 
     setLoading(true);
 
+    // startDate = today, endDate = 1 year from now (sent silently, not shown in form)
+    const startDate = new Date();
+    const endDate   = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 1);
+
     const payload = {
       name:           openingname,
       hours:          hours,
       payment:        `${payment} ${currency}`,
       paymentType:    paymenttype,
       shiftTimings:   shifttimings,
-      startDate:      startdate,
-      endDate:        enddate,
+      startDate,
+      endDate,
       skill:          skills,
       location:       location,
       technology:     technology === 'Other' ? customTech : technology,
@@ -388,7 +376,6 @@ function Addopening() {
   return (
     <div className="min-h-screen flex">
 
-      {/* ── Popup ── */}
       {showSharePopup && (
         <ShareUrlPopup
           publicUrl={createdPublicUrl}
@@ -425,17 +412,17 @@ function Addopening() {
                   </div>
                 )}
 
-                {/* Opening Name + Hours */}
+                {/* Row 1: Opening Name + Hours */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Opening Name <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
                     <input type="text" value={openingname} placeholder="Enter name"
                       onChange={(e) => { setOpeningname(e.target.value); if (errors.openingname) setErrors(prev => ({ ...prev, openingname: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.openingname && <p className="text-red-600 text-sm mt-1">{errors.openingname}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Hours <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Hours <span className="text-pink-800">*</span></label>
                     <input type="text" value={hours} placeholder="Enter hours"
                       onChange={(e) => { setHours(e.target.value); if (errors.hours) setErrors(prev => ({ ...prev, hours: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.hours ? 'border-red-500' : 'border-yellow-400'}`} />
@@ -443,19 +430,17 @@ function Addopening() {
                   </div>
                 </div>
 
-                {/* Shift Timings + Payment */}
+                {/* Row 2: Shift Timings + Payment */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Shift Timings <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Shift Timings <span className="text-pink-800">*</span></label>
                     <input type="text" value={shifttimings} placeholder="Enter timings"
                       onChange={(e) => { setShifttimings(e.target.value); if (errors.shifttimings) setErrors(prev => ({ ...prev, shifttimings: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.shifttimings ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.shifttimings && <p className="text-red-600 text-sm mt-1">{errors.shifttimings}</p>}
                   </div>
-
-                  {/* ── Payment Field ── */}
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Payment <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Payment <span className="text-pink-800">*</span></label>
                     <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
                       <select
                         value={currency}
@@ -471,13 +456,13 @@ function Addopening() {
                         type="text"
                         value={payment}
                         placeholder="Amount"
-onChange={(e) => {
-  const val = e.target.value;
-  if (/^[a-zA-Z0-9]*$/.test(val)) {
-    setPayment(val);
-    if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
-  }
-}}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (/^[a-zA-Z0-9]*$/.test(val)) {
+                            setPayment(val);
+                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
+                          }
+                        }}
                         className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
                         style={{ boxShadow: 'none' }}
                       />
@@ -486,53 +471,108 @@ onChange={(e) => {
                   </div>
                 </div>
 
-                {/* Payment Type + Technology */}
+                {/* Row 3: Payment Type + Technology */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Payment Type <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Payment Type <span className="text-pink-800">*</span></label>
                     <input type="text" value={paymenttype} placeholder="Enter type"
                       onChange={(e) => { setPaymenttype(e.target.value); if (errors.paymenttype) setErrors(prev => ({ ...prev, paymenttype: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.paymenttype ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.paymenttype && <p className="text-red-600 text-sm mt-1">{errors.paymenttype}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Technology <span className="text-pink-800">*</span></label>
-                    <select value={technology}
-                      onChange={(e) => { setTechnology(e.target.value); if (errors.technology) setErrors(prev => ({ ...prev, technology: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}>
+                    <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
+                    <select
+                      value={technology}
+                      onChange={(e) => {
+                        setTechnology(e.target.value);
+                        if (e.target.value !== 'Other') setCustomTech('');
+                        if (errors.technology) setErrors(prev => ({ ...prev, technology: '' }));
+                      }}
+                      className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
+                    >
                       <option value="">Select Technology</option>
-                      <option value="JAVA">JAVA</option>
-                      <option value="DOTNET">DOTNET</option>
-                      <option value="TESTING">TESTING</option>
-                      <option value="ANGULAR">ANGULAR</option>
-                      <option value="REACTJS">REACTJS</option>
-                      <option value="AWS DEVOPS">AWS DEVOPS</option>
-                      <option value="AZURE DEVOPS">AZURE DEVOPS</option>
-                      <option value="SQL DEVELOPER">SQL DEVELOPER</option>
-                      <option value="Other">Other</option>
+                      <optgroup label="Java Ecosystem">
+                        <option value="JAVA">Java</option>
+                        <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
+                        <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
+                        <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
+                      </optgroup>
+                      <optgroup label=".NET Ecosystem">
+                        <option value="DOTNET">ASP.NET</option>
+                        <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
+                        <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
+                        <option value="DOTNET CORE">ASP.NET Core</option>
+                      </optgroup>
+                      <optgroup label="Python Ecosystem">
+                        <option value="PYTHON">Python</option>
+                        <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
+                        <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
+                        <option value="PYTHON DJANGO">Python + Django</option>
+                        <option value="PYTHON FLASK">Python + Flask</option>
+                      </optgroup>
+                      <optgroup label="Node.js Ecosystem">
+                        <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
+                        <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
+                        <option value="MERN">MERN Stack</option>
+                        <option value="MEAN">MEAN Stack</option>
+                        <option value="MEVN">MEVN Stack</option>
+                      </optgroup>
+                      <optgroup label="Frontend">
+                        <option value="ANGULAR">Angular</option>
+                        <option value="REACTJS">React.js</option>
+                        <option value="VUEJS">Vue.js</option>
+                        <option value="NEXTJS">Next.js</option>
+                        <option value="NUXTJS">Nuxt.js</option>
+                      </optgroup>
+                      <optgroup label="Mobile Development">
+                        <option value="ANDROID">Android</option>
+                        <option value="IOS SWIFT">iOS (Swift)</option>
+                        <option value="REACT NATIVE">React Native</option>
+                        <option value="FLUTTER">Flutter</option>
+                      </optgroup>
+                      <optgroup label="Database &amp; Data Engineering">
+                        <option value="SQL DEVELOPER">SQL Developer</option>
+                        <option value="DATA ENGINEER">Data Engineer</option>
+                        <option value="DATA SCIENCE">Data Science</option>
+                        <option value="ML AI">Machine Learning / AI</option>
+                        <option value="POWER BI">Power BI / Tableau</option>
+                      </optgroup>
+                      <optgroup label="DevOps &amp; Cloud">
+                        <option value="AWS DEVOPS">AWS DevOps</option>
+                        <option value="AZURE DEVOPS">Azure DevOps</option>
+                        <option value="GCP DEVOPS">GCP DevOps</option>
+                        <option value="DEVOPS">DevOps (General)</option>
+                        <option value="CLOUD ARCHITECT">Cloud Architect</option>
+                      </optgroup>
+                      <optgroup label="Testing">
+                        <option value="TESTING">Manual Testing</option>
+                        <option value="AUTOMATION TESTING">Automation Testing</option>
+                        <option value="PERFORMANCE TESTING">Performance Testing</option>
+                        <option value="API TESTING">API Testing</option>
+                      </optgroup>
+                      <option value="Other">Other (Custom)</option>
                     </select>
                     {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
                     {technology === 'Other' && (
-                      <div className="p-2">
-                        <input type="text" className="border-2 border-yellow-400 p-2 rounded w-full"
-                          placeholder="Enter custom technology" value={customTech}
-                          onChange={(e) => setCustomTech(e.target.value)} />
-                      </div>
+                      <input type="text" className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
+                        placeholder="Enter custom technology" value={customTech}
+                        onChange={(e) => setCustomTech(e.target.value)} />
                     )}
                   </div>
                 </div>
 
-                {/* Experience + Employment Type */}
+                {/* Row 4: Experience + Employment Type */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Experience <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
                     <input type="text" value={experience} placeholder="Enter experience"
                       onChange={(e) => { setExperience(e.target.value); if (errors.experience) setErrors(prev => ({ ...prev, experience: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Employment Type <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Employment Type <span className="text-pink-800">*</span></label>
                     <select value={employmenttype}
                       onChange={(e) => { setEmploymenttype(e.target.value); if (errors.employmenttype) setErrors(prev => ({ ...prev, employmenttype: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}>
@@ -547,17 +587,17 @@ onChange={(e) => {
                   </div>
                 </div>
 
-                {/* Skills + Location */}
+                {/* Row 5: Skills + Location */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Skills <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
                     <SkillTagInput value={skills}
                       onChange={(val) => { setSkills(val); if (errors.skills) setErrors(prev => ({ ...prev, skills: '' })); }}
                       error={errors.skills} />
                     {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Location <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Location <span className="text-pink-800">*</span></label>
                     <select value={location}
                       onChange={(e) => { setLocation(e.target.value); if (errors.location) setErrors(prev => ({ ...prev, location: '' })); }}
                       className={`border-2 p-2 rounded w-full ${errors.location ? 'border-red-500' : 'border-yellow-400'}`}>
@@ -570,9 +610,9 @@ onChange={(e) => {
                   </div>
                 </div>
 
-                {/* Status */}
+                {/* Row 6: Status (full width) */}
                 <div className="w-full">
-                  <label className="font-semibold mb-1">Status <span className="text-pink-800">*</span></label>
+                  <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
                   <select value={status}
                     onChange={(e) => { setStatus(e.target.value); if (errors.status) setErrors(prev => ({ ...prev, status: '' })); }}
                     className={`border-2 p-2 rounded w-full ${errors.status ? 'border-red-500' : 'border-yellow-400'}`}>
@@ -583,27 +623,9 @@ onChange={(e) => {
                   {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
                 </div>
 
-                {/* Start Date + End Date */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">Start Date <span className="text-pink-800">*</span></label>
-                    <input type="date" value={startdate.toISOString().split('T')[0]}
-                      onChange={(e) => { setStartdate(new Date(e.target.value)); if (errors.startdate) setErrors(prev => ({ ...prev, startdate: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.startdate ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.startdate && <p className="text-red-600 text-sm mt-1">{errors.startdate}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1">End Date <span className="text-pink-800">*</span></label>
-                    <input type="date" value={enddate.toISOString().split('T')[0]}
-                      onChange={(e) => { setEnddate(new Date(e.target.value)); if (errors.enddate) setErrors(prev => ({ ...prev, enddate: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.enddate ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.enddate && <p className="text-red-600 text-sm mt-1">{errors.enddate}</p>}
-                  </div>
-                </div>
-
-                {/* Description */}
+                {/* Row 7: Description (full width) */}
                 <div className="w-full">
-                  <label className="font-semibold mb-1">Description</label>
+                  <label className="font-semibold mb-1 block">Description</label>
                   <textarea
                     value={description}
                     placeholder="Describe the job role, responsibilities, requirements..."
@@ -618,11 +640,11 @@ onChange={(e) => {
 
             <div className="flex gap-4 p-4 items-center justify-center mt-8">
               <button onClick={() => navigate('/current_openings')}
-                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer">
+                className="px-6 py-2 rounded-md border border-gray-400 bg-white text-gray-800 hover:bg-gray-100 transition cursor-pointer">
                 Back
               </button>
               <button onClick={createopening}
-                className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer">
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold transition cursor-pointer">
                 Create
               </button>
             </div>

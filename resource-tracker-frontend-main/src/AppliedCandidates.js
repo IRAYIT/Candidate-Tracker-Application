@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
 
 const BASE_URL = "http://localhost:8098/api/public/apply";
-const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "HIRED"];
+const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
 
 function AppliedCandidates() {
   const [permissionid, setPermissionid] = useState("");

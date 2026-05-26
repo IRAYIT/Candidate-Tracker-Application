@@ -25,37 +25,157 @@ const SKILL_OPTIONS = [
   "Agile","Scrum","Kanban","GraphQL","gRPC","OAuth","JWT","Design Patterns","System Design","SonarQube",
 ];
 
+// ─── Technology → suggested skills map (expanded) ────────────────────────────
 const TECHNOLOGY_SKILLS = {
-  JAVA:           ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
-  DOTNET:         [".NET Core","ASP.NET","C#","Entity Framework","LINQ","Blazor","SignalR"],
-  TESTING:        ["Manual Testing","Selenium","Cypress","JMeter","Playwright","Postman","TestNG","Appium"],
-  ANGULAR:        ["Angular","TypeScript","RxJS","NgRx","HTML","CSS","Material UI"],
-  REACTJS:        ["React","Redux","JavaScript","TypeScript","Tailwind CSS","Next.js","Vite"],
-  "AWS DEVOPS":   ["AWS","Docker","Kubernetes","Jenkins","Terraform","Ansible","GitHub Actions","Linux"],
-  "AZURE DEVOPS": ["Azure","CI/CD","Terraform","GitHub Actions","Docker","Kubernetes"],
-  "SQL DEVELOPER":["SQL","PL/SQL","MySQL","PostgreSQL","Oracle","SQL Server","MongoDB"],
+  "JAVA":                      ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
+  "JAVA FULLSTACK":            ["Core Java","Spring Boot","React","Angular","REST API","JPA","Maven","HTML","CSS","JavaScript"],
+  "JAVA FULLSTACK ANGULAR":    ["Core Java","Spring Boot","Angular","TypeScript","REST API","JPA","HTML","CSS","Maven"],
+  "JAVA FULLSTACK REACT":      ["Core Java","Spring Boot","React","JavaScript","TypeScript","REST API","JPA","Redux","Maven"],
+  "JAVA SPRING BOOT":          ["Spring Boot","Spring MVC","Spring Security","JPA","Hibernate","REST API","Maven","JUnit"],
+  "JAVA MICROSERVICES":        ["Microservices","Spring Boot","Spring Cloud","Apache Kafka","Docker","Kubernetes","REST API","JPA"],
+  "DOTNET":                    [".NET Core","ASP.NET","C#","Entity Framework","LINQ","Blazor","SignalR"],
+  "DOTNET FULLSTACK":          ["C#","ASP.NET Core","React","Angular","Entity Framework","LINQ","HTML","CSS","JavaScript"],
+  "DOTNET FULLSTACK ANGULAR":  ["C#","ASP.NET Core","Angular","TypeScript","Entity Framework","REST API","HTML","CSS"],
+  "DOTNET FULLSTACK REACT":    ["C#","ASP.NET Core","React","JavaScript","TypeScript","Entity Framework","Redux","HTML","CSS"],
+  "DOTNET CORE":               ["ASP.NET Core","C#","Entity Framework","LINQ","REST API","SignalR","NUnit"],
+  "PYTHON":                    ["Python","Django","Flask","FastAPI","REST API","Pandas","NumPy","PostgreSQL"],
+  "PYTHON FULLSTACK":          ["Python","Django","React","Angular","REST API","HTML","CSS","JavaScript","PostgreSQL"],
+  "PYTHON FULLSTACK ANGULAR":  ["Python","Django","Angular","TypeScript","REST API","HTML","CSS","PostgreSQL"],
+  "PYTHON FULLSTACK REACT":    ["Python","Django","React","JavaScript","TypeScript","REST API","Redux","PostgreSQL"],
+  "PYTHON DJANGO":             ["Python","Django","REST API","PostgreSQL","Celery","Redis","HTML","CSS"],
+  "PYTHON FASTAPI":            ["Python","FastAPI","REST API","PostgreSQL","SQLAlchemy","Docker","Pydantic"],
+  "PYTHON FLASK":              ["Python","Flask","REST API","SQLAlchemy","PostgreSQL","HTML","CSS","Jinja2"],
+  "NODE FULLSTACK":            ["Node.js","Express.js","JavaScript","TypeScript","MongoDB","REST API","HTML","CSS"],
+  "NODE FULLSTACK ANGULAR":    ["Node.js","Express.js","Angular","TypeScript","MongoDB","REST API","HTML","CSS"],
+  "NODE FULLSTACK REACT":      ["Node.js","Express.js","React","JavaScript","TypeScript","MongoDB","Redux","REST API"],
+  "MERN":                      ["MongoDB","Express.js","React","Node.js","JavaScript","TypeScript","Redux","REST API","HTML","CSS"],
+  "MEAN":                      ["MongoDB","Express.js","Angular","Node.js","TypeScript","REST API","RxJS","HTML","CSS"],
+  "MEVN":                      ["MongoDB","Express.js","Vue.js","Node.js","JavaScript","REST API","Vuex","HTML","CSS"],
+  "ANGULAR":                   ["Angular","TypeScript","RxJS","NgRx","HTML","CSS","Material UI"],
+  "REACTJS":                   ["React","Redux","JavaScript","TypeScript","Tailwind CSS","Next.js","Vite"],
+  "VUEJS":                     ["Vue.js","JavaScript","TypeScript","Vuex","HTML","CSS","Nuxt.js"],
+  "NEXTJS":                    ["Next.js","React","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
+  "NUXTJS":                    ["Nuxt.js","Vue.js","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
+  "FRONTEND":                  ["HTML","CSS","JavaScript","TypeScript","React","Angular","Vue.js","Bootstrap","Tailwind CSS"],
+  "ANDROID":                   ["Android","Kotlin","Java","REST API","Firebase","SQLite","Jetpack Compose"],
+  "IOS SWIFT":                 ["iOS","Swift","Objective-C","Xcode","REST API","Firebase","SwiftUI","CoreData"],
+  "REACT NATIVE":              ["React Native","JavaScript","TypeScript","React","Redux","REST API","Firebase"],
+  "FLUTTER":                   ["Flutter","Dart","REST API","Firebase","SQLite","Provider","Riverpod"],
+  "SQL DEVELOPER":             ["SQL","PL/SQL","MySQL","PostgreSQL","Oracle","SQL Server","MongoDB"],
+  "DATA ENGINEER":             ["Python","Apache Spark","Hadoop","Airflow","dbt","PostgreSQL","AWS","GCP","SQL"],
+  "DATA SCIENCE":              ["Python","Machine Learning","Pandas","NumPy","Scikit-learn","TensorFlow","Tableau","Power BI"],
+  "ML AI":                     ["Machine Learning","Deep Learning","TensorFlow","PyTorch","Scikit-learn","Python","Pandas","NumPy"],
+  "POWER BI":                  ["Power BI","Tableau","DAX","SQL","Excel","Data Analysis","Python"],
+  "AWS DEVOPS":                ["AWS","Docker","Kubernetes","Jenkins","Terraform","Ansible","GitHub Actions","Linux"],
+  "AZURE DEVOPS":              ["Azure","CI/CD","Terraform","GitHub Actions","Docker","Kubernetes","PowerShell"],
+  "GCP DEVOPS":                ["GCP","Docker","Kubernetes","Terraform","CI/CD","Linux","GitHub Actions"],
+  "DEVOPS":                    ["Docker","Kubernetes","Jenkins","Terraform","Ansible","Linux","Bash","CI/CD","GitHub Actions"],
+  "CLOUD ARCHITECT":           ["AWS","Azure","GCP","Terraform","Docker","Kubernetes","Microservices Architecture","System Design"],
+  "TESTING":                   ["Manual Testing","Selenium","Cypress","JMeter","Playwright","Postman","TestNG","Appium"],
+  "AUTOMATION TESTING":        ["Selenium","Cypress","Playwright","TestNG","JUnit","Appium","Jest","Postman"],
+  "PERFORMANCE TESTING":       ["JMeter","LoadRunner","Gatling","Postman","API Testing","Performance Testing"],
+  "API TESTING":               ["Postman","Swagger","REST API","Selenium","TestNG","API Testing","JWT"],
 };
 
-const TECHNOLOGY_OPTIONS = [
-  { value: "JAVA",          label: "JAVA" },
-  { value: "DOTNET",        label: "DOTNET" },
-  { value: "TESTING",       label: "TESTING" },
-  { value: "ANGULAR",       label: "ANGULAR" },
-  { value: "REACTJS",       label: "REACTJS" },
-  { value: "AWS DEVOPS",    label: "AWS DEVOPS" },
-  { value: "AZURE DEVOPS",  label: "AZURE DEVOPS" },
-  { value: "SQL DEVELOPER", label: "SQL DEVELOPER" },
-  { value: "Other",         label: "Other" },
+// ─── Grouped technology options for <select> ──────────────────────────────────
+const TECHNOLOGY_GROUPS = [
+  {
+    label: "Java Ecosystem",
+    options: [
+      { value: "JAVA",                   label: "Java" },
+      { value: "JAVA FULLSTACK ANGULAR", label: "Java Full Stack + Angular" },
+      { value: "JAVA FULLSTACK REACT",   label: "Java Full Stack + React" },
+      { value: "JAVA SPRING BOOT",       label: "Java + Spring Boot" },
+    ],
+  },
+  {
+    label: ".NET Ecosystem",
+    options: [
+      { value: "DOTNET",                   label: "ASP.NET" },
+      { value: "DOTNET FULLSTACK ANGULAR", label: "ASP.NET Full Stack + Angular" },
+      { value: "DOTNET FULLSTACK REACT",   label: "ASP.NET Full Stack + React" },
+    ],
+  },
+  {
+    label: "Python Ecosystem",
+    options: [
+      { value: "PYTHON",                   label: "Python" },
+      { value: "PYTHON FULLSTACK ANGULAR", label: "Python Full Stack + Angular" },
+      { value: "PYTHON FULLSTACK REACT",   label: "Python Full Stack + React" },
+      { value: "PYTHON DJANGO",            label: "Python + Django" },
+      { value: "PYTHON FASTAPI",           label: "Python + FastAPI" },
+      { value: "PYTHON FLASK",             label: "Python + Flask" },
+    ],
+  },
+  {
+    label: "Node.js Ecosystem",
+    options: [
+      { value: "NODE FULLSTACK ANGULAR", label: "Node.js Full Stack + Angular" },
+      { value: "NODE FULLSTACK REACT",   label: "Node.js Full Stack + React" },
+      { value: "MERN",                   label: "MERN Stack (MongoDB, Express, React, Node)" },
+      { value: "MEAN",                   label: "MEAN Stack (MongoDB, Express, Angular, Node)" },
+      { value: "MEVN",                   label: "MEVN Stack (MongoDB, Express, Vue, Node)" },
+    ],
+  },
+  {
+    label: "Frontend",
+    options: [
+      { value: "ANGULAR",  label: "Angular" },
+      { value: "REACTJS",  label: "React.js" },
+      { value: "VUEJS",    label: "Vue.js" },
+      { value: "NEXTJS",   label: "Next.js" },
+      { value: "NUXTJS",   label: "Nuxt.js" },
+    ],
+  },
+  {
+    label: "Mobile Development",
+    options: [
+      { value: "ANDROID",      label: "Android" },
+      { value: "IOS SWIFT",    label: "iOS (Swift)" },
+      { value: "REACT NATIVE", label: "React Native" },
+      { value: "FLUTTER",      label: "Flutter" },
+    ],
+  },
+  {
+    label: "Database & Data Engineering",
+    options: [
+      { value: "SQL DEVELOPER", label: "SQL Developer" },
+      { value: "DATA ENGINEER", label: "Data Engineer" },
+      { value: "DATA SCIENCE",  label: "Data Science" },
+      { value: "ML AI",         label: "Machine Learning / AI" },
+      { value: "POWER BI",      label: "Power BI / Tableau" },
+    ],
+  },
+  {
+    label: "DevOps & Cloud",
+    options: [
+      { value: "AWS DEVOPS",      label: "AWS DevOps" },
+      { value: "AZURE DEVOPS",    label: "Azure DevOps" },
+      { value: "GCP DEVOPS",      label: "GCP DevOps" },
+      { value: "DEVOPS",          label: "DevOps (General)" },
+      { value: "CLOUD ARCHITECT", label: "Cloud Architect" },
+    ],
+  },
+  {
+    label: "Testing",
+    options: [
+      { value: "TESTING",             label: "Manual Testing" },
+      { value: "AUTOMATION TESTING",  label: "Automation Testing" },
+      { value: "PERFORMANCE TESTING", label: "Performance Testing" },
+      { value: "API TESTING",         label: "API Testing" },
+    ],
+  },
 ];
 
-const ROLE_LABELS = ["Backend","Frontend","Testing","DevOps","Database","Mobile","AI/ML","Full Stack","Other"];
+// ─── All predefined tech values — used in buildRoleFromAPI to detect "Other" ──
+const PREDEFINED_TECHNOLOGIES = TECHNOLOGY_GROUPS.flatMap((g) => g.options.map((o) => o.value));
 
-const PREDEFINED_TECHNOLOGIES = TECHNOLOGY_OPTIONS.map((t) => t.value).filter((v) => v !== "Other");
+const ROLE_LABELS = ["Backend","Frontend","Testing","DevOps","Database","Mobile","AI/ML","Full Stack","Other"];
 
 // ─── Create empty role ────────────────────────────────────────────────────────
 const createEmptyRole = () => ({
   id: Date.now() + Math.random(),
-  dbId: null,            // real DB id if loaded from existing project
+  dbId: null,
   roleLabel: "",
   technology: "",
   customTech: "",
@@ -71,7 +191,6 @@ const buildRoleFromAPI = (apiRole) => {
   const tech = apiRole.technology || "";
   const isPredefined = PREDEFINED_TECHNOLOGIES.includes(tech);
 
-  // Skills — handle both array and comma string
   const skills = Array.isArray(apiRole.skills)
     ? apiRole.skills.map((s) => s.trim()).filter(Boolean)
     : (apiRole.skills || "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -83,7 +202,7 @@ const buildRoleFromAPI = (apiRole) => {
     technology: isPredefined ? tech : (tech ? "Other" : ""),
     customTech: isPredefined ? "" : tech,
     skills,
-    resourcePool: [],      // will be fetched on mount
+    resourcePool: [],
     selectedResourceIds: apiRole.resourceIds || [],
     selectedResourceNames: apiRole.resourceNames || [],
     loading: false,
@@ -319,7 +438,8 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     try {
       const requests = skills.map((skill) =>
         axios.post("http://localhost:8098/api/v1/projects/getResourceNames", {
-          permissionId: 3, skill: skill.trim(),
+          permissionId: 3,
+          skill: skill.trim(),
           technology: role.technology === "Other" ? role.customTech : role.technology,
         })
       );
@@ -341,7 +461,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     }
   }, [index, onUpdate, role.technology, role.customTech]);
 
-  // Auto-fetch resource pool when component mounts if skills already exist (edit mode)
   useEffect(() => {
     if (role.skills.length > 0 && role.resourcePool.length === 0 && !role.loading) {
       fetchResources(role.skills);
@@ -404,10 +523,20 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
-            <select value={role.technology} onChange={(e) => handleTechChange(e.target.value)}
-              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}>
+            <select
+              value={role.technology}
+              onChange={(e) => handleTechChange(e.target.value)}
+              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}
+            >
               <option value="">Select Technology</option>
-              {TECHNOLOGY_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              {TECHNOLOGY_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value="Other">Other (Custom)</option>
             </select>
             {roleError?.technology && <p className="text-red-600 text-sm mt-1">{roleError.technology}</p>}
             {role.technology === "Other" && (
@@ -422,7 +551,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
         </div>
 
-        {/* Skills — full width */}
+        {/* Skills */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Skills <span className="text-pink-800">*</span>
@@ -432,7 +561,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           {roleError?.skills && <p className="text-red-600 text-sm mt-1">{roleError.skills}</p>}
         </div>
 
-        {/* Developers — full width */}
+        {/* Assign Developers */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Assign Developers <span className="text-pink-800">*</span>
@@ -458,24 +587,23 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function Edit_project() {
-  const [projectId, setProjectId]           = useState(0);
-  const [projectName, setProjectName]       = useState("");
-  const [clientName, setClientName]         = useState("");
-  const [totalAmount, setTotalAmount]       = useState("");
+  const [projectId, setProjectId]             = useState(0);
+  const [projectName, setProjectName]         = useState("");
+  const [clientName, setClientName]           = useState("");
+  const [totalAmount, setTotalAmount]         = useState("");
   const [developerAmount, setDeveloperAmount] = useState("");
-  const [startDate, setStartDate]           = useState("");
-  const [endDate, setEndDate]               = useState("");
-  const [amount, setAmount]                 = useState("");
-  const [status, setStatus]                 = useState("");
-  const [roles, setRoles]                   = useState([createEmptyRole()]);
-  const [errors, setErrors]                 = useState({});
-  const [roleErrors, setRoleErrors]         = useState([]);
-  const [loading, setLoading]               = useState(false);
-  const [pageLoading, setPageLoading]       = useState(true);
-  const [creatorName]                       = useState(localStorage.getItem("resourceName") || "");
+  const [startDate, setStartDate]             = useState("");
+  const [endDate, setEndDate]                 = useState("");
+  const [amount, setAmount]                   = useState("");
+  const [status, setStatus]                   = useState("");
+  const [roles, setRoles]                     = useState([createEmptyRole()]);
+  const [errors, setErrors]                   = useState({});
+  const [roleErrors, setRoleErrors]           = useState([]);
+  const [loading, setLoading]                 = useState(false);
+  const [pageLoading, setPageLoading]         = useState(true);
+  const [creatorName]                         = useState(localStorage.getItem("resourceName") || "");
   const navigate = useNavigate();
 
-  // ── Load existing project on mount ──────────────────────────────────────────
   useEffect(() => {
     const pid = localStorage.getItem("projectid");
     if (pid) fetchProject(pid);
@@ -485,7 +613,6 @@ function Edit_project() {
     try {
       const res = await axios.get(`http://localhost:8098/api/v1/projects/${pid}`);
       const data = res.data;
-
       setProjectId(data.id || 0);
       setProjectName(data.name || "");
       setClientName(data.clientName || "");
@@ -495,12 +622,8 @@ function Edit_project() {
       setDeveloperAmount(data.developerAmount || "");
       setTotalAmount(data.totalAmount || "");
       setStatus(data.status || "");
-
-      // Build roles from API — each role has its own tech, skills, developers
       const apiRoles = data.projectRoles || [];
-      if (apiRoles.length > 0) {
-        setRoles(apiRoles.map(buildRoleFromAPI));
-      }
+      if (apiRoles.length > 0) setRoles(apiRoles.map(buildRoleFromAPI));
     } catch (err) {
       console.error("Failed to load project:", err);
     } finally {
@@ -508,7 +631,6 @@ function Edit_project() {
     }
   };
 
-  // ── Role management ──────────────────────────────────────────────────────────
   const updateRole = useCallback((index, patch) => {
     setRoles((prev) => prev.map((r, i) => i === index ? { ...r, ...patch } : r));
   }, []);
@@ -518,7 +640,6 @@ function Edit_project() {
     setRoleErrors((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // ── Validation ───────────────────────────────────────────────────────────────
   const validate = () => {
     const e = {};
     if (!projectName.trim())                              e.projectName     = "Project name is required";
@@ -543,7 +664,6 @@ function Edit_project() {
     return !Object.keys(e).length && re.every((x) => x === null);
   };
 
-  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleUpdate = () => {
     if (!validate()) return;
     setLoading(true);
@@ -577,7 +697,6 @@ function Edit_project() {
       .finally(() => setLoading(false));
   };
 
-  // ── Field helpers ────────────────────────────────────────────────────────────
   const fieldClass = (errKey) =>
     `border-2 p-2 rounded w-full text-sm focus:outline-none transition-colors ${
       errors[errKey] ? "border-red-500" : "border-yellow-400"
@@ -585,7 +704,6 @@ function Edit_project() {
 
   const totalAssigned = roles.reduce((s, r) => s + r.selectedResourceIds.length, 0);
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-gradient-to-b from-blue-500 to-yellow-400 min-h-screen">
@@ -604,11 +722,7 @@ function Edit_project() {
               Edit Project
             </h2>
 
-            {pageLoading ? (
-              <div className="flex justify-center items-center h-[400px]">
-                <ClipLoader size={60} color="#FACC15" />
-              </div>
-            ) : loading ? (
+            {pageLoading || loading ? (
               <div className="flex justify-center items-center h-[400px]">
                 <ClipLoader size={60} color="#FACC15" />
               </div>

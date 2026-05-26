@@ -77,7 +77,6 @@ function SkillTagInput({ value, onChange, error }) {
   const dropdownRef = useRef(null);
   const containerRef = useRef(null);
 
-  // FIX #4: use a ref to track initialization instead of missing dep
   useEffect(() => {
     if (!initialized.current && value) {
       const arr = value.split(',').map(s => s.trim()).filter(Boolean);
@@ -288,7 +287,6 @@ function Addresource() {
   const [enddate, setEndDate] = useState(new Date());
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  // FIX #1 & #2: add phoneDialCode state (was referenced as form.phoneDialCode but never defined)
   const [phoneDialCode, setPhoneDialCode] = useState('+91');
   const [technology, setTechnology] = useState('');
   const [skill, setSkill] = useState('');
@@ -309,7 +307,7 @@ function Addresource() {
 
   const navigate = useNavigate();
 
-useEffect(() => {
+  useEffect(() => {
     axios.get('http://localhost:8098/api/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
@@ -349,8 +347,8 @@ useEffect(() => {
     if (!email?.trim()) newErrors.email = 'Email is required.';
     if (!phone?.trim()) {
       newErrors.phone = 'Mobile is required.';
-    }  else if (!/^\d{7,15}$/.test(phone.trim())) {
-  newErrors.phone = 'Mobile must be between 7 and 15 digits.';
+    } else if (!/^\d{7,15}$/.test(phone.trim())) {
+      newErrors.phone = 'Mobile must be between 7 and 15 digits.';
     }
     if (!skill?.trim()) newErrors.skill = 'Skills are required.';
     if (!technology?.trim()) newErrors.technology = 'Technology is required.';
@@ -408,7 +406,6 @@ useEffect(() => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    // FIX #3: removed the broken boolean condition; validation above is sufficient
     if (Number(experience) < 0) {
       setexperiencePopup(true);
       return;
@@ -433,7 +430,6 @@ useEffect(() => {
       finalTechnology = `${technology},${customTechnology}`;
     }
 
-    // FIX #2: use phoneDialCode + phone instead of undefined form.phoneDialCode / form.phone
     let payload = {
       permissionId: basedonrole,
       managerId: null,
@@ -481,7 +477,6 @@ useEffect(() => {
     axios.post('http://localhost:8098/api/v1/resource/upload', formData)
       .then(() => { navigate('/manageresources'); })
       .catch(() => {})
-      // FIX #5: always reset loading state
       .finally(() => { setLoading(false); });
   };
 
@@ -548,7 +543,7 @@ useEffect(() => {
                     {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
                   </div>
 
-                  {/* FIX #1: Phone Number — fixed broken JSX-inside-className and removed duplicate <select> */}
+                  {/* Phone Number */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">
                       Phone Number <span className="text-pink-800">*</span>
@@ -623,16 +618,89 @@ useEffect(() => {
                       className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.technology ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
                     >
                       <option value="">-- Select Technology --</option>
-                      <option value="JAVA">JAVA</option>
-                      <option value="DOTNET">DOTNET</option>
-                      <option value="TESTING">TESTING</option>
-                      <option value="ANGULAR">ANGULAR</option>
-                      <option value="REACTJS">REACTJS</option>
-                      <option value="AWS DEVOPS">AWS DEVOPS</option>
-                      <option value="AZURE DEVOPS">AZURE DEVOPS</option>
-                      <option value="SQL DEVELOPER">SQL DEVELOPER</option>
-                      <option value="OTHER">OTHER</option>
+
+                      {/* ── Java Ecosystem ── */}
+                      <optgroup label="Java Ecosystem">
+                        <option value="JAVA">Java</option>
+                        <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
+                        <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
+                        <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
+                      </optgroup>
+
+                      {/* ── .NET Ecosystem ── */}
+                      <optgroup label=".NET Ecosystem">
+                        <option value="DOTNET">ASP.NET</option>
+                        <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
+                        <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
+                        <option value="DOTNET CORE">ASP.NET Core</option>
+                      </optgroup>
+
+                      {/* ── Python Ecosystem ── */}
+                      <optgroup label="Python Ecosystem">
+                        <option value="PYTHON">Python</option>
+                        <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
+                        <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
+                        <option value="PYTHON DJANGO">Python + Django</option>
+                        <option value="PYTHON FASTAPI">Python + FastAPI</option>
+                        <option value="PYTHON FLASK">Python + Flask</option>
+                      </optgroup>
+
+                      {/* ── Node.js Ecosystem ── */}
+                      <optgroup label="Node.js Ecosystem">
+                        <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
+                        <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
+                        <option value="MERN">MERN Stack (MongoDB, Express, React, Node)</option>
+                        <option value="MEAN">MEAN Stack (MongoDB, Express, Angular, Node)</option>
+                        <option value="MEVN">MEVN Stack (MongoDB, Express, Vue, Node)</option>
+                      </optgroup>
+
+                      {/* ── Frontend ── */}
+                      <optgroup label="Frontend">
+                        <option value="ANGULAR">Angular</option>
+                        <option value="REACTJS">React.js</option>
+                        <option value="VUEJS">Vue.js</option>
+                        <option value="NEXTJS">Next.js</option>
+                        <option value="NUXTJS">Nuxt.js</option>
+                        <option value="FRONTEND">Frontend (HTML / CSS / JS)</option>
+                      </optgroup>
+
+                      {/* ── Mobile ── */}
+                      <optgroup label="Mobile Development">
+                        <option value="ANDROID">Android</option>
+                        <option value="IOS SWIFT">iOS (Swift)</option>
+                        <option value="REACT NATIVE">React Native</option>
+                        <option value="FLUTTER">Flutter</option>
+                      </optgroup>
+
+                      {/* ── Database & Data ── */}
+                      <optgroup label=" Database &amp; Data Engineering">
+                        <option value="SQL DEVELOPER">SQL Developer</option>
+                        <option value="DATA ENGINEER">Data Engineer</option>
+                        <option value="DATA SCIENCE">Data Science</option>
+                        <option value="ML AI">Machine Learning / AI</option>
+                        <option value="POWER BI">Power BI / Tableau</option>
+                      </optgroup>
+
+                      {/* ── DevOps & Cloud ── */}
+                      <optgroup label="DevOps &amp; Cloud">
+                        <option value="AWS DEVOPS">AWS DevOps</option>
+                        <option value="AZURE DEVOPS">Azure DevOps</option>
+                        <option value="GCP DEVOPS">GCP DevOps</option>
+                        <option value="DEVOPS">DevOps (General)</option>
+                        <option value="CLOUD ARCHITECT">Cloud Architect</option>
+                      </optgroup>
+
+                      {/* ── Testing ── */}
+                      <optgroup label="Testing">
+                        <option value="TESTING">Manual Testing</option>
+                        <option value="AUTOMATION TESTING">Automation Testing</option>
+                        <option value="PERFORMANCE TESTING">Performance Testing</option>
+                        <option value="API TESTING">API Testing</option>
+                      </optgroup>
+
+                      <option value="OTHER">Other (Custom)</option>
                     </select>
+
                     {technology === 'OTHER' && (
                       <input
                         type="text"
@@ -644,6 +712,7 @@ useEffect(() => {
                     )}
                     {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
                   </div>
+
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Type <span className="text-pink-800">*</span></label>
                     <select
@@ -720,7 +789,7 @@ useEffect(() => {
                   </div>
                 )}
 
-                 {/* Resume Upload */}
+                {/* Resume Upload */}
                 <div>
                   <label className="font-semibold mb-1 block">Upload Resume <span className="text-pink-800">*</span></label>
                   <input
