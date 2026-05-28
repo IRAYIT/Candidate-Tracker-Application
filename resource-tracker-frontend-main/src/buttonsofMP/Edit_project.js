@@ -25,7 +25,6 @@ const SKILL_OPTIONS = [
   "Agile","Scrum","Kanban","GraphQL","gRPC","OAuth","JWT","Design Patterns","System Design","SonarQube",
 ];
 
-// ─── Technology → suggested skills map (expanded) ────────────────────────────
 const TECHNOLOGY_SKILLS = {
   "JAVA":                      ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
   "JAVA FULLSTACK":            ["Core Java","Spring Boot","React","Angular","REST API","JPA","Maven","HTML","CSS","JavaScript"],
@@ -77,102 +76,71 @@ const TECHNOLOGY_SKILLS = {
   "API TESTING":               ["Postman","Swagger","REST API","Selenium","TestNG","API Testing","JWT"],
 };
 
-// ─── Grouped technology options for <select> ──────────────────────────────────
 const TECHNOLOGY_GROUPS = [
-  {
-    label: "Java Ecosystem",
-    options: [
-      { value: "JAVA",                   label: "Java" },
-      { value: "JAVA FULLSTACK ANGULAR", label: "Java Full Stack + Angular" },
-      { value: "JAVA FULLSTACK REACT",   label: "Java Full Stack + React" },
-      { value: "JAVA SPRING BOOT",       label: "Java + Spring Boot" },
-    ],
-  },
-  {
-    label: ".NET Ecosystem",
-    options: [
-      { value: "DOTNET",                   label: "ASP.NET" },
-      { value: "DOTNET FULLSTACK ANGULAR", label: "ASP.NET Full Stack + Angular" },
-      { value: "DOTNET FULLSTACK REACT",   label: "ASP.NET Full Stack + React" },
-    ],
-  },
-  {
-    label: "Python Ecosystem",
-    options: [
-      { value: "PYTHON",                   label: "Python" },
-      { value: "PYTHON FULLSTACK ANGULAR", label: "Python Full Stack + Angular" },
-      { value: "PYTHON FULLSTACK REACT",   label: "Python Full Stack + React" },
-      { value: "PYTHON DJANGO",            label: "Python + Django" },
-      { value: "PYTHON FASTAPI",           label: "Python + FastAPI" },
-      { value: "PYTHON FLASK",             label: "Python + Flask" },
-    ],
-  },
-  {
-    label: "Node.js Ecosystem",
-    options: [
-      { value: "NODE FULLSTACK ANGULAR", label: "Node.js Full Stack + Angular" },
-      { value: "NODE FULLSTACK REACT",   label: "Node.js Full Stack + React" },
-      { value: "MERN",                   label: "MERN Stack (MongoDB, Express, React, Node)" },
-      { value: "MEAN",                   label: "MEAN Stack (MongoDB, Express, Angular, Node)" },
-      { value: "MEVN",                   label: "MEVN Stack (MongoDB, Express, Vue, Node)" },
-    ],
-  },
-  {
-    label: "Frontend",
-    options: [
-      { value: "ANGULAR",  label: "Angular" },
-      { value: "REACTJS",  label: "React.js" },
-      { value: "VUEJS",    label: "Vue.js" },
-      { value: "NEXTJS",   label: "Next.js" },
-      { value: "NUXTJS",   label: "Nuxt.js" },
-    ],
-  },
-  {
-    label: "Mobile Development",
-    options: [
-      { value: "ANDROID",      label: "Android" },
-      { value: "IOS SWIFT",    label: "iOS (Swift)" },
-      { value: "REACT NATIVE", label: "React Native" },
-      { value: "FLUTTER",      label: "Flutter" },
-    ],
-  },
-  {
-    label: "Database & Data Engineering",
-    options: [
-      { value: "SQL DEVELOPER", label: "SQL Developer" },
-      { value: "DATA ENGINEER", label: "Data Engineer" },
-      { value: "DATA SCIENCE",  label: "Data Science" },
-      { value: "ML AI",         label: "Machine Learning / AI" },
-      { value: "POWER BI",      label: "Power BI / Tableau" },
-    ],
-  },
-  {
-    label: "DevOps & Cloud",
-    options: [
-      { value: "AWS DEVOPS",      label: "AWS DevOps" },
-      { value: "AZURE DEVOPS",    label: "Azure DevOps" },
-      { value: "GCP DEVOPS",      label: "GCP DevOps" },
-      { value: "DEVOPS",          label: "DevOps (General)" },
-      { value: "CLOUD ARCHITECT", label: "Cloud Architect" },
-    ],
-  },
-  {
-    label: "Testing",
-    options: [
-      { value: "TESTING",             label: "Manual Testing" },
-      { value: "AUTOMATION TESTING",  label: "Automation Testing" },
-      { value: "PERFORMANCE TESTING", label: "Performance Testing" },
-      { value: "API TESTING",         label: "API Testing" },
-    ],
-  },
+  { label: "Java Ecosystem", options: [
+    { value: "JAVA", label: "Java" },
+    { value: "JAVA FULLSTACK ANGULAR", label: "Java Full Stack + Angular" },
+    { value: "JAVA FULLSTACK REACT", label: "Java Full Stack + React" },
+    { value: "JAVA SPRING BOOT", label: "Java + Spring Boot" },
+  ]},
+  { label: ".NET Ecosystem", options: [
+    { value: "DOTNET", label: "ASP.NET" },
+    { value: "DOTNET FULLSTACK ANGULAR", label: "ASP.NET Full Stack + Angular" },
+    { value: "DOTNET FULLSTACK REACT", label: "ASP.NET Full Stack + React" },
+  ]},
+  { label: "Python Ecosystem", options: [
+    { value: "PYTHON", label: "Python" },
+    { value: "PYTHON FULLSTACK ANGULAR", label: "Python Full Stack + Angular" },
+    { value: "PYTHON FULLSTACK REACT", label: "Python Full Stack + React" },
+    { value: "PYTHON DJANGO", label: "Python + Django" },
+    { value: "PYTHON FASTAPI", label: "Python + FastAPI" },
+    { value: "PYTHON FLASK", label: "Python + Flask" },
+  ]},
+  { label: "Node.js Ecosystem", options: [
+    { value: "NODE FULLSTACK ANGULAR", label: "Node.js Full Stack + Angular" },
+    { value: "NODE FULLSTACK REACT", label: "Node.js Full Stack + React" },
+    { value: "MERN", label: "MERN Stack (MongoDB, Express, React, Node)" },
+    { value: "MEAN", label: "MEAN Stack (MongoDB, Express, Angular, Node)" },
+    { value: "MEVN", label: "MEVN Stack (MongoDB, Express, Vue, Node)" },
+  ]},
+  { label: "Frontend", options: [
+    { value: "ANGULAR", label: "Angular" },
+    { value: "REACTJS", label: "React.js" },
+    { value: "VUEJS", label: "Vue.js" },
+    { value: "NEXTJS", label: "Next.js" },
+    { value: "NUXTJS", label: "Nuxt.js" },
+  ]},
+  { label: "Mobile Development", options: [
+    { value: "ANDROID", label: "Android" },
+    { value: "IOS SWIFT", label: "iOS (Swift)" },
+    { value: "REACT NATIVE", label: "React Native" },
+    { value: "FLUTTER", label: "Flutter" },
+  ]},
+  { label: "Database & Data Engineering", options: [
+    { value: "SQL DEVELOPER", label: "SQL Developer" },
+    { value: "DATA ENGINEER", label: "Data Engineer" },
+    { value: "DATA SCIENCE", label: "Data Science" },
+    { value: "ML AI", label: "Machine Learning / AI" },
+    { value: "POWER BI", label: "Power BI / Tableau" },
+  ]},
+  { label: "DevOps & Cloud", options: [
+    { value: "AWS DEVOPS", label: "AWS DevOps" },
+    { value: "AZURE DEVOPS", label: "Azure DevOps" },
+    { value: "GCP DEVOPS", label: "GCP DevOps" },
+    { value: "DEVOPS", label: "DevOps (General)" },
+    { value: "CLOUD ARCHITECT", label: "Cloud Architect" },
+  ]},
+  { label: "Testing", options: [
+    { value: "TESTING", label: "Manual Testing" },
+    { value: "AUTOMATION TESTING", label: "Automation Testing" },
+    { value: "PERFORMANCE TESTING", label: "Performance Testing" },
+    { value: "API TESTING", label: "API Testing" },
+  ]},
 ];
 
-// ─── All predefined tech values — used in buildRoleFromAPI to detect "Other" ──
 const PREDEFINED_TECHNOLOGIES = TECHNOLOGY_GROUPS.flatMap((g) => g.options.map((o) => o.value));
-
 const ROLE_LABELS = ["Backend","Frontend","Testing","DevOps","Database","Mobile","AI/ML","Full Stack","Other"];
 
-// ─── Create empty role ────────────────────────────────────────────────────────
 const createEmptyRole = () => ({
   id: Date.now() + Math.random(),
   dbId: null,
@@ -186,15 +154,12 @@ const createEmptyRole = () => ({
   loading: false,
 });
 
-// ─── Build role from API response ─────────────────────────────────────────────
 const buildRoleFromAPI = (apiRole) => {
   const tech = apiRole.technology || "";
   const isPredefined = PREDEFINED_TECHNOLOGIES.includes(tech);
-
   const skills = Array.isArray(apiRole.skills)
     ? apiRole.skills.map((s) => s.trim()).filter(Boolean)
     : (apiRole.skills || "").split(",").map((s) => s.trim()).filter(Boolean);
-
   return {
     id: Date.now() + Math.random(),
     dbId: apiRole.id || null,
@@ -209,7 +174,6 @@ const buildRoleFromAPI = (apiRole) => {
   };
 };
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
 function groupResources(list) {
   const managerIds = new Set(list.filter((r) => r.managerId != null).map((r) => r.managerId));
   const tree = list.filter((r) => managerIds.has(r.id)).map((mgr) => ({
@@ -484,7 +448,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
   return (
     <div className={`border-2 rounded-lg overflow-visible ${roleError ? "border-red-400" : "border-yellow-400"}`}>
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 rounded-t-lg">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded-full bg-white text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{index + 1}</div>
@@ -509,9 +472,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
         </div>
       </div>
 
-      {/* Body */}
       <div className="p-4 bg-white space-y-4">
-        {/* Role Type + Technology */}
         <div className="flex flex-wrap gap-4 justify-between">
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Role Type</label>
@@ -523,17 +484,12 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
-            <select
-              value={role.technology}
-              onChange={(e) => handleTechChange(e.target.value)}
-              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}
-            >
+            <select value={role.technology} onChange={(e) => handleTechChange(e.target.value)}
+              className={`border-2 p-2 rounded w-full text-sm ${roleError?.technology ? "border-red-500" : "border-yellow-400"}`}>
               <option value="">Select Technology</option>
               {TECHNOLOGY_GROUPS.map((group) => (
                 <optgroup key={group.label} label={group.label}>
-                  {group.options.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
+                  {group.options.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </optgroup>
               ))}
               <option value="Other">Other (Custom)</option>
@@ -551,7 +507,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
         </div>
 
-        {/* Skills */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Skills <span className="text-pink-800">*</span>
@@ -561,7 +516,6 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           {roleError?.skills && <p className="text-red-600 text-sm mt-1">{roleError.skills}</p>}
         </div>
 
-        {/* Assign Developers */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Assign Developers <span className="text-pink-800">*</span>
@@ -590,11 +544,10 @@ function Edit_project() {
   const [projectId, setProjectId]             = useState(0);
   const [projectName, setProjectName]         = useState("");
   const [clientName, setClientName]           = useState("");
-  const [totalAmount, setTotalAmount]         = useState("");
+  const [bufferAllocation, setBufferAllocation] = useState("");
   const [developerAmount, setDeveloperAmount] = useState("");
   const [startDate, setStartDate]             = useState("");
   const [endDate, setEndDate]                 = useState("");
-  const [amount, setAmount]                   = useState("");
   const [status, setStatus]                   = useState("");
   const [roles, setRoles]                     = useState([createEmptyRole()]);
   const [errors, setErrors]                   = useState({});
@@ -603,6 +556,9 @@ function Edit_project() {
   const [pageLoading, setPageLoading]         = useState(true);
   const [creatorName]                         = useState(localStorage.getItem("resourceName") || "");
   const navigate = useNavigate();
+
+  // ── Always computed live — never stale ──────────────────────────────────────
+  const computedTotal = (Number(bufferAllocation) || 0) + (Number(developerAmount) || 0);
 
   useEffect(() => {
     const pid = localStorage.getItem("projectid");
@@ -618,9 +574,9 @@ function Edit_project() {
       setClientName(data.clientName || "");
       setStartDate(toDateString(data.startDate));
       setEndDate(toDateString(data.endDate));
-      setAmount(data.amount || "");
-      setDeveloperAmount(data.developerAmount || "");
-      setTotalAmount(data.totalAmount || "");
+      // Map API field names → our state
+      setBufferAllocation(data.totalAmount ?? data.bufferAllocation ?? "");
+      setDeveloperAmount(data.developerAmount ?? "");
       setStatus(data.status || "");
       const apiRoles = data.projectRoles || [];
       if (apiRoles.length > 0) setRoles(apiRoles.map(buildRoleFromAPI));
@@ -642,13 +598,13 @@ function Edit_project() {
 
   const validate = () => {
     const e = {};
-    if (!projectName.trim())                              e.projectName     = "Project name is required";
-    if (!clientName.trim())                               e.clientName      = "Client name is required";
-    if (!totalAmount || Number(totalAmount) <= 0)         e.totalAmount     = "Enter a valid amount";
-    if (!developerAmount || Number(developerAmount) <= 0) e.developerAmount = "Enter a valid amount";
-    if (!startDate)                                       e.startDate       = "Start date is required";
-    if (!endDate)                                         e.endDate         = "End date is required";
-    if (!status)                                          e.status          = "Status is required";
+    if (!projectName.trim())                                e.projectName       = "Project name is required";
+    if (!clientName.trim())                                 e.clientName        = "Client name is required";
+    if (!bufferAllocation || Number(bufferAllocation) <= 0) e.bufferAllocation  = "Enter a valid amount";
+    if (!developerAmount || Number(developerAmount) <= 0)   e.developerAmount   = "Enter a valid amount";
+    if (!startDate)                                         e.startDate         = "Start date is required";
+    if (!endDate)                                           e.endDate           = "End date is required";
+    if (!status)                                            e.status            = "Status is required";
 
     const re = roles.map((role) => {
       const err = {};
@@ -672,11 +628,11 @@ function Edit_project() {
       id: projectId,
       name: projectName,
       clientName,
-      totalAmount,
+      totalAmount: bufferAllocation,       // backend field name
       developerAmount,
+      amount: computedTotal,               // grand total sent to backend
       startDate,
       endDate,
-      amount,
       status,
       updatedAt: new Date(),
       updatedBy: creatorName,
@@ -765,17 +721,17 @@ function Edit_project() {
                   </div>
                 </div>
 
-                {/* Row 3 — Buffer + Developer Allocation */}
+                {/* Row 3 — Buffer Allocation + Developer Allocation */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Buffer Allocation <span className="text-pink-800">*</span></label>
-                    <div className={`flex items-center border-2 rounded ${errors.totalAmount ? "border-red-500" : "border-yellow-400"}`}>
+                    <div className={`flex items-center border-2 rounded ${errors.bufferAllocation ? "border-red-500" : "border-yellow-400"}`}>
                       <span className="px-3 py-2 bg-yellow-50 text-sm font-bold text-gray-600 border-r-2 border-yellow-400">$</span>
-                      <input type="number" value={totalAmount} placeholder="0.00"
-                        onChange={(e) => { setTotalAmount(e.target.value); if (errors.totalAmount) setErrors((p) => ({ ...p, totalAmount: "" })); }}
+                      <input type="number" value={bufferAllocation} placeholder="0.00"
+                        onChange={(e) => { setBufferAllocation(e.target.value); if (errors.bufferAllocation) setErrors((p) => ({ ...p, bufferAllocation: "" })); }}
                         className="flex-1 border-none outline-none bg-white text-sm px-2 py-2" />
                     </div>
-                    {errors.totalAmount && <p className="text-red-600 text-sm mt-1">{errors.totalAmount}</p>}
+                    {errors.bufferAllocation && <p className="text-red-600 text-sm mt-1">{errors.bufferAllocation}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Developer Allocation <span className="text-pink-800">*</span></label>
@@ -789,14 +745,21 @@ function Edit_project() {
                   </div>
                 </div>
 
-                {/* Row 4 — Total Amount + Status */}
+                {/* Row 4 — Total Amount (computed) + Status */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Total Amount</label>
+                    <label className="font-semibold mb-1 block">
+                      Total Amount
+                      <span className="ml-2 text-xs font-normal text-gray-400">(Buffer + Developer)</span>
+                    </label>
                     <div className="flex items-center border-2 border-yellow-400 rounded bg-gray-50">
                       <span className="px-3 py-2 bg-yellow-50 text-sm font-bold text-gray-400 border-r-2 border-yellow-400">$</span>
-                      <input type="number" value={amount} readOnly
-                        className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-500 cursor-not-allowed" />
+                      <input
+                        type="text"
+                        value={computedTotal}
+                        readOnly
+                        className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-600 cursor-not-allowed font-semibold"
+                      />
                     </div>
                   </div>
                   <div className="w-full md:w-[48%]">
@@ -847,11 +810,11 @@ function Edit_project() {
                 {/* Action Buttons */}
                 <div className="flex gap-4 p-4 items-center justify-center mt-4">
                   <button type="button" onClick={() => navigate("/manageprojects")}
-                    className="border-2 rounded-2xl border-gray-900 px-6 py-2 cursor-pointer hover:bg-gray-50 transition-colors">
+                    className="px-6 py-2 rounded-md border border-gray-400 bg-white text-gray-800 hover:bg-gray-100 transition cursor-pointer">
                     Back
                   </button>
                   <button type="button" onClick={handleUpdate}
-                    className="border-2 rounded-2xl border-gray-900 px-6 py-2 cursor-pointer bg-yellow-400 hover:bg-yellow-500 transition-colors font-semibold">
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold transition cursor-pointer">
                     Update
                   </button>
                 </div>

@@ -203,135 +203,323 @@ function SkillTagInput({ value, onChange, error }) {
   );
 }
 
+// ─── AssignedEmployeesInput Component ────────────────────────────────────────
+function AssignedEmployeesInput({ assignedEmployees, onRemove, availableEmployees, onAdd, error }) {
+  const [searchTerm, setSearchTerm]         = useState('');
+  const [showDropdown, setShowDropdown]     = useState(false);
+  const [highlightedIdx, setHighlightedIdx] = useState(-1);
+  const containerRef = useRef(null);
+  const inputRef     = useRef(null);
+  // Tracks whether the mouse is pressed inside the dropdown list.
+  // Prevents the input's onBlur from closing the dropdown before onMouseDown fires.
+  const mouseDownInsideDropdown = useRef(false);
+
+  // Close on outside click only
+  useEffect(() => {
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+        setHighlightedIdx(-1);
+        setSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Filter available pool — exclude already assigned ones
+  const filteredPool = availableEmployees.filter(emp => {
+    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+    return (
+      fullName.includes(searchTerm.toLowerCase()) &&
+      !assignedEmployees.some(a => a.id === emp.id)
+    );
+  });
+
+  const openDropdown = () => {
+    setShowDropdown(true);
+    setHighlightedIdx(-1);
+    // Small delay so React has rendered the input before focusing
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const handleAdd = (emp) => {
+    onAdd(emp);
+    setSearchTerm('');
+    setHighlightedIdx(-1);
+    // Keep dropdown open so user can keep adding
+    setShowDropdown(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const handleInputBlur = () => {
+    // If the user clicked inside the dropdown list, don't close —
+    // let the onMouseDown handler on the list item fire first.
+    if (mouseDownInsideDropdown.current) return;
+    setShowDropdown(false);
+    setHighlightedIdx(-1);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showDropdown || filteredPool.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIdx(i => (i + 1) % filteredPool.length);
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIdx(i => (i - 1 + filteredPool.length) % filteredPool.length);
+    }
+    if (e.key === 'Enter' && highlightedIdx >= 0) {
+      e.preventDefault();
+      handleAdd(filteredPool[highlightedIdx]);
+    }
+    if (e.key === 'Escape') {
+      setShowDropdown(false);
+      setHighlightedIdx(-1);
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+
+      {/* ── Badge area — clicking opens the search ── */}
+      <div
+        className={`border-2 rounded p-2 min-h-[42px] flex flex-wrap gap-2 bg-white cursor-text ${
+          error ? 'border-red-500' : 'border-yellow-400'
+        }`}
+        onClick={openDropdown}
+      >
+        {assignedEmployees.length === 0 ? (
+          <span className="text-gray-400 text-sm self-center pointer-events-none">
+            No employees assigned yet — click to search
+          </span>
+        ) : (
+          assignedEmployees.map(emp => (
+            <span
+              key={emp.id}
+              className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-3 py-1 rounded-full"
+            >
+              {emp.firstName} {emp.lastName}
+              <button
+                type="button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onRemove(emp.id); }}
+                title="Remove employee"
+                className="ml-1 text-blue-400 hover:text-red-500 font-bold leading-none cursor-pointer transition-colors"
+              >
+                ×
+              </button>
+            </span>
+          ))
+        )}
+      </div>
+
+      {/* ── Search input — shown when dropdown is open ── */}
+      {showDropdown && (
+        <div className="mt-1 relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchTerm}
+            placeholder="Type to search employees..."
+            autoFocus
+            onChange={(e) => { setSearchTerm(e.target.value); setHighlightedIdx(-1); }}
+            onBlur={handleInputBlur}
+            onKeyDown={handleKeyDown}
+            className="w-full border-2 border-yellow-400 rounded p-2 text-sm outline-none focus:ring-2 focus:ring-yellow-200"
+          />
+
+          {/* Dropdown list */}
+          {filteredPool.length > 0 && (
+            <ul
+              className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto mt-1"
+              style={{ maxHeight: '180px' }}
+              onMouseDown={() => { mouseDownInsideDropdown.current = true; }}
+              onMouseUp={() => { mouseDownInsideDropdown.current = false; }}
+            >
+              {filteredPool.map((emp, idx) => (
+                <li
+                  key={emp.id}
+                  onMouseDown={(e) => { e.preventDefault(); handleAdd(emp); }}
+                  onMouseEnter={() => setHighlightedIdx(idx)}
+                  onMouseLeave={() => setHighlightedIdx(-1)}
+                  className={`px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2 ${
+                    highlightedIdx === idx
+                      ? 'bg-yellow-100 text-blue-700 font-medium'
+                      : 'text-gray-700 hover:bg-yellow-50'
+                  }`}
+                >
+                  <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {emp.firstName?.[0]?.toUpperCase()}
+                  </span>
+                  {emp.firstName} {emp.lastName}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* No results */}
+          {searchTerm.trim() && filteredPool.length === 0 && (
+            <div className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow mt-1 px-3 py-2 text-sm text-gray-400">
+              No matching employees found
+            </div>
+          )}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 // ─── Main Resource_edit Component ────────────────────────────────────────────
 function Resource_edit() {
-  const [resData, setResData] = useState({});
-  const [resourceName, setResourceName] = useState("");
-  const [firstName, setFirstName] = useState("");
+  const [resData, setResData]             = useState({});
+  const [resourceName, setResourceName]   = useState("");
+  const [firstName, setFirstName]         = useState("");
   const [customTechnology, setCustomTechnology] = useState('');
-  const [lastName, setLastName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [lastName, setLastName]           = useState("");
+  const [loading, setLoading]             = useState(false);
+  const [email, setEmail]                 = useState("");
+  const [phone, setPhone]                 = useState("");
   const [phoneDialCode, setPhoneDialCode] = useState('+91');
-  const [errors, setErrors] = useState({});
-  const [technology, setTechnology] = useState("");
-  const [skill, setSkill] = useState("");
+  const [errors, setErrors]               = useState({});
+  const [technology, setTechnology]       = useState("");
+  const [skill, setSkill]                 = useState("");
   const [employmenttype, setEmploymenttype] = useState("");
-  const [experience, setExperience] = useState("");
-  const [status, setStatus] = useState("");
-  const [startdate, setStartdate] = useState(new Date());
-  const [enddate, setEnddate] = useState(new Date());
-  const [error, setError] = useState(false);
-  const navigate = useNavigate();
-  const [managerId, setManagerId] = useState('');
-  const [permissionid, setPermissionid] = useState('');
-  const [resourceId, setResourceid] = useState(localStorage.getItem("rid"));
-  const [creatorName, setCreatorName] = useState(localStorage.getItem("resourceName"));
-  const [mappedResources, setMappedResources] = useState([]);
-  const [comments, setComments] = useState('');
-  const [isClient, setIsClient] = useState(false);
+  const [experience, setExperience]       = useState("");
+  const [status, setStatus]               = useState("");
+  const [startdate, setStartdate]         = useState(new Date());
+  const [enddate, setEnddate]             = useState(new Date());
+  const [error, setError]                 = useState(false);
+  const navigate                          = useNavigate();
+  const [managerId, setManagerId]         = useState('');
+  const [permissionid, setPermissionid]   = useState('');
+  const [resourceId, setResourceid]       = useState(localStorage.getItem("rid"));
+  const [creatorName, setCreatorName]     = useState(localStorage.getItem("resourceName"));
+  const [comments, setComments]           = useState('');
+  const [isClient, setIsClient]           = useState(false);
 
-  // ─── Employment Role state ───────────────────────────────────────────────
-  const [selectedRole, setSelectedRole] = useState('');
-  const [employeeList, setEmployeeList] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  // ─── Role & employee assignment state ───────────────────────────────────
+  const [selectedRole, setSelectedRole]           = useState('');
+  // Full employee objects that are currently assigned to this manager
+  const [assignedEmployees, setAssignedEmployees] = useState([]);
+  // Full pool of unassigned employees fetched from backend
+  const [employeePool, setEmployeePool]           = useState([]);
 
-  // ─── Fetch unassigned employees for Manager mapping ──────────────────────
+  // ── Step 1: fetch unassigned employees (the available pool) ─────────────
   useEffect(() => {
     axios.get('http://localhost:8098/api/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
-        setEmployeeList(onlyEmployees);
+        setEmployeePool(onlyEmployees);
       })
       .catch(() => {});
   }, []);
 
-  // ─── Fetch resource data ─────────────────────────────────────────────────
+  // ── Step 2: fetch this resource's data ──────────────────────────────────
+  //   After loading, if this is a Manager and has assignedResourceIds,
+  //   we need full employee objects for the badge display.
+  //   Those employees are currently ASSIGNED (not in the unassigned pool),
+  //   so we fetch them individually by ID.
   useEffect(() => {
     const resourceid = localStorage.getItem("temp_id_for_use");
-    if (resourceid) {
-      axios
-        .get(`http://localhost:8098/api/v1/resource/${resourceid}`)
-        .then((res) => {
-          const data = res.data;
-          setResData(data);
-          setResourceName(data.resourceName || "");
-          setResourceid(data.id);
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
-          setEmail(data.email || "");
+    if (!resourceid) return;
 
-          const rawPhone = data.phone || "";
-          const matchedCountry = PHONE_COUNTRIES.find(c => rawPhone.startsWith(c.code));
-          if (matchedCountry) {
-            setPhoneDialCode(matchedCountry.code);
-            setPhone(rawPhone.replace(matchedCountry.code, '').trim());
-          } else {
-            setPhone(rawPhone);
-          }
+    axios.get(`http://localhost:8098/api/v1/resource/${resourceid}`)
+      .then((res) => {
+        const data = res.data;
+        setResData(data);
+        setResourceName(data.resourceName || "");
+        setResourceid(data.id);
+        setFirstName(data.firstName || "");
+        setLastName(data.lastName || "");
+        setEmail(data.email || "");
 
-          setTechnology(data.technology || "");
-          setSkill(data.skill || "");
-          setEmploymenttype(data.employmentType || "");
-          setExperience(data.experience || "");
-          setStatus(data.status || "");
-          setStartdate(data.startDate?.split("T")[0] || "");
-          setEnddate(data.endDate?.split("T")[0] || "");
-          setManagerId(data.managerId);
-          setPermissionid(data.permissionId);
-          setComments(data.comments || "");
+        const rawPhone = data.phone || "";
+        const matchedCountry = PHONE_COUNTRIES.find(c => rawPhone.startsWith(c.code));
+        if (matchedCountry) {
+          setPhoneDialCode(matchedCountry.code);
+          setPhone(rawPhone.replace(matchedCountry.code, '').trim());
+        } else {
+          setPhone(rawPhone);
+        }
 
-          const permissionToRole = { 1: 'Admin', 2: 'HR', 3: 'Manager', 4: 'Employee' };
-          setSelectedRole(permissionToRole[data.permissionId] || '');
+        setTechnology(data.technology || "");
+        setSkill(data.skill || "");
+        setEmploymenttype(data.employmentType || "");
+        setExperience(data.experience || "");
+        setStatus(data.status || "");
+        setStartdate(data.startDate?.split("T")[0] || "");
+        setEnddate(data.endDate?.split("T")[0] || "");
+        setManagerId(data.managerId);
+        setPermissionid(data.permissionId);
+        setComments(data.comments || "");
 
-          if (data.assignedResourceIds?.length) {
-            setMappedResources(data.assignedResourceIds.map(id => ({ id })));
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching resource:", err);
-        });
-    }
+        const permissionToRole = { 1: 'Admin', 2: 'HR', 3: 'Manager', 4: 'Employee' };
+        setSelectedRole(permissionToRole[data.permissionId] || '');
+
+        // ── Fetch already-assigned employees via the same endpoint the view page uses ──
+        if (data.permissionId === 3) {
+          axios.get(`http://localhost:8098/api/v1/resource/getAllResourcesByManagerId/${resourceid}`)
+            .then(empRes => setAssignedEmployees(empRes.data ?? []))
+            .catch(() => {});
+        }
+      })
+      .catch((err) => console.error("Error fetching resource:", err));
   }, []);
 
-  // ─── Role helpers ────────────────────────────────────────────────────────
+  // ── Role change: clear assigned list when role changes away from Manager ─
   const handleRoleChange = (role) => {
     setSelectedRole(role);
-    setMappedResources([]);
-    setSearchTerm('');
+    if (role !== 'Manager') setAssignedEmployees([]);
   };
 
-  const handleSelect = (emp) => {
-    setMappedResources(prev => [...prev, emp]);
+  // ── Add employee from dropdown → move into assignedEmployees ────────────
+  const handleAddEmployee = (emp) => {
+    setAssignedEmployees(prev => [...prev, emp]);
   };
 
-  const handleRemove = (empId) => {
-    setMappedResources(prev => prev.filter(e => e.id !== empId));
+  // ── Remove badge → employee goes back into available pool automatically ──
+  // (filteredPool in AssignedEmployeesInput re-computes and will include them
+  //  again since we only filter out ids present in assignedEmployees)
+  const handleRemoveEmployee = (empId) => {
+    setAssignedEmployees(prev => prev.filter(e => e.id !== empId));
   };
 
-  const filteredEmployees = employeeList.filter(
-    emp =>
-      (`${emp.firstName}_${emp.lastName}_${emp.firstName[0]}`)
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) &&
-      !mappedResources.some(e => e.id === emp.id)
-  );
+  // ── The available pool = fetched unassigned + any we removed this session ─
+  // Employees who were already assigned when the page loaded are NOT in the
+  // unassigned pool from the backend. When we remove them from assignedEmployees
+  // we want them to appear in the dropdown so the user can re-add if needed.
+  // We achieve this by merging employeePool with the enriched assigned list,
+  // deduplicating by id.
+  const [initialAssigned, setInitialAssigned] = useState([]);
+  useEffect(() => {
+    if (assignedEmployees.length > 0 && initialAssigned.length === 0) {
+      setInitialAssigned(assignedEmployees);
+    }
+  }, [assignedEmployees]);
+
+  const fullAvailablePool = [
+    ...employeePool,
+    ...initialAssigned.filter(a => !employeePool.some(e => e.id === a.id)),
+  ];
 
   // ─── Validation ──────────────────────────────────────────────────────────
   const validateFields = () => {
     const newErrors = {};
-    if (!firstName?.trim()) newErrors.firstName = "First name is required.";
-    if (!lastName?.trim()) newErrors.lastName = "Last name is required.";
-    if (!email?.trim()) newErrors.email = "Email is required.";
-    if (!phone?.trim()) newErrors.phone = "Mobile is required.";
-    if (!skill?.trim()) newErrors.skill = "Skills are required.";
-    if (!technology?.trim()) newErrors.technology = "Technology is required.";
+    if (!firstName?.trim())   newErrors.firstName      = "First name is required.";
+    if (!lastName?.trim())    newErrors.lastName       = "Last name is required.";
+    if (!email?.trim())       newErrors.email          = "Email is required.";
+    if (!phone?.trim())       newErrors.phone          = "Mobile is required.";
+    if (!skill?.trim())       newErrors.skill          = "Skills are required.";
+    if (!technology?.trim())  newErrors.technology     = "Technology is required.";
     if (!employmenttype?.trim()) newErrors.employmentType = "Employment type is required.";
-    if (!experience?.toString().trim() || isNaN(experience) || experience < 0) newErrors.experience = "Valid experience is required.";
-    if (!selectedRole) newErrors.selectedRole = "Employment role is required.";
-    if (!comments?.trim()) newErrors.comments = "Comments are required.";
-    if (!status) newErrors.status = "Status is required.";
+    if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
+                              newErrors.experience     = "Valid experience is required.";
+    if (!selectedRole)        newErrors.selectedRole   = "Employment role is required.";
+    if (!comments?.trim())    newErrors.comments       = "Comments are required.";
+    if (!status)              newErrors.status         = "Status is required.";
     return newErrors;
   };
 
@@ -345,49 +533,43 @@ function Resource_edit() {
 
     const roleToPermissionId = { Admin: 1, HR: 2, Manager: 3, Employee: 4 };
 
-    if (resourceName && firstName && lastName && email && phone && skill && technology && employmenttype && experience && status !== "") {
-      setError(false);
-      const formData = new FormData();
-      let finalTechnology = technology;
-      if (technology === "OTHER") {
-        finalTechnology = `${technology},${customTechnology}`;
-      }
-      const payload = {
-        id: resourceId,
-        permissionId: roleToPermissionId[selectedRole] ?? permissionid,
-        managerId: managerId,
-        resourceName,
-        firstName,
-        lastName,
-        linkedin: "cns",
-        startDate: startdate,
-        endDate: enddate,
-        skill,
-        technology: finalTechnology,
-        experience,
-        employmentType: employmenttype,
-        phone: `${phoneDialCode} ${phone}`,
-        email,
-        client: isClient,
-        status,
-        comments: comments || "cns",
-        assignedResourceIds: selectedRole === 'Manager' ? mappedResources.map(r => r.id) : [],
-        createdAt: new Date(),
-        createdBy: creatorName,
-        updatedAt: new Date(),
-        updatedBy: creatorName,
-      };
-      formData.append("payload", JSON.stringify(payload));
-      formData.append("attachments", new Blob([]), "empty.txt");
+    const formData = new FormData();
+    let finalTechnology = technology;
+    if (technology === "OTHER") finalTechnology = `${technology},${customTechnology}`;
 
-      axios
-        .put("http://localhost:8098/api/v1/resource/update/upload", formData)
-        .then(() => { navigate('/manageresources'); })
-        .catch(() => {})
-        .finally(() => { setLoading(false); });
-    } else {
-      setLoading(false);
-    }
+    const payload = {
+      id: resourceId,
+      permissionId: roleToPermissionId[selectedRole] ?? permissionid,
+      managerId,
+      resourceName,
+      firstName,
+      lastName,
+      linkedin: "cns",
+      startDate: startdate,
+      endDate: enddate,
+      skill,
+      technology: finalTechnology,
+      experience,
+      employmentType: employmenttype,
+      phone: `${phoneDialCode} ${phone}`,
+      email,
+      client: isClient,
+      status,
+      comments: comments || "cns",
+      assignedResourceIds: selectedRole === 'Manager' ? assignedEmployees.map(e => e.id) : [],
+      createdAt: new Date(),
+      createdBy: creatorName,
+      updatedAt: new Date(),
+      updatedBy: creatorName,
+    };
+    formData.append("payload", JSON.stringify(payload));
+    formData.append("attachments", new Blob([]), "empty.txt");
+
+    axios
+      .put("http://localhost:8098/api/v1/resource/update/upload", formData)
+      .then(() => navigate('/manageresources'))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -415,21 +597,11 @@ function Resource_edit() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Resource Name *</label>
-                    <input
-                      type="text"
-                      value={resourceName}
-                      onChange={(e) => setResourceName(e.target.value)}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
+                    <input type="text" value={resourceName} onChange={(e) => setResourceName(e.target.value)} className="border-2 border-yellow-400 p-2 rounded w-full" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">First Name *</label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => { setFirstName(e.target.value); setErrors(prev => ({ ...prev, firstName: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
+                    <input type="text" value={firstName} onChange={(e) => { setFirstName(e.target.value); setErrors(p => ({ ...p, firstName: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
                     {errors.firstName && <p className="text-red-600 text-sm">{errors.firstName}</p>}
                   </div>
                 </div>
@@ -438,22 +610,12 @@ function Resource_edit() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Last Name *</label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => { setLastName(e.target.value); setErrors(prev => ({ ...prev, lastName: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
+                    <input type="text" value={lastName} onChange={(e) => { setLastName(e.target.value); setErrors(p => ({ ...p, lastName: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
                     {errors.lastName && <p className="text-red-600 text-sm">{errors.lastName}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Email *</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
+                    <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, email: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
                     {errors.email && <p className="text-red-600 text-sm">{errors.email}</p>}
                   </div>
                 </div>
@@ -463,32 +625,16 @@ function Resource_edit() {
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Phone *</label>
                     <div className={`flex border-2 rounded overflow-hidden ${errors.phone ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <select
-                        value={phoneDialCode}
-                        onChange={(e) => setPhoneDialCode(e.target.value)}
-                        className="bg-gray-50 border-r-2 border-yellow-400 px-2 py-2 text-sm font-medium text-gray-700 outline-none cursor-pointer"
-                      >
-                        {PHONE_COUNTRIES.map((country) => (
-                          <option key={country.code} value={country.code}>{country.flag} {country.label}</option>
-                        ))}
+                      <select value={phoneDialCode} onChange={(e) => setPhoneDialCode(e.target.value)} className="bg-gray-50 border-r-2 border-yellow-400 px-2 py-2 text-sm font-medium text-gray-700 outline-none cursor-pointer">
+                        {PHONE_COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.label}</option>)}
                       </select>
-                      <input
-                        type="text"
-                        value={phone}
-                        onChange={(e) => { setPhone(e.target.value); setErrors(prev => ({ ...prev, phone: '' })); }}
-                        placeholder="Enter phone number"
-                        className="flex-1 p-2 text-sm outline-none bg-white"
-                      />
+                      <input type="text" value={phone} onChange={(e) => { setPhone(e.target.value); setErrors(p => ({ ...p, phone: '' })); }} placeholder="Enter phone number" className="flex-1 p-2 text-sm outline-none bg-white" />
                     </div>
                     {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Skill *</label>
-                    <SkillTagInput
-                      value={skill}
-                      onChange={(val) => { setSkill(val); setErrors(prev => ({ ...prev, skill: '' })); }}
-                      error={errors.skill}
-                    />
+                    <SkillTagInput value={skill} onChange={(val) => { setSkill(val); setErrors(p => ({ ...p, skill: '' })); }} error={errors.skill} />
                     {errors.skill && <p className="text-red-600 text-sm mt-1">{errors.skill}</p>}
                   </div>
                 </div>
@@ -497,16 +643,7 @@ function Resource_edit() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Technology *</label>
-                    <select
-                      value={technology}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setTechnology(value);
-                        if (value !== 'OTHER') setCustomTechnology('');
-                        if (errors.technology) setErrors(prev => ({ ...prev, technology: '' }));
-                      }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    >
+                    <select value={technology} onChange={(e) => { const v = e.target.value; setTechnology(v); if (v !== 'OTHER') setCustomTechnology(''); setErrors(p => ({ ...p, technology: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full">
                       <option value="">{technology || '-- Select Technology --'}</option>
                       <option value="JAVA">JAVA</option>
                       <option value="DOTNET">DOTNET</option>
@@ -519,24 +656,13 @@ function Resource_edit() {
                       <option value="OTHER">OTHER</option>
                     </select>
                     {technology === 'OTHER' && (
-                      <input
-                        type="text"
-                        value={customTechnology}
-                        onChange={(e) => setCustomTechnology(e.target.value.toUpperCase())}
-                        placeholder="Enter custom technology"
-                        className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
-                      />
+                      <input type="text" value={customTechnology} onChange={(e) => setCustomTechnology(e.target.value.toUpperCase())} placeholder="Enter custom technology" className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm" />
                     )}
                     {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Experience *</label>
-                    <input
-                      type="text"
-                      value={experience}
-                      onChange={(e) => { setExperience(e.target.value); setErrors(prev => ({ ...prev, experience: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    />
+                    <input type="text" value={experience} onChange={(e) => { setExperience(e.target.value); setErrors(p => ({ ...p, experience: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
                     {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
                 </div>
@@ -545,11 +671,7 @@ function Resource_edit() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Type *</label>
-                    <select
-                      value={employmenttype}
-                      onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmentType: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    >
+                    <select value={employmenttype} onChange={(e) => { setEmploymenttype(e.target.value); setErrors(p => ({ ...p, employmentType: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full">
                       <option value="">-- Select Type --</option>
                       <option value="Freelancing">Freelancing</option>
                       <option value="Consultant">Consultant</option>
@@ -561,11 +683,7 @@ function Resource_edit() {
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Role *</label>
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => { handleRoleChange(e.target.value); setErrors(prev => ({ ...prev, selectedRole: '' })); }}
-                      className="border-2 border-yellow-400 p-2 rounded w-full"
-                    >
+                    <select value={selectedRole} onChange={(e) => { handleRoleChange(e.target.value); setErrors(p => ({ ...p, selectedRole: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full">
                       <option value="">Select Role</option>
                       <option value="Admin">Admin</option>
                       <option value="HR">HR</option>
@@ -576,51 +694,24 @@ function Resource_edit() {
                   </div>
                 </div>
 
-                {/* Manager Mapping — only shown when role is Manager */}
+                {/* ── Assigned Employees — only when role is Manager ── */}
                 {selectedRole === 'Manager' && (
-                  <div className="mt-2">
-                    <label className="font-semibold mb-1 block">Map Resource</label>
-                    <div className="w-64">
-                      <input
-                        type="text"
-                        placeholder="Type to search..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="border-2 border-yellow-400 p-2 rounded w-full text-sm mt-2"
-                      />
-                      {filteredEmployees.length > 0 && (
-                        <div className="mt-2 border rounded-lg p-2 bg-white shadow-md max-h-40 overflow-y-auto">
-                          {filteredEmployees.map((emp, idx) => (
-                            <div
-                              key={idx}
-                              onClick={() => handleSelect(emp)}
-                              className="cursor-pointer px-3 py-2 rounded-md hover:bg-yellow-100 transition-all text-sm text-gray-800"
-                            >
-                              {`${emp.firstName}_${emp.lastName}_${emp.firstName[0]}`}
-                            </div>
-                          ))}
-                        </div>
+                  <div>
+                    <label className="font-semibold mb-1 block">
+                      Assigned Employees
+                      {assignedEmployees.length > 0 && (
+                        <span className="ml-2 text-xs font-normal text-gray-500">
+                          ({assignedEmployees.length} assigned)
+                        </span>
                       )}
-                    </div>
-                    {mappedResources.length > 0 && (
-                      <div className="mt-4">
-                        <strong className="block mb-1">Selected:</strong>
-                        <ul className="list-disc list-inside text-sm">
-                          {mappedResources.map((emp) => (
-                            <li key={emp.id} className="flex justify-between items-center mb-1">
-                              {emp.firstName
-                                ? `${emp.firstName}_${emp.lastName}_${emp.firstName[0]}`
-                                : `Resource ID: ${emp.id}`}
-                              <button
-                                type="button"
-                                onClick={() => handleRemove(emp.id)}
-                                className="text-red-600 ml-2 text-sm cursor-pointer"
-                              >✕</button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    </label>
+                    <AssignedEmployeesInput
+                      assignedEmployees={assignedEmployees}
+                      onRemove={handleRemoveEmployee}
+                      availableEmployees={fullAvailablePool}
+                      onAdd={handleAddEmployee}
+                      error={errors.assignedEmployees}
+                    />
                   </div>
                 )}
 
@@ -629,7 +720,7 @@ function Resource_edit() {
                   <label className="font-semibold mb-1 block">Comments *</label>
                   <textarea
                     value={comments}
-                    onChange={(e) => { setComments(e.target.value); setErrors(prev => ({ ...prev, comments: '' })); }}
+                    onChange={(e) => { setComments(e.target.value); setErrors(p => ({ ...p, comments: '' })); }}
                     placeholder="Enter comments"
                     rows={3}
                     className={`border-2 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 ${
@@ -641,17 +732,10 @@ function Resource_edit() {
 
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center mt-8">
-                  <button
-                    onClick={() => navigate('/manageresources')}
-                    type="button"
-                    className="px-6 py-2 rounded-md border border-gray-400 bg-white text-gray-800 hover:bg-gray-100 transition cursor-pointer"
-                  >
+                  <button onClick={() => navigate('/manageresources')} type="button" className="px-6 py-2 rounded-md border border-gray-400 bg-white text-gray-800 hover:bg-gray-100 transition cursor-pointer">
                     Back
                   </button>
-                  <button
-                    type="submit"
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold transition"
-                  >
+                  <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold transition">
                     Save Changes
                   </button>
                 </div>

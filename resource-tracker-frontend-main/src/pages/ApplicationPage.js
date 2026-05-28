@@ -48,9 +48,9 @@ function ApplicationPage() {
     else { setError('Invalid job link.'); setLoading(false); }
   }, [publicUrlKey]);
 
-  // ── Derive company name and country code from opening location ──
   const companyName = getCompanyName(opening?.location);
   const countryCode = getCountryCode(opening?.location);
+  const isTerminated = (opening?.status || '').toUpperCase() === 'TERMINATED';
 
   if (loading) {
     return (
@@ -67,7 +67,7 @@ function ApplicationPage() {
     return (
       <div className="ap-center">
         <div className="ap-error-box">
-          <span style={{fontSize:'2rem'}}>⚠</span>
+          <span style={{ fontSize: '2rem' }}>⚠</span>
           <h2>Oops!</h2>
           <p>{error}</p>
           <small>Please check the link or contact the hiring team.</small>
@@ -86,8 +86,13 @@ function ApplicationPage() {
           <span className="ap-header__divider" />
           <span className="ap-header__label">Career Portal</span>
         </header>
+
         <JobDetailsCard opening={opening} />
-        <ApplicationForm publicUrlKey={publicUrlKey} country={countryCode} />
+
+        {!isTerminated && (
+          <ApplicationForm publicUrlKey={publicUrlKey} country={countryCode} />
+        )}
+
         <footer className="ap-footer">
           <p>© {new Date().getFullYear()} {companyName} · Resource Tracker</p>
         </footer>

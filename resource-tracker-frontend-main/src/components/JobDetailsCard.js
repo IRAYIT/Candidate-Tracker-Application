@@ -18,18 +18,39 @@ function formatPayment(paymentRaw, paymentType) {
 
   if (!amount || isNaN(Number(amount))) return null;
 
-  const symbol   = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+  const symbol    = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
   const formatted = Number(amount).toLocaleString("en-IN");
-  const type     = paymentType ? ` / ${paymentType}` : "";
+  const type      = paymentType ? ` / ${paymentType}` : "";
 
   if (currencyCode === "SEK") return `${formatted} ${symbol}${type}`;
   return `${symbol}${formatted}${type}`;
+}
+
+// ─── Map job status → badge variant ──────────────────────────────────────────
+function getStatusVariant(status) {
+  switch ((status || '').toUpperCase()) {
+    case 'ACTIVE':
+    case 'OPEN':
+      return 'green';
+    case 'TERMINATED':
+    case 'CLOSED':
+      return 'red';
+    case 'ON_HOLD':
+    case 'PAUSED':
+      return 'yellow';
+    case 'DRAFT':
+      return 'gray';
+    default:
+      return 'green';
+  }
 }
 
 function JobDetailsCard({ opening }) {
   const skills = opening.skill
     ? opening.skill.split(',').map((s) => s.trim()).filter(Boolean)
     : [];
+
+  const isTerminated = (opening.status || '').toUpperCase() === 'TERMINATED';
 
   return (
     <div className="jd-card">
@@ -38,14 +59,16 @@ function JobDetailsCard({ opening }) {
           <span className="jd-card__tag">#{opening.technology}</span>
           <h1 className="jd-card__title">{opening.name}</h1>
         </div>
-        <JobBadge variant="green">{opening.status}</JobBadge>
+        <JobBadge variant={getStatusVariant(opening.status)}>
+          {opening.status}
+        </JobBadge>
       </div>
 
       <div className="jd-card__meta">
-        {opening.location     && <MetaItem icon="📍" label={opening.location} />}
+        {opening.location        && <MetaItem icon="📍" label={opening.location} />}
         {opening.employementtype && <MetaItem icon="💼" label={opening.employementtype} />}
-        {opening.hours        && <MetaItem icon="⏱"  label={`${opening.hours} hrs/day`} />}
-        {opening.shiftTimings && <MetaItem icon="🕐" label={opening.shiftTimings} />}
+        {opening.hours           && <MetaItem icon="⏱"  label={`${opening.hours} hrs/day`} />}
+        {opening.shiftTimings    && <MetaItem icon="🕐" label={opening.shiftTimings} />}
         {formatPayment(opening.payment, opening.paymentType) && (
           <MetaItem icon="💰" label={formatPayment(opening.payment, opening.paymentType)} />
         )}
@@ -57,8 +80,11 @@ function JobDetailsCard({ opening }) {
       {opening.description && (
         <div className="jd-card__description">
           {opening.description.split('\n').filter(line => line.trim() !== '').map((line, i) => {
-            const isHeading = line.trim().endsWith(':') ||
-              (line.trim().length < 40 && !/[,.]/.test(line) && line.trim() === line.trim().replace(/^\s*[-•]\s*/, ''));
+            const isHeading =
+              line.trim().endsWith(':') ||
+              (line.trim().length < 40 &&
+                !/[,.]/.test(line) &&
+                line.trim() === line.trim().replace(/^\s*[-•]\s*/, ''));
             return isHeading ? (
               <p key={i} style={{ fontWeight: '700', color: '#1e3a5f', margin: '12px 0 4px 0', fontSize: '0.92rem' }}>
                 {line.trim()}
@@ -80,6 +106,16 @@ function JobDetailsCard({ opening }) {
               <JobBadge key={skill} variant="accent">{skill}</JobBadge>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── Closed banner shown inline when job is terminated ── */}
+      {isTerminated && (
+        <div className="jd-card__closed-banner">
+          <p className="jd-card__closed-banner-title">This position is closed</p>
+          <p className="jd-card__closed-banner-sub">
+            Applications are no longer being accepted for this role.
+          </p>
         </div>
       )}
     </div>

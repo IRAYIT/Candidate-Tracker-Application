@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { submitApplication } from '../api/jobApi';
 import './ApplicationForm.css';
 
@@ -490,17 +490,18 @@ function SkillTagInput({ value, onChange, error }) {
 function ApplicationForm({ publicUrlKey, country = 'IN' }) {
   const locale = LOCALE_CONFIG[country] || LOCALE_CONFIG.IN;
 
-  const [form, setForm]               = useState(() => getInitialState(country));
-  const [resume, setResume]           = useState(null);
-  const [coverLetter, setCoverLetter] = useState(null);
+  const [form, setForm]                     = useState(() => getInitialState(country));
+  const [resume, setResume]                 = useState(null);
+  const [coverLetter, setCoverLetter]       = useState(null);
   const [additionalDocs, setAdditionalDocs] = useState(null);
   const [languagesKnown, setLanguagesKnown] = useState('[]');
-  const [errors, setErrors]           = useState({});
-  const [submitting, setSubmitting]   = useState(false);
-  const [submitted, setSubmitted]     = useState(false);
-  const [serverError, setServerError] = useState('');
-  const [showRetainPopup, setShowRetainPopup] = useState(false);
+  const [errors, setErrors]                 = useState({});
+  const [submitting, setSubmitting]         = useState(false);
+  const [submitted, setSubmitted]           = useState(false);
+  const [serverError, setServerError]       = useState('');
+  const [showRetainPopup, setShowRetainPopup]   = useState(false);
   const [retainCvForFuture, setRetainCvForFuture] = useState(null);
+  const [isDuplicate, setIsDuplicate]           = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -529,9 +530,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
 
     if (type === 'resume') {
       setResume(file);
-      if (retainCvForFuture === null) {
-        setShowRetainPopup(true);
-      }
+      if (retainCvForFuture === null) setShowRetainPopup(true);
     }
     if (type === 'coverLetter')    setCoverLetter(file);
     if (type === 'additionalDocs') setAdditionalDocs(file);
@@ -607,10 +606,17 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         `http://localhost:8098/api/public/apply/${publicUrlKey}`,
         { method: 'POST', body: formData }
       );
+
       if (!response.ok) {
         const errorText = await response.text();
+        // ── Duplicate detected from backend ──
+        if (response.status === 409 || errorText?.toLowerCase().includes('already applied')) {
+          setIsDuplicate(true);
+          return;
+        }
         throw new Error(errorText || `Submission failed (status ${response.status})`);
       }
+
       setSubmitted(true);
     } catch (err) {
       setServerError(err.message || 'Something went wrong. Please try again.');
@@ -619,7 +625,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
     }
   }
 
-  // ── Success screen ────────────────────────────────────────────────────────
+  // ── Success screen ─────────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="af-success">
@@ -630,9 +636,10 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
     );
   }
 
-  // ── Form ──────────────────────────────────────────────────────────────────
+  // ── Form ───────────────────────────────────────────────────────────────────
   return (
     <form className="af-form" onSubmit={handleSubmit} noValidate>
+
       <div className="af-form__header">
         <h2 className="af-form__title">Apply for this Position</h2>
         <p className="af-form__subtitle">Fields marked <span style={{color:'#4f8ef7'}}>*</span> are required.</p>
@@ -641,6 +648,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
       {/* ── Personal Information ── */}
       <div className="af-section-title">Personal Information</div>
       <div className="af-grid">
+
         <Field label="First Name" required error={errors.firstName}>
           <input className={`af-input ${errors.firstName ? 'af-input--error' : ''}`}
             type="text" name="firstName" value={form.firstName}
@@ -662,19 +670,14 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <Field label="Phone Number" required error={errors.phone}>
           <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
                className={errors.phone ? 'af-input--error' : ''}>
-            <select
-              name="phoneDialCode"
-              value={form.phoneDialCode}
-              onChange={handleChange}
+            <select name="phoneDialCode" value={form.phoneDialCode} onChange={handleChange}
               style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 8px',
                        borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
               {PHONE_COUNTRIES.map(c => (
                 <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
               ))}
             </select>
-            <input
-              className="af-input"
-              style={{ border: 'none', borderRadius: 0, flex: 1 }}
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
               type="tel" name="phone" value={form.phone}
               onChange={handleChange} placeholder={locale.phonePlaceholder} />
           </div>
@@ -693,17 +696,12 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
               <option key={v} value={v}>{v}</option>)}
           </select>
           {form.visaStatus === 'Other' && (
-            <input
-              className="af-input"
-              style={{ marginTop: '8px' }}
-              type="text"
-              name="visaStatusOther"
-              value={form.visaStatusOther || ''}
-              onChange={handleChange}
-              placeholder="Please specify your visa / work authorization"
-            />
+            <input className="af-input" style={{ marginTop: '8px' }}
+              type="text" name="visaStatusOther" value={form.visaStatusOther || ''}
+              onChange={handleChange} placeholder="Please specify your visa / work authorization" />
           )}
         </Field>
+
       </div>
 
       {/* ── Professional Details ── */}
@@ -712,56 +710,38 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
 
         <Field label="Current Salary" error={errors.currentSalary} hint="Optional">
           <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-            <select
-              name="currentSalaryCurrency"
-              value={form.currentSalaryCurrency}
-              onChange={handleChange}
+            <select name="currentSalaryCurrency" value={form.currentSalaryCurrency} onChange={handleChange}
               style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
                        borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
-              {CURRENCIES.map(c => (
-                <option key={c.symbol} value={c.symbol}>{c.label}</option>
-              ))}
+              {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
             </select>
-            <input
-              className="af-input"
-              style={{ border: 'none', borderRadius: 0, flex: 1 }}
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
               type="text" name="currentSalary" value={form.currentSalary}
               onChange={(e) => {
                 const val = e.target.value;
-                if (/^[a-zA-Z0-9]*$/.test(val)) {
+                if (/^[a-zA-Z0-9]*$/.test(val))
                   handleChange({ target: { name: 'currentSalary', value: val } });
-                }
               }}
-              placeholder={locale.salaryPlaceholder}
-            />
+              placeholder={locale.salaryPlaceholder} />
           </div>
         </Field>
 
         <Field label="Expected Salary" required error={errors.expectedSalary}>
           <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
                className={errors.expectedSalary ? 'af-input--error' : ''}>
-            <select
-              name="expectedSalaryCurrency"
-              value={form.expectedSalaryCurrency}
-              onChange={handleChange}
+            <select name="expectedSalaryCurrency" value={form.expectedSalaryCurrency} onChange={handleChange}
               style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
                        borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
-              {CURRENCIES.map(c => (
-                <option key={c.symbol} value={c.symbol}>{c.label}</option>
-              ))}
+              {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
             </select>
-            <input
-              className="af-input"
-              style={{ border: 'none', borderRadius: 0, flex: 1 }}
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
               type="text" name="expectedSalary" value={form.expectedSalary}
               onChange={(e) => {
                 const val = e.target.value;
-                if (/^[a-zA-Z0-9]*$/.test(val)) {
+                if (/^[a-zA-Z0-9]*$/.test(val))
                   handleChange({ target: { name: 'expectedSalary', value: val } });
-                }
               }}
-              placeholder={locale.salaryPlaceholder}
-            />
+              placeholder={locale.salaryPlaceholder} />
           </div>
         </Field>
 
@@ -792,15 +772,9 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
               <option key={s} value={s}>{s}</option>)}
           </select>
           {form.source === 'Other' && (
-            <input
-              className="af-input"
-              style={{ marginTop: '8px' }}
-              type="text"
-              name="sourceOther"
-              value={form.sourceOther || ''}
-              onChange={handleChange}
-              placeholder="Please specify how you heard about us"
-            />
+            <input className="af-input" style={{ marginTop: '8px' }}
+              type="text" name="sourceOther" value={form.sourceOther || ''}
+              onChange={handleChange} placeholder="Please specify how you heard about us" />
           )}
         </Field>
 
@@ -815,17 +789,12 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
           />
         </Field>
 
-        <Field
-          label="Languages Known"
-          error={errors.languagesKnownField}
-          hint="Add a language, then select proficiency"
-        >
+        <Field label="Languages Known" error={errors.languagesKnownField} hint="Add a language, then select proficiency">
           <LanguageInput
             value={languagesKnown}
             onChange={(val) => {
               setLanguagesKnown(val);
-              if (errors.languagesKnownField)
-                setErrors(prev => ({ ...prev, languagesKnownField: '' }));
+              if (errors.languagesKnownField) setErrors(prev => ({ ...prev, languagesKnownField: '' }));
             }}
             error={errors.languagesKnownField}
           />
@@ -840,17 +809,10 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <label className={`af-file-label ${resume ? 'af-file-label--has-file' : ''} ${errors.resume ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{resume ? '📄' : '⬆️'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {resume ? resume.name : 'Click to upload Resume / CV'}
-            </span>
-            {resume && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(resume.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{resume ? resume.name : 'Click to upload Resume / CV'}</span>
+            {resume && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(resume.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'resume')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'resume')} style={{display:'none'}} />
         </label>
       </Field>
 
@@ -858,17 +820,10 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <label className={`af-file-label ${coverLetter ? 'af-file-label--has-file' : ''} ${errors.coverLetter ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{coverLetter ? '📄' : '📝'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {coverLetter ? coverLetter.name : 'Click to upload Cover Letter (optional)'}
-            </span>
-            {coverLetter && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(coverLetter.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{coverLetter ? coverLetter.name : 'Click to upload Cover Letter (optional)'}</span>
+            {coverLetter && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(coverLetter.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'coverLetter')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'coverLetter')} style={{display:'none'}} />
         </label>
       </Field>
 
@@ -876,62 +831,98 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <label className={`af-file-label ${additionalDocs ? 'af-file-label--has-file' : ''} ${errors.additionalDocs ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{additionalDocs ? '📄' : '📎'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {additionalDocs ? additionalDocs.name : 'Click to upload Additional Documents (optional)'}
-            </span>
-            {additionalDocs && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(additionalDocs.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{additionalDocs ? additionalDocs.name : 'Click to upload Additional Documents (optional)'}</span>
+            {additionalDocs && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(additionalDocs.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'additionalDocs')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'additionalDocs')} style={{display:'none'}} />
         </label>
       </Field>
 
       {serverError && <div className="af-server-error">⚠ {serverError}</div>}
 
+      {/* ── Retain CV Popup ── */}
       {showRetainPopup && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
           background: 'rgba(0,0,0,0.5)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          alignItems: 'center', justifyContent: 'center', zIndex: 9999,
         }}>
           <div style={{
             background: 'white', padding: '24px', borderRadius: '12px',
             width: '90%', maxWidth: '420px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.2)', textAlign: 'center'
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)', textAlign: 'center',
           }}>
-            <h3 style={{ marginBottom: '12px', color: '#1e293b' }}>
-              Keep CV for Future Openings?
-            </h3>
+            <h3 style={{ marginBottom: '12px', color: '#1e293b' }}>Keep CV for Future Openings?</h3>
             <p style={{ marginBottom: '24px', color: '#64748b', lineHeight: '1.5' }}>
               Would you like us to retain your CV and contact you for future job opportunities?
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button type="button"
                 onClick={() => { setRetainCvForFuture(true); setShowRetainPopup(false); }}
-                style={{
-                  padding: '10px 22px', border: 'none', borderRadius: '8px',
-                  background: '#2563eb', color: 'white', cursor: 'pointer',
-                  fontWeight: '600', fontSize: '0.9rem'
-                }}>Yes</button>
+                style={{ padding: '10px 22px', border: 'none', borderRadius: '8px',
+                         background: '#2563eb', color: 'white', cursor: 'pointer',
+                         fontWeight: '600', fontSize: '0.9rem' }}>Yes</button>
               <button type="button"
                 onClick={() => { setRetainCvForFuture(false); setShowRetainPopup(false); }}
-                style={{
-                  padding: '10px 22px', border: '1px solid #cbd5e1', borderRadius: '8px',
-                  background: 'white', color: '#334155', cursor: 'pointer',
-                  fontWeight: '600', fontSize: '0.9rem'
-                }}>No</button>
+                style={{ padding: '10px 22px', border: '1px solid #cbd5e1', borderRadius: '8px',
+                         background: 'white', color: '#334155', cursor: 'pointer',
+                         fontWeight: '600', fontSize: '0.9rem' }}>No</button>
             </div>
           </div>
         </div>
       )}
 
+ {/* ── Already Applied Popup ── */}
+{isDuplicate && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    background: 'rgba(0,0,0,0.35)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+    backdropFilter: 'blur(1px)',
+  }}>
+    <div style={{
+      background: 'white', borderRadius: '14px',
+      width: '90%', maxWidth: '400px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+      overflow: 'hidden', animation: 'fadeInUp 0.2s ease',
+      textAlign: 'center',
+    }}>
+      <div style={{ padding: '32px 28px' }}>
+
+        <p style={{ margin: '0 0 12px', fontWeight: '700', color: '#1e293b', fontSize: '1.05rem' }}>
+          Already Applied
+        </p>
+
+        <p style={{ margin: '0 0 28px', color: '#64748b', fontSize: '0.875rem', lineHeight: '1.7' }}>
+          You have already applied for this job using{' '}
+          <span style={{ fontWeight: '600', color: '#334155' }}>{form.email}</span>.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setIsDuplicate(false)}
+          style={{
+            width: '100%', padding: '12px',
+            background: '#3b82f6',
+            color: 'white', border: 'none', borderRadius: '10px',
+            fontWeight: '600', fontSize: '0.95rem', cursor: 'pointer',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = '#2563eb'}
+          onMouseLeave={e => e.currentTarget.style.background = '#3b82f6'}
+        >
+          OK, Got it
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
+
       <button type="submit" className="af-submit-btn" disabled={submitting}>
         {submitting ? '⏳ Submitting…' : 'Submit Application →'}
       </button>
+
     </form>
   );
 }

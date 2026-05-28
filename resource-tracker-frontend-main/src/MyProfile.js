@@ -10,11 +10,40 @@ const PHONE_COUNTRIES = [
   { code: '+1',  flag: '🇺🇸', label: '+1'  },
 ];
 
+// ─── Read-only Skill Tag Display ──────────────────────────────────────────────
+function SkillTagDisplay({ value }) {
+  const skills = value
+    ? value.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  if (skills.length === 0) {
+    return (
+      <div className="border-2 border-yellow-400 rounded p-2 min-h-[42px] bg-gray-100 text-gray-400 text-sm">
+        No skills listed
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-2 border-yellow-400 rounded p-2 min-h-[42px] bg-gray-100 flex flex-wrap gap-2">
+      {skills.map(skill => (
+        <span
+          key={skill}
+          className="flex items-center bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300"
+        >
+          {skill}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ─── MyProfile Component ──────────────────────────────────────────────────────
 function MyProfile() {
-  const [resData, setResData] = useState(null);
-  const [role, setRole] = useState('');
+  const [resData, setResData]       = useState(null);
+  const [role, setRole]             = useState('');
   const [phoneDialCode, setPhoneDialCode] = useState('+91');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber]     = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,19 +51,13 @@ function MyProfile() {
       try {
         const employee = localStorage.getItem("employeeid");
         const res = await axios.get(`http://localhost:8098/api/v1/resource/${employee}`);
+        const data = res.data;
 
-        if (res.data.permissionId == 1) {
-          setRole("Admin");
-        } else if (res.data.permissionId == 2) {
-          setRole("Manager");
-        } else {
-          setRole("Employee");
-        }
+        const permissionToRole = { 1: 'Admin', 2: 'HR', 3: 'Manager', 4: 'Employee' };
+        setRole(permissionToRole[data.permissionId] || 'Employee');
 
-        // Parse stored phone into dial code + number
-        // Expected format from Addresource: "+91 9876543210"
-        if (res.data.phone) {
-          const stored = res.data.phone.trim();
+        if (data.phone) {
+          const stored = data.phone.trim();
           const matched = PHONE_COUNTRIES.find(c => stored.startsWith(c.code));
           if (matched) {
             setPhoneDialCode(matched.code);
@@ -44,8 +67,7 @@ function MyProfile() {
           }
         }
 
-        setResData(res.data);
-        console.log(res.data);
+        setResData(data);
       } catch (error) {
         console.error("Error fetching employee data:", error);
       }
@@ -53,6 +75,10 @@ function MyProfile() {
 
     fetchEmployeeData();
   }, []);
+
+  // Shared disabled input style
+  const disabledInput = "w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm";
+  const labelClass    = "font-semibold block text-gray-700 mb-1";
 
   return (
     <div className="min-h-screen flex">
@@ -72,43 +98,34 @@ function MyProfile() {
             {resData && (
               <div className="space-y-6">
 
-                {/* First Name + Last Name */}
+                {/* Row 1: Resource Name + First Name */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={resData.firstName}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Resource Name</label>
+                    <input type="text" value={resData.resourceName || ''} disabled className={disabledInput} />
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={resData.lastName}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>First Name</label>
+                    <input type="text" value={resData.firstName || ''} disabled className={disabledInput} />
                   </div>
                 </div>
 
-                {/* Email + Phone */}
+                {/* Row 2: Last Name + Email */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Email</label>
-                    <input
-                      type="text"
-                      value={resData.email}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Last Name</label>
+                    <input type="text" value={resData.lastName || ''} disabled className={disabledInput} />
                   </div>
-
-                  {/* Phone with Dial Code — same pattern as Addresource */}
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Phone</label>
+                    <label className={labelClass}>Email</label>
+                    <input type="text" value={resData.email || ''} disabled className={disabledInput} />
+                  </div>
+                </div>
+
+                {/* Row 3: Phone + Skill */}
+                <div className="flex flex-wrap gap-4 justify-between">
+                  <div className="w-full md:w-[48%]">
+                    <label className={labelClass}>Phone</label>
                     <div className="flex border-2 border-yellow-400 rounded overflow-hidden bg-gray-100">
                       <select
                         value={phoneDialCode}
@@ -116,9 +133,7 @@ function MyProfile() {
                         className="bg-gray-200 px-2 outline-none border-r border-yellow-400 text-sm text-gray-800 cursor-not-allowed"
                       >
                         {PHONE_COUNTRIES.map((c) => (
-                          <option key={c.code} value={c.code}>
-                            {c.flag} {c.label}
-                          </option>
+                          <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
                         ))}
                       </select>
                       <input
@@ -129,94 +144,51 @@ function MyProfile() {
                       />
                     </div>
                   </div>
-                </div>
-
-                {/* Technology + Skill */}
-                <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Technology</label>
-                    <input
-                      type="text"
-                      value={resData.technology}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Skill</label>
-                    <input
-                      type="text"
-                      value={resData.skill}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Skill</label>
+                    <SkillTagDisplay value={resData.skill} />
                   </div>
                 </div>
 
-                {/* Employment Type + Experience */}
+                {/* Row 4: Technology + Experience */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Employment Type</label>
-                    <input
-                      type="text"
-                      value={resData.employmentType}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Technology</label>
+                    <input type="text" value={resData.technology || ''} disabled className={disabledInput} />
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Experience</label>
-                    <input
-                      type="text"
-                      value={resData.experience}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Experience</label>
+                    <input type="text" value={resData.experience || ''} disabled className={disabledInput} />
                   </div>
                 </div>
 
-                {/* Employee Role + Status */}
+                {/* Row 5: Employment Type + Employment Role */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Employee Role</label>
-                    <input
-                      type="text"
-                      value={role}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Employment Type</label>
+                    <input type="text" value={resData.employmentType || ''} disabled className={disabledInput} />
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Status</label>
-                    <input
-                      type="text"
-                      value={resData.status}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className={labelClass}>Employment Role</label>
+                    <input type="text" value={role} disabled className={disabledInput} />
                   </div>
                 </div>
 
-                {/* Start Date + End Date */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Start Date</label>
-                    <input
-                      type="text"
-                      value={new Date(resData.startDate).toISOString().split("T")[0]}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">End Date</label>
-                    <input
-                      type="text"
-                      value={new Date(resData.endDate).toISOString().split("T")[0]}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
-                  </div>
+                {/* Row 6: Status */}
+                <div>
+                  <label className={labelClass}>Status</label>
+                  <input type="text" value={resData.status || ''} disabled className={disabledInput} />
+                </div>
+
+                {/* Row 7: Comments */}
+                <div>
+                  <label className={labelClass}>Comments</label>
+                  <textarea
+                    value={resData.comments || ''}
+                    disabled
+                    rows={3}
+                    className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm resize-none cursor-not-allowed"
+                  />
                 </div>
 
               </div>
