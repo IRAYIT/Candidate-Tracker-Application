@@ -26,7 +26,6 @@ const PERMISSIONS = {
     { title: 'MY PROFILE', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     { title: 'MY PROJECTS', path: '/manageprojects' },
-    { title: 'APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
 };
 

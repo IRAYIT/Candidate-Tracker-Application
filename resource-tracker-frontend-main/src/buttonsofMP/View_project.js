@@ -8,6 +8,7 @@ function View_project() {
   const [project, setProject] = useState(null);
   const [loading, setLoading]  = useState(true);
   const navigate = useNavigate();
+  const userRole = parseInt(localStorage.getItem("permissionid")); // ✅ NEW
 
   useEffect(() => {
     const pid = localStorage.getItem("projectid");
@@ -25,7 +26,6 @@ function View_project() {
     }
   };
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
   const fmt = (dateStr) => {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -49,7 +49,6 @@ function View_project() {
     </div>
   );
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex">
@@ -95,14 +94,12 @@ function View_project() {
         <main className="flex-1 bg-white p-8">
           <div className="max-w-5xl mx-auto my-8 p-8 bg-white rounded-lg shadow-md">
 
-            {/* Page Header */}
             <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-6 shadow">
               View Project
             </h2>
 
             <div className="space-y-6">
 
-              {/* ── Project Details ── */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <ReadField label="Project Name"        value={project.name} />
                 <ReadField label="Client Name"         value={project.clientName} />
@@ -114,7 +111,6 @@ function View_project() {
                 <ReadField label="Status"              value={project.status} />
               </div>
 
-              {/* ── Team Assignment ── */}
               <div>
                 <h3 className="text-xl font-bold p-4 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-4 shadow flex items-center justify-between">
                   <span>Team Assignment</span>
@@ -130,12 +126,10 @@ function View_project() {
                 ) : (
                   <div className="space-y-4">
                     {roles.map((role, index) => {
-                      // Skills — split comma-separated string or use array
                       const skillList = Array.isArray(role.skills)
                         ? role.skills
                         : (role.skills || "").split(",").map((s) => s.trim()).filter(Boolean);
 
-                      // Developer names — prefer resourceNames, fall back to resourceIds
                       const devNames = role.resourceNames?.length
                         ? role.resourceNames
                         : (role.resourceIds || []).map(String);
@@ -143,7 +137,6 @@ function View_project() {
                       return (
                         <div key={role.id || index} className="border-2 border-yellow-400 rounded-lg overflow-hidden">
 
-                          {/* Role Header */}
                           <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400">
                             <div className="w-7 h-7 rounded-full bg-white text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
                               {index + 1}
@@ -167,10 +160,7 @@ function View_project() {
                             )}
                           </div>
 
-                          {/* Role Body */}
                           <div className="p-4 bg-white space-y-4">
-
-                            {/* Skills */}
                             <div>
                               <label className="font-semibold mb-2 block text-sm">Skills</label>
                               {skillList.length > 0 ? (
@@ -186,7 +176,6 @@ function View_project() {
                               )}
                             </div>
 
-                            {/* Assigned Developers */}
                             <div>
                               <label className="font-semibold mb-2 block text-sm">Assigned Developers</label>
                               {devNames.length > 0 ? (
@@ -201,7 +190,6 @@ function View_project() {
                                 <p className="text-gray-400 text-sm">No developers assigned</p>
                               )}
                             </div>
-
                           </div>
                         </div>
                       );
@@ -218,12 +206,15 @@ function View_project() {
                 >
                   Back
                 </button>
-                <button
-                  onClick={() => navigate("/edit_project")}
-                  className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer bg-green-600 text-white hover:bg-green-700 transition"
-                >
-                  Edit
-                </button>
+
+                {userRole !== 4 && ( // ✅ Hidden for permissionid === 4
+                  <button
+                    onClick={() => navigate("/edit_project")}
+                    className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer bg-green-600 text-white hover:bg-green-700 transition"
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
 
             </div>

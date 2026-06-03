@@ -18,6 +18,7 @@ function View_opening() {
   const [location, setLocation]             = useState('');
   const [description, setDescription]       = useState('');
   const navigate = useNavigate();
+const userRole = parseInt(localStorage.getItem("permissionid"));
 
   useEffect(() => {
     const openingid = localStorage.getItem("opening_id");
@@ -51,6 +52,10 @@ function View_opening() {
     </div>
   );
 
+  const skillList = skills
+    ? skills.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-gradient-to-b from-blue-500 to-yellow-400 min-h-screen">
@@ -70,7 +75,6 @@ function View_opening() {
 
             <div className="space-y-6">
 
-              {/* Row 1: Opening Name | Hours */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Opening Name *" value={openingname} />
@@ -80,7 +84,6 @@ function View_opening() {
                 </div>
               </div>
 
-              {/* Row 2: Shift Timings | Payment */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Shift Timings *" value={shifttimings} />
@@ -90,7 +93,6 @@ function View_opening() {
                 </div>
               </div>
 
-              {/* Row 3: Payment Type | Technology */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Payment Type *" value={paymenttype} />
@@ -100,7 +102,6 @@ function View_opening() {
                 </div>
               </div>
 
-              {/* Row 4: Experience | Employment Type */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Experience *" value={experience} />
@@ -110,22 +111,33 @@ function View_opening() {
                 </div>
               </div>
 
-              {/* Row 5: Skills | Location */}
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
-                  <ReadField label="Skills *" value={skills} />
+                  <label className="font-semibold mb-1 block">Skills *</label>
+                  <div className="border-2 border-yellow-400 rounded p-2 min-h-[42px] bg-gray-50 flex flex-wrap gap-2">
+                    {skillList.length > 0 ? (
+                      skillList.map((skill) => (
+                        <span
+                          key={skill}
+                          className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-3 py-1 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 text-sm">No skills listed</span>
+                    )}
+                  </div>
                 </div>
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Location *" value={location} />
                 </div>
               </div>
 
-              {/* Row 6: Status (full width) */}
               <div className="w-full">
                 <ReadField label="Status *" value={status} />
               </div>
 
-              {/* Row 7: Description (full width) */}
               <div className="w-full">
                 <label className="font-semibold mb-1 block">Description</label>
                 <textarea
@@ -145,12 +157,15 @@ function View_opening() {
               >
                 Back
               </button>
-              <button
-                onClick={() => navigate('/edit_opening')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold transition cursor-pointer"
-              >
-                Edit
-              </button>
+
+              {userRole !== 4 && (  // ✅ Edit button hidden for role 4
+                <button
+                  onClick={() => navigate('/edit_opening')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold transition cursor-pointer"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         </main>

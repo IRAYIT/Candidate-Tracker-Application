@@ -1,8 +1,18 @@
-export const OPENINGCOLUMNS = [
+export const OPENINGCOLUMNS = (permissionid) => [
   { id: 'name',          header: 'OPENING NAME', accessorKey: 'name'          },
   { id: 'skill',         header: 'SKILL',        accessorKey: 'skill'         },
   { id: 'experience',    header: 'EXPERIENCE',   accessorKey: 'experience'    },
-  { id: 'status',        header: 'STATUS',       accessorKey: 'status'        },
+  { 
+    id: 'status', 
+    header: 'STATUS', 
+    accessorKey: 'status',
+    cell: ({ getValue }) => {
+      const status = getValue();
+      if (status === "TERMINATED") return <span className="text-red-500 font-semibold">Closed</span>;
+      if (status === "ACTIVE") return <span className="text-green-500 font-semibold">Active</span>;
+      return status;
+    }
+  },
   { id: 'createdByName', header: 'RECRUITER',    accessorKey: 'createdByName' },
   { id: 'location',      header: 'LOCATION',     accessorKey: 'location'      },
   {
@@ -11,6 +21,13 @@ export const OPENINGCOLUMNS = [
     accessorKey: 'candidateCount',
     cell: ({ row, getValue }) => {
       const count = getValue();
+      if (permissionid === "4") {
+        return (
+          <span className="text-gray-700 font-semibold cursor-default">
+            {count}
+          </span>
+        );
+      }
       return (
         <span
           onClick={() => {
@@ -26,7 +43,6 @@ export const OPENINGCOLUMNS = [
     }
   }
 ];
-
 export const MANAGERESOURCECOLUMNS = [
   {
     id: 'firstName',

@@ -81,13 +81,17 @@ function ManageResources() {
     return resources.map((res) => {
       const skillArray =
         res.skill?.split(",").map((s) => s.trim()).filter(Boolean) || [];
+
+      // If technology was saved as "OTHER,<customValue>", show only the custom part
+      let displayTechnology = res.technology || "";
+      if (displayTechnology.startsWith("OTHER,")) {
+        displayTechnology = displayTechnology.replace(/^OTHER,\s*/, "").trim() || "OTHER";
+      }
+
       return {
         ...res,
         skill: skillArray.slice(0, 2).join(", "),
-        technology:
-          res.technology === "OTHER"
-            ? res.customTechnology || "OTHER"
-            : res.technology,
+        technology: displayTechnology,
       };
     });
   };
@@ -333,7 +337,7 @@ function ManageResources() {
           >
             <div className="bg-white rounded-lg shadow-lg text-center" style={{ width: "350px", padding: "24px" }}>
               <h2 className="text-lg font-semibold text-blue-700 mb-4">Confirm Deletion</h2>
-              <p className="text-gray-700 mb-6">Are you sure you want to delete this Resource?</p>
+              <p className="text-gray-700 mb-6">Please confirm that you want to delete this resource.</p>
               <div className="flex justify-center gap-4">
                 <button
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"

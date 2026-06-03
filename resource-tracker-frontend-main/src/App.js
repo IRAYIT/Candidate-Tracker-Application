@@ -25,6 +25,7 @@ import ApplicationPage from './pages/ApplicationPage';
 import AppliedCandidates from './AppliedCandidates';
 import CandidateView from './CandidateView';
 import TrackApplication from "./pages/Track/TrackApplication";
+import SetNewPassword from './Setnewpassword';
 function App() {
   return (
     
@@ -55,6 +56,7 @@ function App() {
         <Route path="/candidate-view" element={<CandidateView />} />
         <Route path="/applied-candidates" element={<AppliedCandidates />} />
         <Route path="/track" element={<TrackApplication />} />
+        <Route path='/setnewpassword' element={<SetNewPassword />} />
       </Routes>
       </BrowserRouter>
   );

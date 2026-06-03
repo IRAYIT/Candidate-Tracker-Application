@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { UserIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { UserIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import iray_icon from "../src/assets/images/iray-logo.jpg";
+
+const DEFAULT_PASSWORD = "RESour$@!ce9";
 
 function Login() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,8 +47,15 @@ function Login() {
           localStorage.setItem("firstName", res.data.firstName);
           localStorage.setItem("lastName", res.data.lastName);
           localStorage.setItem("resourceName", res.data.resourceName);
-          setLoginSuccess(true);
-          navigate("/manageresources");
+
+          // Detect default password → force password reset
+          if (password === DEFAULT_PASSWORD) {
+            localStorage.setItem("resetEmail", userName);
+            navigate("/setnewpassword");
+          } else {
+            setLoginSuccess(true);
+            navigate("/manageresources");
+          }
         }
       })
       .catch(() => {
@@ -79,7 +89,7 @@ function Login() {
             <div className="flex items-center border rounded-md px-3 py-2 focus-within:ring-2 ring-yellow-400">
               <LockClosedIcon className="w-5 h-5 text-gray-500 mr-2" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={password}
                 onChange={onChange}
@@ -87,6 +97,16 @@ function Login() {
                 placeholder="Password"
                 className="w-full focus:outline-none"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword
+                  ? <EyeSlashIcon className="w-5 h-5" />
+                  : <EyeIcon className="w-5 h-5" />
+                }
+              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-between items-center mt-4 gap-4">

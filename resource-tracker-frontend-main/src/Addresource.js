@@ -130,6 +130,7 @@ function SkillTagInput({ value, onChange, error }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [isFocused, setIsFocused] = useState(false);
   const initialized = useRef(false);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -152,6 +153,7 @@ function SkillTagInput({ value, onChange, error }) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setShowDropdown(false);
         setHighlightedIndex(-1);
+        setIsFocused(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -216,8 +218,8 @@ function SkillTagInput({ value, onChange, error }) {
   return (
     <div className="relative" ref={containerRef}>
       <div
-        className={`border rounded p-2 flex flex-wrap items-center gap-2 cursor-text min-h-[42px] ${
-          error ? 'border-red-500' : 'border-gray-300'
+        className={`border-2 rounded p-2 flex flex-wrap items-center gap-2 cursor-text min-h-[42px] transition-all ${
+          error ? 'border-red-500' : isFocused ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-yellow-400'
         }`}
         onClick={() => { setShowDropdown(true); inputRef.current?.focus(); }}
       >
@@ -238,7 +240,8 @@ function SkillTagInput({ value, onChange, error }) {
           value={inputValue}
           placeholder={selectedSkills.length === 0 ? "Search and add skills..." : ""}
           onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
-          onFocus={() => setShowDropdown(true)}
+          onFocus={() => { setShowDropdown(true); setIsFocused(true); }}
+          onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           className="outline-none text-sm bg-transparent border-none focus:ring-0 focus:outline-none"
           style={{
@@ -249,7 +252,7 @@ function SkillTagInput({ value, onChange, error }) {
         {selectedSkills.length > 0 && (
           <button type="button"
             onClick={(e) => { e.stopPropagation(); setShowDropdown(true); setTimeout(() => inputRef.current?.focus(), 0); }}
-            className="w-6 h-6 rounded-full bg-blue-400 hover:bg-blue-500 text-white font-bold text-base flex items-center justify-center cursor-pointer flex-shrink-0">
+            className="w-6 h-6 rounded-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold text-base flex items-center justify-center cursor-pointer flex-shrink-0">
             +
           </button>
         )}
@@ -263,7 +266,7 @@ function SkillTagInput({ value, onChange, error }) {
           onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
           onKeyDown={handleKeyDown}
           autoFocus
-          className="mt-1 w-full border border-gray-300 rounded p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
+          className="mt-1 w-full border-2 border-yellow-400 rounded p-2 text-sm outline-none focus:ring-2 focus:ring-yellow-200"
         />
       )}
 
@@ -279,11 +282,11 @@ function SkillTagInput({ value, onChange, error }) {
               className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
                 skill === '__OTHER__'
                   ? highlightedIndex === index
-                    ? 'bg-blue-50 text-blue-700 font-semibold border-t border-gray-200'
-                    : 'text-blue-600 font-semibold border-t border-gray-200 hover:bg-blue-50'
+                    ? 'bg-yellow-100 text-blue-700 font-semibold border-t border-gray-200'
+                    : 'text-blue-600 font-semibold border-t border-gray-200 hover:bg-yellow-50'
                   : highlightedIndex === index
-                    ? 'bg-blue-50 text-blue-700 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-yellow-100 text-blue-700 font-medium'
+                    : 'text-gray-700 hover:bg-yellow-50'
               }`}>
               {skill === '__OTHER__' ? `+ Add "${inputValue.trim()}" as custom skill` : skill}
             </li>
@@ -381,7 +384,7 @@ function Addresource() {
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = 'Valid experience is required.';
     if (!file || file.length === 0) newErrors.file = 'Resume file is required.';
-    if (!comments?.trim()) newErrors.comments = 'Comments are required.';
+    // comments is now optional — no validation
     if (!status) newErrors.status = 'Status is required.';
     return newErrors;
   };
@@ -505,7 +508,6 @@ function Addresource() {
         const data = err.response?.data;
         const httpStatus = err.response?.status;
 
-        // Extract details array from: { errorMessage: "...", details: ["Email Already Exists"] }
         const details = Array.isArray(data?.details) ? data.details : [];
         const detailsText = details.join(' ').toLowerCase();
         const errorMsgText = (
@@ -536,6 +538,17 @@ function Addresource() {
       .finally(() => { setLoading(false); });
   };
 
+  // shared input class helpers
+  const inputClass = (hasError) =>
+    `border-2 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 ${
+      hasError ? 'border-red-500 focus:ring-red-200' : 'border-yellow-400 focus:ring-yellow-200'
+    }`;
+
+  const selectClass = (hasError) =>
+    `border-2 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 ${
+      hasError ? 'border-red-500 focus:ring-red-200' : 'border-yellow-400 focus:ring-yellow-200'
+    }`;
+
   // ── JSX ──────────────────────────────────────────────────────────────────
   return (
     <>
@@ -543,6 +556,54 @@ function Addresource() {
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        .ar-field {
+          border: 2px solid #FACC15 !important;
+          border-radius: 4px;
+          padding: 8px 12px;
+          width: 100%;
+          font-size: 14px;
+          box-sizing: border-box;
+          background: #fff;
+        }
+        .ar-field:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(250,204,21,0.35);
+        }
+        .ar-field.ar-error {
+          border-color: #ef4444 !important;
+        }
+        .ar-phone-wrap {
+          display: flex;
+          border: 2px solid #FACC15;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        .ar-phone-wrap.ar-error {
+          border-color: #ef4444 !important;
+        }
+        .ar-phone-wrap select {
+          background: #f9fafb;
+          border-right: 2px solid #FACC15;
+          padding: 8px;
+          font-size: 14px;
+          outline: none;
+          cursor: pointer;
+        }
+        .ar-phone-wrap input {
+          flex: 1;
+          padding: 8px 12px;
+          font-size: 14px;
+          border: none;
+          outline: none;
+          background: #fff;
+        }
+        .ar-skill-wrap {
+          border: 2px solid #FACC15 !important;
+          border-radius: 4px;
+        }
+        .ar-skill-wrap.ar-error {
+          border-color: #ef4444 !important;
         }
       `}</style>
 
@@ -576,7 +637,7 @@ function Addresource() {
                         value={firstName}
                         onChange={(e) => { setFirstName(e.target.value); if (errors.firstName) setErrors(prev => ({ ...prev, firstName: '' })); }}
                         placeholder="Enter first name"
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.firstName ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.firstName ? ' ar-error' : ''}`}
                       />
                       {errors.firstName && <p className="text-red-600 text-sm mt-1">{errors.firstName}</p>}
                     </div>
@@ -588,7 +649,7 @@ function Addresource() {
                         onBlur={checkResourceName}
                         onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors(prev => ({ ...prev, lastName: '' })); }}
                         placeholder="Enter last name"
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.lastName ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.lastName ? ' ar-error' : ''}`}
                       />
                       {errors.lastName && <p className="text-red-600 text-sm mt-1">{errors.lastName}</p>}
                     </div>
@@ -604,17 +665,16 @@ function Addresource() {
                         onBlur={checkEmail}
                         onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors(prev => ({ ...prev, email: '' })); }}
                         placeholder="Enter email"
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.email ? ' ar-error' : ''}`}
                       />
                       {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
                     </div>
                     <div className="w-full md:w-[48%]">
                       <label className="font-semibold mb-1 block">Phone Number <span className="text-pink-800">*</span></label>
-                      <div className={`flex border rounded overflow-hidden ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}>
+                      <div className={`ar-phone-wrap${errors.phone ? ' ar-error' : ''}`}>
                         <select
                           value={phoneDialCode}
                           onChange={(e) => setPhoneDialCode(e.target.value)}
-                          className="bg-gray-100 px-2 outline-none border-r border-gray-300 text-sm"
                         >
                           {PHONE_COUNTRIES.map((c) => (
                             <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
@@ -625,7 +685,6 @@ function Addresource() {
                           value={phone}
                           onChange={(e) => { setPhone(e.target.value); if (errors.phone) setErrors(prev => ({ ...prev, phone: '' })); }}
                           placeholder="9876543210"
-                          className="flex-1 p-3 text-sm focus:outline-none"
                         />
                       </div>
                       {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
@@ -650,7 +709,7 @@ function Addresource() {
                         value={experience}
                         onChange={(e) => { setExperience(e.target.value); if (errors.experience) setErrors(prev => ({ ...prev, experience: '' })); }}
                         placeholder="Enter experience"
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.experience ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.experience ? ' ar-error' : ''}`}
                       />
                       {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                     </div>
@@ -668,7 +727,7 @@ function Addresource() {
                           if (value !== 'OTHER') setCustomTechnology('');
                           if (errors.technology) setErrors(prev => ({ ...prev, technology: '' }));
                         }}
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.technology ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.technology ? ' ar-error' : ''}`}
                       >
                         <option value="">-- Select Technology --</option>
                         <optgroup label="Java Ecosystem">
@@ -740,7 +799,7 @@ function Addresource() {
                           value={customTechnology}
                           onChange={(e) => setCustomTechnology(e.target.value.toUpperCase())}
                           placeholder="Enter custom technology"
-                          className="mt-2 border border-gray-300 p-3 rounded w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          className="ar-field mt-2"
                         />
                       )}
                       {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
@@ -751,7 +810,7 @@ function Addresource() {
                       <select
                         value={employmentType}
                         onChange={(e) => { setEmploymentType(e.target.value); if (errors.employmentType) setErrors(prev => ({ ...prev, employmentType: '' })); }}
-                        className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.employmentType ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                        className={`ar-field${errors.employmentType ? ' ar-error' : ''}`}
                       >
                         <option value="">-- Select Type --</option>
                         <option value="Freelancing">Freelancing</option>
@@ -770,7 +829,7 @@ function Addresource() {
                     <select
                       value={selectedRole}
                       onChange={(e) => handleRoleChange(e.target.value)}
-                      className="border border-gray-300 p-3 rounded w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      className="ar-field"
                     >
                       <option value="">Select Role</option>
                       <option value="Admin">Admin</option>
@@ -790,13 +849,13 @@ function Addresource() {
                           placeholder="Type to search..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="border border-gray-300 p-3 rounded w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 mt-2"
+                          className="ar-field mt-2"
                         />
                         {filteredEmployees.length > 0 && (
                           <div className="mt-2 border rounded-lg p-2 bg-white shadow-md max-h-40 overflow-y-auto">
                             {filteredEmployees.map((emp, idx) => (
                               <div key={idx} onClick={() => handleSelect(emp)}
-                                className="cursor-pointer px-3 py-2 rounded-md hover:bg-blue-100 transition-all text-sm text-gray-800">
+                                className="cursor-pointer px-3 py-2 rounded-md hover:bg-yellow-100 transition-all text-sm text-gray-800">
                                 {`${emp.firstName}_${emp.lastName}_${emp.firstName[0]}`}
                               </div>
                             ))}
@@ -826,22 +885,21 @@ function Addresource() {
                       type="file"
                       multiple
                       onChange={(e) => { setFile(e.target.files); if (errors.file) setErrors(prev => ({ ...prev, file: '' })); }}
-                      className={`border p-3 rounded w-full mt-2 text-sm ${errors.file ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`ar-field mt-2${errors.file ? ' ar-error' : ''}`}
                     />
                     {errors.file && <p className="text-red-600 text-sm mt-1">{errors.file}</p>}
                   </div>
 
-                  {/* Comments */}
+                  {/* Comments — optional, no * and no validation */}
                   <div>
-                    <label className="font-semibold mb-1 block">Comments <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Comments</label>
                     <textarea
                       value={comments}
-                      onChange={(e) => { setComments(e.target.value); if (errors.comments) setErrors(prev => ({ ...prev, comments: '' })); }}
-                      placeholder="Enter comments"
+                      onChange={(e) => setComments(e.target.value)}
+                      placeholder="Enter comments (optional)"
                       rows={3}
-                      className={`border p-3 rounded w-full text-sm focus:outline-none focus:ring-2 ${errors.comments ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
+                      className="ar-field"
                     />
-                    {errors.comments && <p className="text-red-600 text-sm mt-1">{errors.comments}</p>}
                   </div>
 
                   {/* Buttons */}
@@ -867,7 +925,7 @@ function Addresource() {
         </div>
       </div>
 
-      {/* ── Portaled Popups — rendered directly into document.body ── */}
+      {/* ── Portaled Popups ── */}
       {showDuplicateEmailPopup && (
         <DuplicateEmailPopup
           email={duplicateEmail}
