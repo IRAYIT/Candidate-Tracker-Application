@@ -549,7 +549,7 @@ function Resource_edit() {
       updatedBy: creatorName,
     };
     formData.append("payload", JSON.stringify(payload));
-    formData.append("attachments", new Blob([]), "empty.txt");
+    // formData.append("attachments", new Blob([]), "empty.txt");
 
     axios
       .put("http://localhost:8098/api/v1/resource/update/upload", formData)

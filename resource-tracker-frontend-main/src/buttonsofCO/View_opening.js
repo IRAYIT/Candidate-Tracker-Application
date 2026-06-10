@@ -89,7 +89,7 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
                   <ReadField label="Shift Timings *" value={shifttimings} />
                 </div>
                 <div className="w-full md:w-[48%]">
-                  <ReadField label="Payment *" value={payment} />
+                  <ReadField label="Payment" value={payment} />
                 </div>
               </div>
 

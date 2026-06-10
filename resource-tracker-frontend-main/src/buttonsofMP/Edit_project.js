@@ -174,22 +174,13 @@ const buildRoleFromAPI = (apiRole) => {
   };
 };
 
-function groupResources(list) {
-  const managerIds = new Set(list.filter((r) => r.managerId != null).map((r) => r.managerId));
-  const tree = list.filter((r) => managerIds.has(r.id)).map((mgr) => ({
-    manager: mgr,
-    reportees: list.filter((r) => r.managerId === mgr.id),
-  }));
-  const independent = list.filter((r) => r.managerId == null && !managerIds.has(r.id));
-  return { tree, independent };
-}
-
+// ─── Hook: smart dropdown direction ──────────────────────────────────────────
 function useDropdownDirection(triggerRef, open) {
   const [direction, setDirection] = useState("down");
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    setDirection(window.innerHeight - rect.bottom < 220 ? "up" : "down");
+    setDirection(window.innerHeight - rect.bottom < 260 ? "up" : "down");
   }, [open, triggerRef]);
   return direction;
 }
@@ -202,12 +193,12 @@ const toDateString = (d) => {
 // ─── SkillTagInput ────────────────────────────────────────────────────────────
 function SkillTagInput({ selected, onChange, technology, error }) {
   const [input, setInput] = useState("");
-  const [open, setOpen] = useState(false);
-  const [hi, setHi] = useState(-1);
-  const inputRef = useRef(null);
-  const containerRef = useRef(null);
-  const triggerRef = useRef(null);
-  const direction = useDropdownDirection(triggerRef, open);
+  const [open, setOpen]   = useState(false);
+  const [hi, setHi]       = useState(-1);
+  const inputRef          = useRef(null);
+  const containerRef      = useRef(null);
+  const triggerRef        = useRef(null);
+  const direction         = useDropdownDirection(triggerRef, open);
 
   useEffect(() => {
     const h = (e) => { if (!containerRef.current?.contains(e.target)) setOpen(false); };
@@ -218,11 +209,11 @@ function SkillTagInput({ selected, onChange, technology, error }) {
   const pool = technology && TECHNOLOGY_SKILLS[technology]
     ? [...TECHNOLOGY_SKILLS[technology], ...SKILL_OPTIONS.filter((s) => !TECHNOLOGY_SKILLS[technology].includes(s))]
     : SKILL_OPTIONS;
-  const filtered = pool.filter((s) => s.toLowerCase().includes(input.toLowerCase()) && !selected.includes(s));
+  const filtered  = pool.filter((s) => s.toLowerCase().includes(input.toLowerCase()) && !selected.includes(s));
   const showOther = input.trim() && !SKILL_OPTIONS.some((s) => s.toLowerCase() === input.trim().toLowerCase()) && !selected.includes(input.trim());
-  const options = showOther ? [...filtered, "__OTHER__"] : filtered;
+  const options   = showOther ? [...filtered, "__OTHER__"] : filtered;
 
-  const add = (s) => { if (!selected.includes(s)) onChange([...selected, s]); setInput(""); setOpen(false); setHi(-1); inputRef.current?.focus(); };
+  const add    = (s) => { if (!selected.includes(s)) onChange([...selected, s]); setInput(""); setOpen(false); setHi(-1); inputRef.current?.focus(); };
   const remove = (s) => onChange(selected.filter((x) => x !== s));
 
   const onKey = (e) => {
@@ -248,7 +239,8 @@ function SkillTagInput({ selected, onChange, technology, error }) {
         {selected.map((s) => (
           <span key={s} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300">
             {s}
-            <button type="button" onClick={(e) => { e.stopPropagation(); remove(s); }} className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×</button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); remove(s); }}
+              className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×</button>
           </span>
         ))}
         <input ref={inputRef} value={input} placeholder={selected.length === 0 ? "Search and add skills..." : ""}
@@ -280,13 +272,15 @@ function SkillTagInput({ selected, onChange, technology, error }) {
   );
 }
 
-// ─── ResourceTreeSelect ───────────────────────────────────────────────────────
-function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loading: poolLoading }) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef(null);
-  const triggerRef = useRef(null);
-  const direction = useDropdownDirection(triggerRef, open);
-  const { tree, independent } = groupResources(resourcePool);
+// ─── ResourceFlatSelect ───────────────────────────────────────────────────────
+// Flat skill-match list. Replaces ResourceTreeSelect + groupResources.
+// Backend returns: id, resourceName, matchCount, matchedSkills (no managerId).
+// Sorted best-match first by backend.
+function ResourceFlatSelect({ resourcePool, selectedIds, onChange, error, loading: poolLoading, totalSkillCount }) {
+  const [open, setOpen]  = useState(false);
+  const containerRef     = useRef(null);
+  const triggerRef       = useRef(null);
+  const direction        = useDropdownDirection(triggerRef, open);
 
   useEffect(() => {
     const h = (e) => { if (!containerRef.current?.contains(e.target)) setOpen(false); };
@@ -294,29 +288,29 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const toggle = (id) => onChange(selectedIds.includes(id) ? selectedIds.filter((s) => s !== id) : [...selectedIds, id]);
-  const toggleMgr = (mgr, reportees) => {
-    const all = [mgr.id, ...reportees.map((r) => r.id)];
-    const allSel = all.every((id) => selectedIds.includes(id));
-    onChange(allSel ? selectedIds.filter((s) => !all.includes(s)) : [...selectedIds, ...all.filter((id) => !selectedIds.includes(id))]);
-  };
-  const mgrState = (mgr, reportees) => {
-    const all = [mgr.id, ...reportees.map((r) => r.id)];
-    const n = all.filter((id) => selectedIds.includes(id)).length;
-    return n === 0 ? "none" : n === all.length ? "all" : "some";
-  };
+  const toggle = (id) =>
+    onChange(selectedIds.includes(id)
+      ? selectedIds.filter((s) => s !== id)
+      : [...selectedIds, id]);
 
-  const selectedNames = resourcePool.filter((r) => selectedIds.includes(r.id)).map((r) => r.resourceName);
-  const isEmpty = resourcePool.length === 0;
-  const dropStyle = direction === "up" ? { bottom: "100%", marginBottom: 4, top: "auto" } : { top: "100%", marginTop: 4 };
+  const selectedNames = resourcePool
+    .filter((r) => selectedIds.includes(r.id))
+    .map((r) => r.resourceName);
+
+  const isEmpty  = resourcePool.length === 0;
+  const dropStyle = direction === "up"
+    ? { bottom: "100%", marginBottom: 4, top: "auto" }
+    : { top: "100%", marginTop: 4 };
 
   return (
     <div ref={containerRef} className="relative">
+
+      {/* ── Trigger box ── */}
       <div ref={triggerRef}
         onClick={() => !poolLoading && !isEmpty && setOpen((p) => !p)}
-        className={`border-2 rounded p-2 min-h-[42px] flex flex-wrap gap-2 items-center transition-all ${
-          error ? "border-red-500" : "border-yellow-400"
-        } ${poolLoading || isEmpty ? "bg-gray-50 cursor-not-allowed" : "bg-white cursor-pointer"}`}
+        className={`border-2 rounded p-2 min-h-[42px] flex flex-wrap gap-2 items-center transition-all
+          ${error ? "border-red-500" : "border-yellow-400"}
+          ${poolLoading || isEmpty ? "bg-gray-50 cursor-not-allowed" : "bg-white cursor-pointer"}`}
       >
         {poolLoading ? (
           <span className="text-sm text-gray-400 flex items-center gap-2">
@@ -324,69 +318,73 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
             Loading developers...
           </span>
         ) : selectedNames.length === 0 ? (
-          <span className="text-sm text-gray-400">{isEmpty ? "Add skills above to load developers" : "Click to select developers..."}</span>
+          <span className="text-sm text-gray-400">
+            {isEmpty ? "Add skills above to load developers" : "Click to select developers..."}
+          </span>
         ) : (
           selectedNames.map((name) => (
             <span key={name} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300">
               {name}
               <button type="button"
-                onClick={(e) => { e.stopPropagation(); const id = resourcePool.find((r) => r.resourceName === name)?.id; if (id) toggle(id); }}
-                className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×</button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const id = resourcePool.find((r) => r.resourceName === name)?.id;
+                  if (id) toggle(id);
+                }}
+                className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×
+              </button>
             </span>
           ))
         )}
-        {!poolLoading && !isEmpty && <span className="ml-auto text-gray-400 text-xs">{open ? "▲" : "▼"}</span>}
+        {!poolLoading && !isEmpty && (
+          <span className="ml-auto text-gray-400 text-xs">{open ? "▲" : "▼"}</span>
+        )}
       </div>
+
+      {/* ── Dropdown ── */}
       {open && (
-        <div className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto" style={{ maxHeight: 240, ...dropStyle }}>
-          {tree.map(({ manager, reportees }) => {
-            const state = mgrState(manager, reportees);
+        <div
+          className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto"
+          style={{ maxHeight: 260, ...dropStyle }}
+        >
+          {/* Column headers */}
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Developer</span>
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Matched Skills</span>
+          </div>
+
+          {/* One row per developer — sorted best-match first by backend */}
+          {resourcePool.map((emp) => {
+            const isPerfect = emp.matchCount === totalSkillCount;
             return (
-              <div key={manager.id}>
-                <label className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 hover:bg-yellow-50 cursor-pointer border-b border-gray-100 transition-colors">
-                  <input type="checkbox" checked={state === "all"} ref={(el) => { if (el) el.indeterminate = state === "some"; }}
-                    onChange={() => toggleMgr(manager, reportees)} className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                  <span className="flex-1 flex items-center gap-2 text-sm font-semibold text-gray-800">
-                    <span>👤</span> {manager.resourceName}
-                    <span className="ml-auto text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Manager</span>
+              <label key={emp.id}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-50 cursor-pointer border-b border-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(emp.id)}
+                  onChange={() => toggle(emp.id)}
+                  className="w-4 h-4 accent-yellow-500 cursor-pointer flex-shrink-0"
+                />
+                {/* Developer name */}
+                <span className="flex-1 text-sm font-medium text-gray-800">
+                  {emp.resourceName}
+                </span>
+                {/* Match score + matched skill names */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
+                    isPerfect
+                      ? "text-green-700 bg-green-50 border-green-200"
+                      : "text-yellow-700 bg-yellow-50 border-yellow-200"
+                  }`}>
+                    {emp.matchCount}/{totalSkillCount}
                   </span>
-                </label>
-                {reportees.map((emp) => (
-                  <label key={emp.id} className="flex items-center gap-3 px-4 py-2 pl-10 hover:bg-yellow-50 cursor-pointer border-b border-gray-50 transition-colors">
-                    <input type="checkbox" checked={selectedIds.includes(emp.id)} onChange={() => toggle(emp.id)} className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                    <span className="text-sm text-gray-600 flex items-center gap-1.5 flex-1">
-                      <span className="text-gray-300 text-xs">└─</span>{emp.resourceName}
-                    </span>
-                    {emp.matchCount > 1 && (
-                      <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                        {emp.matchCount} skills matched
-                      </span>
-                    )}
-                  </label>
-                ))}
-              </div>
+                  <span className="text-xs text-gray-500 max-w-[180px] truncate" title={emp.matchedSkills}>
+                    {emp.matchedSkills}
+                  </span>
+                </div>
+              </label>
             );
           })}
-          {independent.length > 0 && (
-            <>
-              {tree.length > 0 && (
-                <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">No Manager</span>
-                </div>
-              )}
-              {independent.map((emp) => (
-                <label key={emp.id} className="flex items-center gap-3 px-4 py-2 hover:bg-yellow-50 cursor-pointer border-b border-gray-50 transition-colors">
-                  <input type="checkbox" checked={selectedIds.includes(emp.id)} onChange={() => toggle(emp.id)} className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                  <span className="text-sm text-gray-700 flex-1">{emp.resourceName}</span>
-                  {emp.matchCount > 1 && (
-                    <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                      {emp.matchCount} skills matched
-                    </span>
-                  )}
-                </label>
-              ))}
-            </>
-          )}
         </div>
       )}
     </div>
@@ -400,31 +398,18 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     if (!skills || skills.length === 0) return;
     onUpdate(index, { loading: true, resourcePool: [] });
     try {
-      const requests = skills.map((skill) =>
-        axios.post("http://localhost:8098/api/v1/projects/getResourceNames", {
-          permissionId: 3,
-          skill: skill.trim(),
-          technology: role.technology === "Other" ? role.customTech : role.technology,
-        })
-      );
-      const responses = await Promise.all(requests);
-      const matchCount = {};
-      const dtoMap = {};
-      responses.forEach((res) => {
-        (res.data || []).forEach((emp) => {
-          dtoMap[emp.id] = emp;
-          matchCount[emp.id] = (matchCount[emp.id] || 0) + 1;
-        });
+      const res = await axios.post("http://localhost:8098/api/v1/projects/getResourceNames", {
+        permissionId: 3,
+        skill: skills.join(","),
+        technology: role.technology === "Other" ? role.customTech : role.technology,
       });
-      const sorted = Object.keys(matchCount)
-        .sort((a, b) => matchCount[b] - matchCount[a])
-        .map((id) => ({ ...dtoMap[id], matchCount: matchCount[id] }));
-      onUpdate(index, { resourcePool: sorted, loading: false });
+      onUpdate(index, { resourcePool: res.data || [], loading: false });
     } catch {
       onUpdate(index, { loading: false, resourcePool: [] });
     }
   }, [index, onUpdate, role.technology, role.customTech]);
 
+  // On mount: if this role already has skills (loaded from API), fetch matching developers
   useEffect(() => {
     if (role.skills.length > 0 && role.resourcePool.length === 0 && !role.loading) {
       fetchResources(role.skills);
@@ -448,6 +433,8 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
   return (
     <div className={`border-2 rounded-lg overflow-visible ${roleError ? "border-red-400" : "border-yellow-400"}`}>
+
+      {/* Card Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 rounded-t-lg">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded-full bg-white text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{index + 1}</div>
@@ -472,7 +459,10 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
         </div>
       </div>
 
+      {/* Card Body */}
       <div className="p-4 bg-white space-y-4">
+
+        {/* Row 1: Role Type + Technology */}
         <div className="flex flex-wrap gap-4 justify-between">
           <div className="w-full md:w-[48%]">
             <label className="font-semibold mb-1 block">Role Type</label>
@@ -507,6 +497,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           </div>
         </div>
 
+        {/* Row 2: Skills */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Skills <span className="text-pink-800">*</span>
@@ -516,6 +507,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
           {roleError?.skills && <p className="text-red-600 text-sm mt-1">{roleError.skills}</p>}
         </div>
 
+        {/* Row 3: Assign Developers */}
         <div className="w-full">
           <label className="font-semibold mb-1 block">
             Assign Developers <span className="text-pink-800">*</span>
@@ -525,15 +517,19 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
               </span>
             )}
           </label>
-          <ResourceTreeSelect
+          {/* ResourceFlatSelect: flat ranked list, no manager grouping.
+              totalSkillCount drives the X/Y match badge per developer. */}
+          <ResourceFlatSelect
             resourcePool={role.resourcePool}
             selectedIds={role.selectedResourceIds}
             onChange={(ids) => onUpdate(index, { selectedResourceIds: ids })}
             error={roleError?.developers}
             loading={role.loading}
+            totalSkillCount={role.skills.length}
           />
           {roleError?.developers && <p className="text-red-600 text-sm mt-1">{roleError.developers}</p>}
         </div>
+
       </div>
     </div>
   );
@@ -541,24 +537,23 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function Edit_project() {
-  const [projectId, setProjectId]             = useState(0);
-  const [projectName, setProjectName]         = useState("");
-  const [clientName, setClientName]           = useState("");
-  const [bufferAllocation, setBufferAllocation] = useState("");
-  const [developerAmount, setDeveloperAmount] = useState("");
-  const [startDate, setStartDate]             = useState("");
-  const [endDate, setEndDate]                 = useState("");
-  const [status, setStatus]                   = useState("");
-  const [roles, setRoles]                     = useState([createEmptyRole()]);
-  const [errors, setErrors]                   = useState({});
-  const [roleErrors, setRoleErrors]           = useState([]);
-  const [loading, setLoading]                 = useState(false);
-  const [pageLoading, setPageLoading]         = useState(true);
-  const [creatorName]                         = useState(localStorage.getItem("resourceName") || "");
+  const [projectId, setProjectId]   = useState(0);
+  const [projectName, setProjectName] = useState("");
+  const [clientName, setClientName]   = useState("");
+  // const [bufferAllocation, setBufferAllocation] = useState("");  // Buffer Allocation — comment in DTO too
+  // const [developerAmount, setDeveloperAmount]   = useState("");  // Developer Allocation — comment in DTO too
+  const [startDate, setStartDate]     = useState("");
+  const [endDate, setEndDate]         = useState("");
+  const [status, setStatus]           = useState("");
+  const [roles, setRoles]             = useState([createEmptyRole()]);
+  const [errors, setErrors]           = useState({});
+  const [roleErrors, setRoleErrors]   = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [creatorName]                 = useState(localStorage.getItem("resourceName") || "");
   const navigate = useNavigate();
 
-  // ── Always computed live — never stale ──────────────────────────────────────
-  const computedTotal = (Number(bufferAllocation) || 0) + (Number(developerAmount) || 0);
+  // const computedTotal = (Number(bufferAllocation) || 0) + (Number(developerAmount) || 0);  // Total Amount — comment in DTO too
 
   useEffect(() => {
     const pid = localStorage.getItem("projectid");
@@ -567,16 +562,15 @@ function Edit_project() {
 
   const fetchProject = async (pid) => {
     try {
-      const res = await axios.get(`http://localhost:8098/api/v1/projects/${pid}`);
+      const res  = await axios.get(`http://localhost:8098/api/v1/projects/${pid}`);
       const data = res.data;
       setProjectId(data.id || 0);
       setProjectName(data.name || "");
       setClientName(data.clientName || "");
       setStartDate(toDateString(data.startDate));
       setEndDate(toDateString(data.endDate));
-      // Map API field names → our state
-      setBufferAllocation(data.totalAmount ?? data.bufferAllocation ?? "");
-      setDeveloperAmount(data.developerAmount ?? "");
+      // setBufferAllocation(data.totalAmount ?? data.bufferAllocation ?? "");  // Buffer Allocation
+      // setDeveloperAmount(data.developerAmount ?? "");                         // Developer Allocation
       setStatus(data.status || "");
       const apiRoles = data.projectRoles || [];
       if (apiRoles.length > 0) setRoles(apiRoles.map(buildRoleFromAPI));
@@ -598,13 +592,13 @@ function Edit_project() {
 
   const validate = () => {
     const e = {};
-    if (!projectName.trim())                                e.projectName       = "Project name is required";
-    if (!clientName.trim())                                 e.clientName        = "Client name is required";
-    if (!bufferAllocation || Number(bufferAllocation) <= 0) e.bufferAllocation  = "Enter a valid amount";
-    if (!developerAmount || Number(developerAmount) <= 0)   e.developerAmount   = "Enter a valid amount";
-    if (!startDate)                                         e.startDate         = "Start date is required";
-    if (!endDate)                                           e.endDate           = "End date is required";
-    if (!status)                                            e.status            = "Status is required";
+    if (!projectName.trim()) e.projectName = "Project name is required";
+    if (!clientName.trim())  e.clientName  = "Client name is required";
+    // if (!bufferAllocation || Number(bufferAllocation) <= 0) e.bufferAllocation = "Enter a valid amount";  // Buffer Allocation
+    // if (!developerAmount  || Number(developerAmount)  <= 0) e.developerAmount  = "Enter a valid amount";  // Developer Allocation
+    if (!startDate)          e.startDate   = "Start date is required";
+    if (!endDate)            e.endDate     = "End date is required";
+    if (!status)             e.status      = "Status is required";
 
     const re = roles.map((role) => {
       const err = {};
@@ -628,9 +622,9 @@ function Edit_project() {
       id: projectId,
       name: projectName,
       clientName,
-      totalAmount: bufferAllocation,       // backend field name
-      developerAmount,
-      amount: computedTotal,               // grand total sent to backend
+      // totalAmount: bufferAllocation,  // Buffer Allocation — comment in DTO too
+      // developerAmount,                // Developer Allocation — comment in DTO too
+      // amount: computedTotal,          // Total Amount — comment in DTO too
       startDate,
       endDate,
       status,
@@ -721,8 +715,8 @@ function Edit_project() {
                   </div>
                 </div>
 
-                {/* Row 3 — Buffer Allocation + Developer Allocation */}
-                <div className="flex flex-wrap gap-4 justify-between">
+                {/* Row 3 — Buffer Allocation + Developer Allocation (commented out — also comment in DTO) */}
+                {/* <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Buffer Allocation <span className="text-pink-800">*</span></label>
                     <div className={`flex items-center border-2 rounded ${errors.bufferAllocation ? "border-red-500" : "border-yellow-400"}`}>
@@ -743,10 +737,10 @@ function Edit_project() {
                     </div>
                     {errors.developerAmount && <p className="text-red-600 text-sm mt-1">{errors.developerAmount}</p>}
                   </div>
-                </div>
+                </div> */}
 
-                {/* Row 4 — Total Amount (computed) + Status */}
-                <div className="flex flex-wrap gap-4 justify-between">
+                {/* Row 4 — Total Amount (commented out — also comment in DTO) */}
+                {/* <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">
                       Total Amount
@@ -754,26 +748,24 @@ function Edit_project() {
                     </label>
                     <div className="flex items-center border-2 border-yellow-400 rounded bg-gray-50">
                       <span className="px-3 py-2 bg-yellow-50 text-sm font-bold text-gray-400 border-r-2 border-yellow-400">$</span>
-                      <input
-                        type="text"
-                        value={computedTotal}
-                        readOnly
-                        className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-600 cursor-not-allowed font-semibold"
-                      />
+                      <input type="text" value={computedTotal} readOnly
+                        className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-600 cursor-not-allowed font-semibold" />
                     </div>
                   </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
-                    <select value={status}
-                      onChange={(e) => { setStatus(e.target.value); if (errors.status) setErrors((p) => ({ ...p, status: "" })); }}
-                      className={fieldClass("status")}>
-                      <option value="">Select Status</option>
-                      <option value="Yet to Start">Yet to Start</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                    {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
-                  </div>
+                </div> */}
+
+                {/* Row 5 — Status (full width) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
+                  <select value={status}
+                    onChange={(e) => { setStatus(e.target.value); if (errors.status) setErrors((p) => ({ ...p, status: "" })); }}
+                    className={fieldClass("status")}>
+                    <option value="">Select Status</option>
+                    <option value="Yet to Start">Yet to Start</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                  {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
                 </div>
 
                 {/* ── Team Assignment ── */}

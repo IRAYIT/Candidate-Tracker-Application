@@ -8,7 +8,7 @@ function View_project() {
   const [project, setProject] = useState(null);
   const [loading, setLoading]  = useState(true);
   const navigate = useNavigate();
-  const userRole = parseInt(localStorage.getItem("permissionid")); // ✅ NEW
+  const userRole = parseInt(localStorage.getItem("permissionid"));
 
   useEffect(() => {
     const pid = localStorage.getItem("projectid");
@@ -33,8 +33,8 @@ function View_project() {
     });
   };
 
-  const ReadField = ({ label, value, prefix }) => (
-    <div className="w-full md:w-[48%]">
+  const ReadField = ({ label, value, prefix, fullWidth }) => (
+    <div className={fullWidth ? "w-full" : "w-full md:w-[48%]"}>
       <label className="font-semibold mb-1 block">{label}</label>
       <div className="flex">
         {prefix && (
@@ -101,14 +101,18 @@ function View_project() {
             <div className="space-y-6">
 
               <div className="flex flex-wrap gap-4 justify-between">
-                <ReadField label="Project Name"        value={project.name} />
-                <ReadField label="Client Name"         value={project.clientName} />
-                <ReadField label="Start Date"          value={fmt(project.startDate)} />
-                <ReadField label="End Date"            value={fmt(project.endDate)} />
-                <ReadField label="Buffer Allocation"   value={project.totalAmount}     prefix="$" />
-                <ReadField label="Developer Allocation" value={project.developerAmount} prefix="$" />
-                <ReadField label="Total Amount"        value={project.amount}          prefix="$" />
-                <ReadField label="Status"              value={project.status} />
+                <ReadField label="Project Name" value={project.name} />
+                <ReadField label="Client Name"  value={project.clientName} />
+                <ReadField label="Start Date"   value={fmt(project.startDate)} />
+                <ReadField label="End Date"     value={fmt(project.endDate)} />
+
+                {/* Buffer Allocation, Developer Allocation, Total Amount — commented out (also comment in DTO) */}
+                {/* <ReadField label="Buffer Allocation"    value={project.totalAmount}     prefix="$" /> */}
+                {/* <ReadField label="Developer Allocation" value={project.developerAmount} prefix="$" /> */}
+                {/* <ReadField label="Total Amount"         value={project.amount}          prefix="$" /> */}
+
+                {/* Status — full width */}
+                <ReadField label="Status" value={project.status} fullWidth />
               </div>
 
               <div>
@@ -191,6 +195,7 @@ function View_project() {
                               )}
                             </div>
                           </div>
+
                         </div>
                       );
                     })}
@@ -207,7 +212,7 @@ function View_project() {
                   Back
                 </button>
 
-                {userRole !== 4 && ( // ✅ Hidden for permissionid === 4
+                {userRole !== 4 && (
                   <button
                     onClick={() => navigate("/edit_project")}
                     className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer bg-green-600 text-white hover:bg-green-700 transition"

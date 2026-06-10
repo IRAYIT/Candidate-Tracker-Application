@@ -1,7 +1,8 @@
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { GlobalFilter } from "./Globarfilter";
 import axios from "axios";
@@ -15,16 +16,19 @@ import {
 function ManageProjects() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [permissionid, setPermissionid] = useState("");
+  const selectedProjectIdRef = useRef(null);
+  const [permissionid, setPermissionid] = useState(
+    () => localStorage.getItem("permissionid") || ""
+  );
   const [projects, setProjects] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const temp_permissionid = localStorage.getItem("permissionid");
-    setPermissionid(temp_permissionid);
-    if (temp_permissionid === "1" || temp_permissionid === "2" || temp_permissionid === "3") {
+    const pid = localStorage.getItem("permissionid");
+    console.log("=== PERMISSION ID ===", pid);
+    if (pid === "1" || pid === "2" || pid === "3") {
       fetchProjects();
     } else {
       fetchProjectByResource();
@@ -38,6 +42,11 @@ function ManageProjects() {
   const fetchProjects = async () => {
     try {
       const res = await axios.get(`http://localhost:8098/api/v1/projects/list`);
+      console.log("=== PROJECTS FETCHED ===", res.data);
+      if (res.data.length > 0) {
+        console.log("=== FIRST PROJECT OBJECT ===", res.data[0]);
+        console.log("=== ID FIELD ===", res.data[0].id);
+      }
       setProjects(res.data);
     } catch (error) {
       console.error("Failed to fetch projects", error);
@@ -50,6 +59,7 @@ function ManageProjects() {
       const res = await axios.get(
         `http://localhost:8098/api/v1/projects/getProjectsByResourceId/${id}`
       );
+      console.log("=== RESOURCE PROJECTS FETCHED ===", res.data);
       setProjects(res.data);
     } catch (error) {
       console.error("Failed to fetch resource projects", error);
@@ -57,24 +67,40 @@ function ManageProjects() {
   };
 
   const deleteproject = async (projectId) => {
+    console.log("=== DELETE CALLED ===");
+    console.log("projectId:", projectId);
+
+    if (!projectId) {
+      console.error("❌ projectId is null/undefined — aborting");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await axios.delete(`http://localhost:8098/api/v1/projects/${projectId}`);
+      const res = await axios.delete(
+        `http://localhost:8098/api/v1/projects/${projectId}`
+      );
+      console.log("=== DELETE RESPONSE ===", res.status, res.data);
       if (res.status === 200) {
-        fetchProjects();
+        console.log("✅ Deleted successfully");
+        const pid = localStorage.getItem("permissionid");
+        if (pid === "1" || pid === "2" || pid === "3") {
+          fetchProjects();
+        } else {
+          fetchProjectByResource();
+        }
         setShowDeleteModal(false);
       }
     } catch (error) {
-      console.error("Failed to delete project", error);
+      console.error("❌ Delete error:", error.response?.status, error.response?.data);
     } finally {
       setLoading(false);
     }
   };
 
-  // Simple columns just for global filter to work on
   const columns = useMemo(() => [
-    { id: 'name',        accessorKey: 'name'   },
-    { id: 'status',      accessorKey: 'status' },
+    { id: 'name', accessorKey: 'name' },
+    { id: 'status', accessorKey: 'status' },
     {
       id: 'technology',
       accessorFn: (row) => (row.projectRoles || []).map((r) => r.technology).filter(Boolean).join(' '),
@@ -131,11 +157,8 @@ function ManageProjects() {
             ) : (
               <div className="mx-4 my-6 rounded-lg border border-gray-300 bg-white shadow flex flex-col" style={{ height: 500 }}>
 
-                {/* ── Table ── */}
                 <div className="overflow-auto flex-1">
                   <table className="w-full table-fixed border-collapse">
-
-                    {/* Fixed column widths */}
                     <colgroup>
                       <col style={{ width: "16%" }} />
                       <col style={{ width: "18%" }} />
@@ -175,39 +198,35 @@ function ManageProjects() {
 
                           return (
                             <tr key={row.id} className="hover:bg-gray-50 transition">
-
-                              {/* Project Name */}
                               <td className="px-4 py-3 text-sm text-gray-800 font-medium align-middle">
                                 {p.name}
                               </td>
-
-                              {/* Technology */}
                               <td className="px-4 py-3 text-sm text-gray-700 align-middle">
                                 {techs}
                               </td>
-
-                              {/* Developers */}
                               <td className="px-4 py-3 text-sm text-gray-700 align-middle">
                                 {devs}
                               </td>
-
-                              {/* Status */}
                               <td className="px-4 py-3 text-sm text-gray-700 align-middle">
                                 {p.status || '—'}
                               </td>
-
-                              {/* Actions */}
                               <td className="px-4 py-3 text-sm align-middle">
                                 <div className="flex gap-2 items-center">
                                   <button
-                                    onClick={() => { navigate("/view_project"); localStorage.setItem("projectid", p.id); }}
+                                    onClick={() => {
+                                      navigate("/view_project");
+                                      localStorage.setItem("projectid", p.id);
+                                    }}
                                     className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
                                   >
                                     View
                                   </button>
                                   {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
                                     <button
-                                      onClick={() => { localStorage.setItem("projectid", p.id); navigate("/edit_project"); }}
+                                      onClick={() => {
+                                        localStorage.setItem("projectid", p.id);
+                                        navigate("/edit_project");
+                                      }}
                                       className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
                                     >
                                       Edit
@@ -215,7 +234,14 @@ function ManageProjects() {
                                   )}
                                   {permissionid === "1" && (
                                     <button
-                                      onClick={() => { setSelectedProjectId(p.id); setShowDeleteModal(true); }}
+                                      onClick={() => {
+                                        console.log("=== DELETE BUTTON CLICKED ===");
+                                        console.log("Full project object p:", p);
+                                        console.log("p.id:", p.id);
+                                        selectedProjectIdRef.current = p.id;
+                                        setSelectedProjectId(p.id);
+                                        setShowDeleteModal(true);
+                                      }}
                                       className="px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
                                     >
                                       Delete
@@ -223,7 +249,6 @@ function ManageProjects() {
                                   )}
                                 </div>
                               </td>
-
                             </tr>
                           );
                         })
@@ -232,7 +257,7 @@ function ManageProjects() {
                   </table>
                 </div>
 
-                {/* ── Pagination ── */}
+                {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 flex-shrink-0">
                   <select
                     value={table.getState().pagination.pageSize}
@@ -270,28 +295,72 @@ function ManageProjects() {
         </div>
       </div>
 
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl text-center p-6" style={{ width: 350 }}>
-            <h2 className="text-lg font-semibold text-blue-700 mb-4">Confirm Deletion</h2>
-            <p className="text-gray-700 mb-6">Are you sure you want to delete this project?</p>
-            <div className="flex justify-center gap-4">
+      {/* Delete Modal — inline styles to bypass any Tailwind purge or z-index issues */}
+      {showDeleteModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              width: '350px',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            }}
+          >
+            <h2 style={{ color: '#1d4ed8', fontWeight: '600', fontSize: '18px', marginBottom: '16px' }}>
+              Confirm Deletion
+            </h2>
+            <p style={{ color: '#374151', marginBottom: '24px' }}>
+              Are you sure you want to delete this project?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
               <button
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-                onClick={() => deleteproject(selectedProjectId)}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }}
+                onClick={() => {
+                  console.log("=== YES DELETE CLICKED ===");
+                  console.log("selectedProjectIdRef.current:", selectedProjectIdRef.current);
+                  deleteproject(selectedProjectIdRef.current);
+                }}
               >
                 Yes, Delete
               </button>
               <button
-                className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md"
+                style={{
+                  backgroundColor: '#d1d5db',
+                  color: '#111827',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }}
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

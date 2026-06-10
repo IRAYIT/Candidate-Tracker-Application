@@ -286,7 +286,6 @@ function Addopening() {
     if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
     if (!hours?.trim())          newErrors.hours          = "Hours are required.";
     if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";
-    if (!payment?.trim())        newErrors.payment        = "Payment is required.";
     if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";
     if (!technology?.trim())     newErrors.technology     = "Technology is required.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
@@ -322,7 +321,7 @@ function Addopening() {
     const payload = {
       name:           openingname,
       hours:          hours,
-      payment:        `${payment} ${currency}`,
+payment: payment?.trim() ? `${payment} ${currency}` : '',
       paymentType:    paymenttype,
       shiftTimings:   shifttimings,
       startDate,
@@ -440,7 +439,7 @@ function Addopening() {
                     {errors.shifttimings && <p className="text-red-600 text-sm mt-1">{errors.shifttimings}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Payment <span className="text-pink-800">*</span></label>
+<label className="font-semibold mb-1 block">Payment</label>
                     <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
                       <select
                         value={currency}

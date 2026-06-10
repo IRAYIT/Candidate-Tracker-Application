@@ -376,7 +376,7 @@ function Edit_opening() {
                     {errors.shifttimings && <p className="text-red-600 text-sm">{errors.shifttimings}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Payment <span className="text-pink-800">*</span></label>
+                    <label className="font-semibold mb-1 block">Payment </label>
                     <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
                       <select value={currency} onChange={(e) => setCurrency(e.target.value)}
                         className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"

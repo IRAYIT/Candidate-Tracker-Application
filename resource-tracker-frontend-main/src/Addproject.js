@@ -25,24 +25,19 @@ const SKILL_OPTIONS = [
   "Agile","Scrum","Kanban","GraphQL","gRPC","OAuth","JWT","Design Patterns","System Design","SonarQube",
 ];
 
-// ─── Technology → suggested skills map (expanded) ─────────────────────────────
+// ─── Technology → suggested skills map ────────────────────────────────────────
 const TECHNOLOGY_SKILLS = {
-  // Java
   "JAVA":                      ["Core Java","Spring Boot","Hibernate","Microservices","REST API","Spring Security","JPA","Maven"],
   "JAVA FULLSTACK":            ["Core Java","Spring Boot","React","Angular","REST API","JPA","Maven","HTML","CSS","JavaScript"],
   "JAVA FULLSTACK ANGULAR":    ["Core Java","Spring Boot","Angular","TypeScript","REST API","JPA","HTML","CSS","Maven"],
   "JAVA FULLSTACK REACT":      ["Core Java","Spring Boot","React","JavaScript","TypeScript","REST API","JPA","Redux","Maven"],
   "JAVA SPRING BOOT":          ["Spring Boot","Spring MVC","Spring Security","JPA","Hibernate","REST API","Maven","JUnit"],
   "JAVA MICROSERVICES":        ["Microservices","Spring Boot","Spring Cloud","Apache Kafka","Docker","Kubernetes","REST API","JPA"],
-
-  // .NET
   "DOTNET":                    [".NET Core","ASP.NET","C#","Entity Framework","LINQ","Blazor","SignalR"],
   "DOTNET FULLSTACK":          ["C#","ASP.NET Core","React","Angular","Entity Framework","LINQ","HTML","CSS","JavaScript"],
   "DOTNET FULLSTACK ANGULAR":  ["C#","ASP.NET Core","Angular","TypeScript","Entity Framework","REST API","HTML","CSS"],
   "DOTNET FULLSTACK REACT":    ["C#","ASP.NET Core","React","JavaScript","TypeScript","Entity Framework","Redux","HTML","CSS"],
   "DOTNET CORE":               ["ASP.NET Core","C#","Entity Framework","LINQ","REST API","SignalR","NUnit"],
-
-  // Python
   "PYTHON":                    ["Python","Django","Flask","FastAPI","REST API","Pandas","NumPy","PostgreSQL"],
   "PYTHON FULLSTACK":          ["Python","Django","React","Angular","REST API","HTML","CSS","JavaScript","PostgreSQL"],
   "PYTHON FULLSTACK ANGULAR":  ["Python","Django","Angular","TypeScript","REST API","HTML","CSS","PostgreSQL"],
@@ -50,51 +45,39 @@ const TECHNOLOGY_SKILLS = {
   "PYTHON DJANGO":             ["Python","Django","REST API","PostgreSQL","Celery","Redis","HTML","CSS"],
   "PYTHON FASTAPI":            ["Python","FastAPI","REST API","PostgreSQL","SQLAlchemy","Docker","Pydantic"],
   "PYTHON FLASK":              ["Python","Flask","REST API","SQLAlchemy","PostgreSQL","HTML","CSS","Jinja2"],
-
-  // Node.js
   "NODE FULLSTACK":            ["Node.js","Express.js","JavaScript","TypeScript","MongoDB","REST API","HTML","CSS"],
   "NODE FULLSTACK ANGULAR":    ["Node.js","Express.js","Angular","TypeScript","MongoDB","REST API","HTML","CSS"],
   "NODE FULLSTACK REACT":      ["Node.js","Express.js","React","JavaScript","TypeScript","MongoDB","Redux","REST API"],
   "MERN":                      ["MongoDB","Express.js","React","Node.js","JavaScript","TypeScript","Redux","REST API","HTML","CSS"],
   "MEAN":                      ["MongoDB","Express.js","Angular","Node.js","TypeScript","REST API","RxJS","HTML","CSS"],
   "MEVN":                      ["MongoDB","Express.js","Vue.js","Node.js","JavaScript","REST API","Vuex","HTML","CSS"],
-
-  // Frontend
   "ANGULAR":                   ["Angular","TypeScript","RxJS","NgRx","HTML","CSS","Material UI"],
   "REACTJS":                   ["React","Redux","JavaScript","TypeScript","Tailwind CSS","Next.js","Vite"],
   "VUEJS":                     ["Vue.js","JavaScript","TypeScript","Vuex","HTML","CSS","Nuxt.js"],
   "NEXTJS":                    ["Next.js","React","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
   "NUXTJS":                    ["Nuxt.js","Vue.js","TypeScript","JavaScript","Tailwind CSS","REST API","HTML","CSS"],
   "FRONTEND":                  ["HTML","CSS","JavaScript","TypeScript","React","Angular","Vue.js","Bootstrap","Tailwind CSS"],
-
-  // Mobile
   "ANDROID":                   ["Android","Kotlin","Java","REST API","Firebase","SQLite","Jetpack Compose"],
   "IOS SWIFT":                 ["iOS","Swift","Objective-C","Xcode","REST API","Firebase","SwiftUI","CoreData"],
   "REACT NATIVE":              ["React Native","JavaScript","TypeScript","React","Redux","REST API","Firebase"],
   "FLUTTER":                   ["Flutter","Dart","REST API","Firebase","SQLite","Provider","Riverpod"],
-
-  // Database & Data
   "SQL DEVELOPER":             ["SQL","PL/SQL","MySQL","PostgreSQL","Oracle","SQL Server","MongoDB"],
   "DATA ENGINEER":             ["Python","Apache Spark","Hadoop","Airflow","dbt","PostgreSQL","AWS","GCP","SQL"],
   "DATA SCIENCE":              ["Python","Machine Learning","Pandas","NumPy","Scikit-learn","TensorFlow","Tableau","Power BI"],
   "ML AI":                     ["Machine Learning","Deep Learning","TensorFlow","PyTorch","Scikit-learn","Python","Pandas","NumPy"],
   "POWER BI":                  ["Power BI","Tableau","DAX","SQL","Excel","Data Analysis","Python"],
-
-  // DevOps & Cloud
   "AWS DEVOPS":                ["AWS","Docker","Kubernetes","Jenkins","Terraform","Ansible","GitHub Actions","Linux"],
   "AZURE DEVOPS":              ["Azure","CI/CD","Terraform","GitHub Actions","Docker","Kubernetes","PowerShell"],
   "GCP DEVOPS":                ["GCP","Docker","Kubernetes","Terraform","CI/CD","Linux","GitHub Actions"],
   "DEVOPS":                    ["Docker","Kubernetes","Jenkins","Terraform","Ansible","Linux","Bash","CI/CD","GitHub Actions"],
   "CLOUD ARCHITECT":           ["AWS","Azure","GCP","Terraform","Docker","Kubernetes","Microservices Architecture","System Design"],
-
-  // Testing
   "TESTING":                   ["Manual Testing","Selenium","Cypress","JMeter","Playwright","Postman","TestNG","Appium"],
   "AUTOMATION TESTING":        ["Selenium","Cypress","Playwright","TestNG","JUnit","Appium","Jest","Postman"],
   "PERFORMANCE TESTING":       ["JMeter","LoadRunner","Gatling","Postman","API Testing","Performance Testing"],
   "API TESTING":               ["Postman","Swagger","REST API","Selenium","TestNG","API Testing","JWT"],
 };
 
-// ─── Technology options for the dropdown (grouped) ────────────────────────────
+// ─── Technology dropdown groups ────────────────────────────────────────────────
 const TECHNOLOGY_GROUPS = [
   {
     label: "Java Ecosystem",
@@ -197,16 +180,6 @@ const createEmptyRole = () => ({
   loading: false,
 });
 
-function groupResources(list) {
-  const managerIds = new Set(list.filter((r) => r.managerId != null).map((r) => r.managerId));
-  const tree = list.filter((r) => managerIds.has(r.id)).map((mgr) => ({
-    manager: mgr,
-    reportees: list.filter((r) => r.managerId === mgr.id),
-  }));
-  const independent = list.filter((r) => r.managerId == null && !managerIds.has(r.id));
-  return { tree, independent };
-}
-
 // ─── Hook: smart dropdown direction ──────────────────────────────────────────
 function useDropdownDirection(triggerRef, open) {
   const [direction, setDirection] = useState("down");
@@ -214,7 +187,7 @@ function useDropdownDirection(triggerRef, open) {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    setDirection(spaceBelow < 220 ? "up" : "down");
+    setDirection(spaceBelow < 260 ? "up" : "down");
   }, [open, triggerRef]);
   return direction;
 }
@@ -222,12 +195,12 @@ function useDropdownDirection(triggerRef, open) {
 // ─── SkillTagInput ────────────────────────────────────────────────────────────
 function SkillTagInput({ selected, onChange, technology, error }) {
   const [input, setInput] = useState("");
-  const [open, setOpen] = useState(false);
-  const [hi, setHi] = useState(-1);
-  const inputRef = useRef(null);
-  const containerRef = useRef(null);
-  const triggerRef = useRef(null);
-  const direction = useDropdownDirection(triggerRef, open);
+  const [open, setOpen]   = useState(false);
+  const [hi, setHi]       = useState(-1);
+  const inputRef          = useRef(null);
+  const containerRef      = useRef(null);
+  const triggerRef        = useRef(null);
+  const direction         = useDropdownDirection(triggerRef, open);
 
   useEffect(() => {
     const h = (e) => { if (!containerRef.current?.contains(e.target)) setOpen(false); };
@@ -239,11 +212,11 @@ function SkillTagInput({ selected, onChange, technology, error }) {
     ? [...TECHNOLOGY_SKILLS[technology], ...SKILL_OPTIONS.filter((s) => !TECHNOLOGY_SKILLS[technology].includes(s))]
     : SKILL_OPTIONS;
 
-  const filtered = pool.filter((s) => s.toLowerCase().includes(input.toLowerCase()) && !selected.includes(s));
+  const filtered  = pool.filter((s) => s.toLowerCase().includes(input.toLowerCase()) && !selected.includes(s));
   const showOther = input.trim() && !SKILL_OPTIONS.some((s) => s.toLowerCase() === input.trim().toLowerCase()) && !selected.includes(input.trim());
-  const options = showOther ? [...filtered, "__OTHER__"] : filtered;
+  const options   = showOther ? [...filtered, "__OTHER__"] : filtered;
 
-  const add = (s) => { if (!selected.includes(s)) onChange([...selected, s]); setInput(""); setOpen(false); setHi(-1); inputRef.current?.focus(); };
+  const add    = (s) => { if (!selected.includes(s)) onChange([...selected, s]); setInput(""); setOpen(false); setHi(-1); inputRef.current?.focus(); };
   const remove = (s) => onChange(selected.filter((x) => x !== s));
 
   const onKey = (e) => {
@@ -316,13 +289,16 @@ function SkillTagInput({ selected, onChange, technology, error }) {
   );
 }
 
-// ─── ResourceTreeSelect ───────────────────────────────────────────────────────
-function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loading }) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef(null);
-  const triggerRef = useRef(null);
-  const direction = useDropdownDirection(triggerRef, open);
-  const { tree, independent } = groupResources(resourcePool);
+// ─── ResourceFlatSelect ───────────────────────────────────────────────────────
+// Replaces ResourceTreeSelect + groupResources.
+// Backend now returns a flat list sorted by matchCount desc.
+// Each employee has: id, resourceName, matchCount, matchedSkills.
+// No managerId — org chart grouping is irrelevant for skill search results.
+function ResourceFlatSelect({ resourcePool, selectedIds, onChange, error, loading, totalSkillCount }) {
+  const [open, setOpen]  = useState(false);
+  const containerRef     = useRef(null);
+  const triggerRef       = useRef(null);
+  const direction        = useDropdownDirection(triggerRef, open);
 
   useEffect(() => {
     const h = (e) => { if (!containerRef.current?.contains(e.target)) setOpen(false); };
@@ -330,21 +306,15 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const toggle = (id) => onChange(selectedIds.includes(id) ? selectedIds.filter((s) => s !== id) : [...selectedIds, id]);
+  const toggle = (id) =>
+    onChange(selectedIds.includes(id)
+      ? selectedIds.filter((s) => s !== id)
+      : [...selectedIds, id]);
 
-  const toggleMgr = (mgr, reportees) => {
-    const all = [mgr.id, ...reportees.map((r) => r.id)];
-    const allSel = all.every((id) => selectedIds.includes(id));
-    onChange(allSel ? selectedIds.filter((s) => !all.includes(s)) : [...selectedIds, ...all.filter((id) => !selectedIds.includes(id))]);
-  };
+  const selectedNames = resourcePool
+    .filter((r) => selectedIds.includes(r.id))
+    .map((r) => r.resourceName);
 
-  const mgrState = (mgr, reportees) => {
-    const all = [mgr.id, ...reportees.map((r) => r.id)];
-    const n = all.filter((id) => selectedIds.includes(id)).length;
-    return n === 0 ? "none" : n === all.length ? "all" : "some";
-  };
-
-  const selectedNames = resourcePool.filter((r) => selectedIds.includes(r.id)).map((r) => r.resourceName);
   const isEmpty = resourcePool.length === 0;
 
   const dropdownStyle = direction === "up"
@@ -353,11 +323,13 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
 
   return (
     <div ref={containerRef} className="relative">
+
+      {/* ── Trigger box ── */}
       <div ref={triggerRef}
         onClick={() => !loading && !isEmpty && setOpen((p) => !p)}
-        className={`border-2 rounded p-2 min-h-[42px] flex flex-wrap gap-2 items-center transition-all ${
-          error ? "border-red-500" : "border-yellow-400"
-        } ${loading || isEmpty ? "bg-gray-50 cursor-not-allowed" : "bg-white cursor-pointer"}`}
+        className={`border-2 rounded p-2 min-h-[42px] flex flex-wrap gap-2 items-center transition-all
+          ${error ? "border-red-500" : "border-yellow-400"}
+          ${loading || isEmpty ? "bg-gray-50 cursor-not-allowed" : "bg-white cursor-pointer"}`}
       >
         {loading ? (
           <span className="text-sm text-gray-400 flex items-center gap-2">
@@ -370,11 +342,17 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
           </span>
         ) : (
           selectedNames.map((name) => (
-            <span key={name} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300">
+            <span key={name}
+              className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full border border-gray-300">
               {name}
               <button type="button"
-                onClick={(e) => { e.stopPropagation(); const id = resourcePool.find((r) => r.resourceName === name)?.id; if (id) toggle(id); }}
-                className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×</button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const id = resourcePool.find((r) => r.resourceName === name)?.id;
+                  if (id) toggle(id);
+                }}
+                className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1">×
+              </button>
             </span>
           ))
         )}
@@ -383,53 +361,57 @@ function ResourceTreeSelect({ resourcePool, selectedIds, onChange, error, loadin
         )}
       </div>
 
+      {/* ── Dropdown ── */}
       {open && (
         <div
           className="absolute z-50 w-full bg-white border border-gray-200 rounded shadow-lg overflow-y-auto"
-          style={{ maxHeight: 240, ...dropdownStyle }}
+          style={{ maxHeight: 260, ...dropdownStyle }}
         >
-          {tree.map(({ manager, reportees }) => {
-            const state = mgrState(manager, reportees);
+          {/* Column headers */}
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Developer</span>
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Matched Skills</span>
+          </div>
+
+          {/* One row per developer — already sorted best-match first by backend */}
+          {resourcePool.map((emp) => {
+            const isPerfect = emp.matchCount === totalSkillCount;
             return (
-              <div key={manager.id}>
-                <label className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 hover:bg-yellow-50 cursor-pointer border-b border-gray-100 transition-colors">
-                  <input type="checkbox" checked={state === "all"}
-                    ref={(el) => { if (el) el.indeterminate = state === "some"; }}
-                    onChange={() => toggleMgr(manager, reportees)}
-                    className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                  <span className="flex-1 flex items-center gap-2 text-sm font-semibold text-gray-800">
-                    <span>👤</span> {manager.resourceName}
-                    <span className="ml-auto text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Manager</span>
+              <label key={emp.id}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-50 cursor-pointer border-b border-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(emp.id)}
+                  onChange={() => toggle(emp.id)}
+                  className="w-4 h-4 accent-yellow-500 cursor-pointer flex-shrink-0"
+                />
+
+                {/* Developer name */}
+                <span className="flex-1 text-sm font-medium text-gray-800">
+                  {emp.resourceName}
+                </span>
+
+                {/* Match score + matched skill names */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Score badge — green for perfect, yellow for partial */}
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
+                    isPerfect
+                      ? "text-green-700 bg-green-50 border-green-200"
+                      : "text-yellow-700 bg-yellow-50 border-yellow-200"
+                  }`}>
+                    {emp.matchCount}/{totalSkillCount}
                   </span>
-                </label>
-                {reportees.map((emp) => (
-                  <label key={emp.id} className="flex items-center gap-3 px-4 py-2 pl-10 hover:bg-yellow-50 cursor-pointer border-b border-gray-50 transition-colors">
-                    <input type="checkbox" checked={selectedIds.includes(emp.id)} onChange={() => toggle(emp.id)}
-                      className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                    <span className="text-sm text-gray-600 flex items-center gap-1.5">
-                      <span className="text-gray-300 text-xs">└─</span>{emp.resourceName}
-                    </span>
-                  </label>
-                ))}
-              </div>
+                  {/* Matched skill names — truncated with full text on hover */}
+                  <span
+                    className="text-xs text-gray-500 max-w-[180px] truncate"
+                    title={emp.matchedSkills}
+                  >
+                    {emp.matchedSkills}
+                  </span>
+                </div>
+              </label>
             );
           })}
-          {independent.length > 0 && (
-            <>
-              {tree.length > 0 && (
-                <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">No Manager</span>
-                </div>
-              )}
-              {independent.map((emp) => (
-                <label key={emp.id} className="flex items-center gap-3 px-4 py-2 hover:bg-yellow-50 cursor-pointer border-b border-gray-50 transition-colors">
-                  <input type="checkbox" checked={selectedIds.includes(emp.id)} onChange={() => toggle(emp.id)}
-                    className="w-4 h-4 accent-yellow-500 cursor-pointer" />
-                  <span className="text-sm text-gray-700">{emp.resourceName}</span>
-                </label>
-              ))}
-            </>
-          )}
         </div>
       )}
     </div>
@@ -467,11 +449,9 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
   const handleSkillChange = (newSkills) => {
     onUpdate(index, { skills: newSkills });
-    const tech = role.technology;
-    const customTech = role.customTech;
-    const effectiveTech = tech === "Other" ? customTech.trim() : tech;
+    const effectiveTech = role.technology === "Other" ? role.customTech.trim() : role.technology;
     if (effectiveTech && newSkills.length > 0) {
-      fetchResources(tech, customTech, newSkills);
+      fetchResources(role.technology, role.customTech, newSkills);
     }
   };
 
@@ -497,16 +477,10 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
                 ? (role.technology === "Other" ? role.customTech || "Custom Technology" : role.technology)
                 : `Role ${index + 1} — Not configured`}
             </span>
-            {role.roleLabel && (
-              <span className="mt-1 inline-flex">
-                <span className="text-xs font-semibold bg-white text-blue-700 px-2 py-0.5 rounded-full">
-                  {role.roleLabel}
-                </span>
-              </span>
-            )}
-            {!role.roleLabel && (
-              <span className="text-xs text-blue-100 opacity-70 mt-0.5">No role type selected</span>
-            )}
+            {role.roleLabel
+              ? <span className="mt-1 inline-flex"><span className="text-xs font-semibold bg-white text-blue-700 px-2 py-0.5 rounded-full">{role.roleLabel}</span></span>
+              : <span className="text-xs text-blue-100 opacity-70 mt-0.5">No role type selected</span>
+            }
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -594,12 +568,15 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
               </span>
             )}
           </label>
-          <ResourceTreeSelect
+          {/* ResourceFlatSelect replaces ResourceTreeSelect.
+              totalSkillCount drives the X/Y match badge per developer. */}
+          <ResourceFlatSelect
             resourcePool={role.resourcePool}
             selectedIds={role.selectedResourceIds}
             onChange={(ids) => onUpdate(index, { selectedResourceIds: ids })}
             error={roleError?.developers}
             loading={role.loading}
+            totalSkillCount={role.skills.length}
           />
           {roleError?.developers && <p className="text-red-600 text-sm mt-1">{roleError.developers}</p>}
         </div>
@@ -611,25 +588,25 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function Addproject() {
-  const [projectName, setProjectName]           = useState("");
-  const [clientName, setClientName]             = useState("");
-  const [totalAmount, setTotalAmount]           = useState("");
-  const [developerAmount, setDeveloperAmount]   = useState("");
-  const [startDate, setStartDate]               = useState("");
-  const [endDate, setEndDate]                   = useState("");
-  const [amount, setAmount]                     = useState("");
-  const [status, setStatus]                     = useState("");
-  const [roles, setRoles]                       = useState([createEmptyRole()]);
-  const [errors, setErrors]                     = useState({});
-  const [roleErrors, setRoleErrors]             = useState([]);
-  const [loading, setLoading]                   = useState(false);
-  const [creatorName]                           = useState(localStorage.getItem("resourceName") || "");
+  const [projectName, setProjectName] = useState("");
+  const [clientName, setClientName]   = useState("");
+  // const [totalAmount, setTotalAmount]        = useState("");  // Buffer Allocation — comment in DTO too
+  // const [developerAmount, setDeveloperAmount]= useState("");  // Developer Allocation — comment in DTO too
+  // const [amount, setAmount]                  = useState("");  // Total Amount — comment in DTO too
+  const [startDate, setStartDate]     = useState("");
+  const [endDate, setEndDate]         = useState("");
+  const [status, setStatus]           = useState("");
+  const [roles, setRoles]             = useState([createEmptyRole()]);
+  const [errors, setErrors]           = useState({});
+  const [roleErrors, setRoleErrors]   = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [creatorName]                 = useState(localStorage.getItem("resourceName") || "");
   const navigate = useNavigate();
 
-  const calcAmount = () => {
-    const t = Number(totalAmount), d = Number(developerAmount);
-    if (t > 0 && d > 0) setAmount(String(t + d));
-  };
+  // const calcAmount = () => {                        // Commented — depends on removed fields
+  //   const t = Number(totalAmount), d = Number(developerAmount);
+  //   if (t > 0 && d > 0) setAmount(String(t + d));
+  // };
 
   const updateRole = useCallback((index, patch) => {
     setRoles((prev) => prev.map((r, i) => i === index ? { ...r, ...patch } : r));
@@ -642,13 +619,13 @@ function Addproject() {
 
   const validate = () => {
     const e = {};
-    if (!projectName.trim())                              e.projectName     = "Project name is required";
-    if (!clientName.trim())                               e.clientName      = "Client name is required";
-    if (!totalAmount || Number(totalAmount) <= 0)         e.totalAmount     = "Enter a valid amount";
-    if (!developerAmount || Number(developerAmount) <= 0) e.developerAmount = "Enter a valid amount";
-    if (!startDate)                                       e.startDate       = "Start date is required";
-    if (!endDate)                                         e.endDate         = "End date is required";
-    if (!status)                                          e.status          = "Status is required";
+    if (!projectName.trim()) e.projectName = "Project name is required";
+    if (!clientName.trim())  e.clientName  = "Client name is required";
+    // if (!totalAmount || Number(totalAmount) <= 0)         e.totalAmount     = "Enter a valid amount";
+    // if (!developerAmount || Number(developerAmount) <= 0) e.developerAmount = "Enter a valid amount";
+    if (!startDate)          e.startDate   = "Start date is required";
+    if (!endDate)            e.endDate     = "End date is required";
+    if (!status)             e.status      = "Status is required";
 
     const re = roles.map((role) => {
       const err = {};
@@ -668,10 +645,18 @@ function Addproject() {
     if (!validate()) return;
     setLoading(true);
     const payload = {
-      name: projectName, clientName, totalAmount, developerAmount,
-      startDate, endDate, amount, status,
-      createdAt: new Date(), createdBy: creatorName,
-      updatedAt: new Date(), updatedBy: creatorName,
+      name: projectName,
+      clientName,
+      // totalAmount,      // Buffer Allocation — comment in DTO too
+      // developerAmount,  // Developer Allocation — comment in DTO too
+      // amount,           // Total Amount — comment in DTO too
+      startDate,
+      endDate,
+      status,
+      createdAt: new Date(),
+      createdBy: creatorName,
+      updatedAt: new Date(),
+      updatedBy: creatorName,
       projectRoles: roles.map((r) => ({
         roleLabel:   r.roleLabel,
         technology:  r.technology === "Other" ? r.customTech : r.technology,
@@ -750,8 +735,8 @@ function Addproject() {
                   </div>
                 </div>
 
-                {/* Row 3 — Buffer + Developer Allocation */}
-                <div className="flex flex-wrap gap-4 justify-between">
+                {/* Row 3 — Buffer Allocation + Developer Allocation (commented out — also comment in DTO) */}
+                {/* <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Buffer Allocation <span className="text-pink-800">*</span></label>
                     <div className={`flex items-center border-2 rounded ${errors.totalAmount ? "border-red-500" : "border-yellow-400"}`}>
@@ -772,10 +757,10 @@ function Addproject() {
                     </div>
                     {errors.developerAmount && <p className="text-red-600 text-sm mt-1">{errors.developerAmount}</p>}
                   </div>
-                </div>
+                </div> */}
 
-                {/* Row 4 — Total Amount + Status */}
-                <div className="flex flex-wrap gap-4 justify-between">
+                {/* Row 4 — Total Amount (commented out — also comment in DTO) */}
+                {/* <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Total Amount</label>
                     <div className="flex items-center border-2 border-yellow-400 rounded bg-gray-50">
@@ -784,18 +769,20 @@ function Addproject() {
                         className="flex-1 border-none outline-none bg-gray-50 text-sm px-2 py-2 text-gray-500 cursor-not-allowed" />
                     </div>
                   </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
-                    <select value={status}
-                      onChange={(e) => { setStatus(e.target.value); if (errors.status) setErrors((p) => ({ ...p, status: "" })); }}
-                      className={fieldClass("status")}>
-                      <option value="">Select Status</option>
-                      <option value="Yet to Start">Yet to Start</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                    {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
-                  </div>
+                </div> */}
+
+                {/* Row 5 — Status (full width) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
+                  <select value={status}
+                    onChange={(e) => { setStatus(e.target.value); if (errors.status) setErrors((p) => ({ ...p, status: "" })); }}
+                    className={fieldClass("status")}>
+                    <option value="">Select Status</option>
+                    <option value="Yet to Start">Yet to Start</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                  {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
                 </div>
 
                 {/* ── Team Assignment ── */}
