@@ -8,19 +8,19 @@ const PERMISSIONS = {
     { title: 'MANAGE CANDIDATES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     { title: 'MANAGE PROJECTS', path: '/manageprojects' },
-    { title: 'APPLIED CANDIDATES', path: '/applied-candidates' },
+    { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "2": [ // HR — view, edit
     { title: 'MANAGE CANDIDATES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     { title: 'MANAGE PROJECTS', path: '/manageprojects' },
-    { title: 'APPLIED CANDIDATES', path: '/applied-candidates' },
+    { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "3": [ // Manager — view, edit
     { title: 'MANAGE CANDIDATES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     { title: 'MANAGE PROJECTS', path: '/manageprojects' },
-    { title: 'APPLIED CANDIDATES', path: '/applied-candidates' },
+    { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "4": [ // Employee — view only (own profile + openings + projects + applied)
     { title: 'MY PROFILE', path: '/manageresources' },

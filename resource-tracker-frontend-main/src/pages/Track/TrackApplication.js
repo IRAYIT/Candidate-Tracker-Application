@@ -510,7 +510,7 @@ function TrackApplication() {
                 </div>
               )}
 
-              <div style={{ display: "flex", gap: 20, marginTop: 24, alignItems: "center" }}>
+              {/* <div style={{ display: "flex", gap: 20, marginTop: 24, alignItems: "center" }}>
                 <button
                   onClick={handleReset}
                   style={{
@@ -526,7 +526,7 @@ function TrackApplication() {
                   </svg>
                   Track another application
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
