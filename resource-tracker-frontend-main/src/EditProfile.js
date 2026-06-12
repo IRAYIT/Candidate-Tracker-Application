@@ -467,7 +467,7 @@ function EditProfile() {
                 {/* Row 1: Resource Name + First Name */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Resource Name *</label>
+                    <label className="font-semibold mb-1 block">Employee Name *</label>
                     <input type="text" value={resourceName} onChange={(e) => setResourceName(e.target.value)} className="border-2 border-yellow-400 p-2 rounded w-full" />
                   </div>
                   <div className="w-full md:w-[48%]">

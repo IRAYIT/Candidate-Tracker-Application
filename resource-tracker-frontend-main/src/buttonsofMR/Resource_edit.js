@@ -570,7 +570,7 @@ function Resource_edit() {
         <main className="flex-1 bg-white p-8">
           <div className="max-w-5xl mx-auto my-8 p-8 bg-white rounded-lg shadow-md">
             <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-6 shadow">
-              Edit Resource
+              Edit Employee Details
             </h2>
             {loading ? (
               <div className="flex justify-center items-center h-[400px]">
@@ -582,7 +582,7 @@ function Resource_edit() {
                 {/* Row 1: Resource Name + First Name */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Resource Name *</label>
+                    <label className="font-semibold mb-1 block">Employee Name *</label>
                     <input type="text" value={resourceName} onChange={(e) => setResourceName(e.target.value)} className="border-2 border-yellow-400 p-2 rounded w-full" />
                   </div>
                   <div className="w-full md:w-[48%]">

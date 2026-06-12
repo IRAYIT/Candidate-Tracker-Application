@@ -43,6 +43,7 @@ export const OPENINGCOLUMNS = (permissionid) => [
     }
   }
 ];
+
 export const MANAGERESOURCECOLUMNS = [
   {
     id: 'firstName',
@@ -58,6 +59,30 @@ export const MANAGERESOURCECOLUMNS = [
     id: 'skill',
     header: 'SKILLS',
     accessorKey: 'skill',
+    cell: ({ row }) => {
+      const allSkills = row.original.skill
+        ? row.original.skill.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+
+      const visible = allSkills.slice(0, 2);
+      const remaining = allSkills.length - 2;
+
+      return (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-gray-800 text-sm">
+            {visible.join(", ")}
+          </span>
+          {remaining > 0 && (
+            <span
+              className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
+              title={allSkills.slice(2).join(", ")}
+            >
+              +{remaining} more
+            </span>
+          )}
+        </div>
+      );
+    },
   },
   {
     id: 'experience',
@@ -68,6 +93,12 @@ export const MANAGERESOURCECOLUMNS = [
     id: 'status',
     header: 'STATUS',
     accessorKey: 'status',
+    cell: ({ getValue }) => {
+      const status = getValue();
+      if (status === "ACTIVE") return <span className="text-green-600 font-semibold">ACTIVE</span>;
+      if (status === "TERMINATED") return <span className="text-red-500 font-semibold">TERMINATED</span>;
+      return status;
+    },
   },
 ];
 

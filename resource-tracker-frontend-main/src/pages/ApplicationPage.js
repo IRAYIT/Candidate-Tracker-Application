@@ -83,8 +83,8 @@ function ApplicationPage() {
       <div className="ap-container">
         <header className="ap-header">
           <span className="ap-header__brand">{companyName}</span>
-          <span className="ap-header__divider" />
-          <span className="ap-header__label">Career Portal</span>
+          {/* <span className="ap-header__divider" /> */}
+          {/* <span className="ap-header__label">Career Portal</span> */}
         </header>
 
         <JobDetailsCard opening={opening} />

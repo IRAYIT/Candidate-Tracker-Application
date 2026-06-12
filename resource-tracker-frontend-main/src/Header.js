@@ -36,7 +36,7 @@ useEffect(() => {
   <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-400 to-yellow-400 shadow">
       <div className="flex space-x-6 text-gray-800 font-medium text-sm">
         <p>Current Role: {role}</p>
-        <p>Resource Name: {resourcename}</p>
+        <p>Name: {resourcename}</p>
       </div>
 
       <div className="relative inline-block text-left" ref={menuRef}>

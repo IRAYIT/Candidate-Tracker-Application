@@ -33,7 +33,6 @@ function ManageResources() {
     const fetchResources = async () => {
       try {
         if (permissionid === "1") {
-          // Admin — fetch all, exclude terminated and other admins
           const res = await axios.get(`http://localhost:8098/api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
@@ -43,7 +42,6 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else if (permissionid === "2") {
-          // HR — fetch all active resources (same as admin but no delete)
           const res = await axios.get(`http://localhost:8098/api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
@@ -53,7 +51,6 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else if (permissionid === "3") {
-          // Manager — fetch resources under this manager
           const res = await axios.get(
             `http://localhost:8098/api/v1/resource/getAllResourcesByManagerId/${id}`
           );
@@ -63,7 +60,6 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else {
-          // Employee (4) — fetch only own profile
           const res = await axios.get(`http://localhost:8098/api/v1/resource/${id}`);
           setResources([res.data]);
         }
@@ -82,7 +78,6 @@ function ManageResources() {
       const skillArray =
         res.skill?.split(",").map((s) => s.trim()).filter(Boolean) || [];
 
-      // If technology was saved as "OTHER,<customValue>", show only the custom part
       let displayTechnology = res.technology || "";
       if (displayTechnology.startsWith("OTHER,")) {
         displayTechnology = displayTechnology.replace(/^OTHER,\s*/, "").trim() || "OTHER";
@@ -90,7 +85,7 @@ function ManageResources() {
 
       return {
         ...res,
-        skill: skillArray.slice(0, 2).join(", "),
+        skill: skillArray.join(", "), // full string; column handles badge display
         technology: displayTechnology,
       };
     });
@@ -103,7 +98,6 @@ function ManageResources() {
         `http://localhost:8098/api/v1/resource/${resourceId}`
       );
       if (deleteResponse.status === 200) {
-        // After delete, re-fetch based on role
         if (permissionid === "1") {
           const response = await axios.get(`http://localhost:8098/api/v1/resource/list`);
           const activeResources = response.data?.filter(
@@ -161,23 +155,21 @@ function ManageResources() {
             <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
             <div className="space-x-3">
 
-       
-{(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
-  <button
-    className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer"
-    onClick={() => navigate("/emailall")}
-  >
-    Email All
-  </button>
-)}
+              {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                <button
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer"
+                  onClick={() => navigate("/emailall")}
+                >
+                  Email All
+                </button>
+              )}
 
-              {/* Add Resource — Admin (1), HR (2), Manager (3) */}
               {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
                 <button
                   className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer"
                   onClick={() => navigate("/addresource")}
                 >
-                  Add Resource
+                  Add Employee
                 </button>
               )}
 

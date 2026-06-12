@@ -61,7 +61,7 @@ function Resource_view() {
 
             {/* ── Page title ── */}
             <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-400 to-yellow-400 mb-6 shadow">
-              Resource Details
+              Employee Details
             </h2>
 
             {resData && (

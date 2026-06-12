@@ -384,7 +384,6 @@ function Addresource() {
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = 'Valid experience is required.';
     if (!file || file.length === 0) newErrors.file = 'Resume file is required.';
-    // comments is now optional — no validation
     if (!status) newErrors.status = 'Status is required.';
     return newErrors;
   };
@@ -406,27 +405,6 @@ function Addresource() {
       .catch(() => {
         setErrors(prev => ({ ...prev, email: 'Error checking email.' }));
       });
-  };
-
-  const checkResourceName = () => {
-    if (!firstName?.trim()) {
-      setErrors(prev => ({ ...prev, firstName: 'FirstName is required.' }));
-      return;
-    }
-    if (!lastName?.trim()) {
-      setErrors(prev => ({ ...prev, lastName: 'LastName is required.' }));
-      return;
-    }
-    axios.get(`http://localhost:8098/api/v1/resource/nameCheck/${firstName}_${lastName}`)
-      .then(res => {
-        if (res.status === 200) {
-          setErrors(prev => ({
-            ...prev,
-            lastName: res.data === 'ResourceName Available' ? '' : res.data,
-          }));
-        }
-      })
-      .catch(() => {});
   };
 
   const save = () => {
@@ -461,7 +439,7 @@ function Addresource() {
     let payload = {
       permissionId: basedonrole,
       managerId: null,
-      resourceName: `${firstName}_${lastName}`,
+      resourceName: `${firstName}_${lastName}`, // backend will auto-suffix if duplicate
       linkedin: linkedIn,
       firstName,
       lastName,
@@ -538,18 +516,6 @@ function Addresource() {
       .finally(() => { setLoading(false); });
   };
 
-  // shared input class helpers
-  const inputClass = (hasError) =>
-    `border-2 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 ${
-      hasError ? 'border-red-500 focus:ring-red-200' : 'border-yellow-400 focus:ring-yellow-200'
-    }`;
-
-  const selectClass = (hasError) =>
-    `border-2 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 ${
-      hasError ? 'border-red-500 focus:ring-red-200' : 'border-yellow-400 focus:ring-yellow-200'
-    }`;
-
-  // ── JSX ──────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{`
@@ -618,7 +584,7 @@ function Addresource() {
           <main className="flex-1 bg-white p-8">
             <div className="max-w-5xl mx-auto my-8 p-8 bg-white rounded-lg shadow-md">
               <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-6 shadow">
-                Add Resource
+                Add Employee
               </h2>
 
               {loading ? (
@@ -646,7 +612,6 @@ function Addresource() {
                       <input
                         type="text"
                         value={lastName}
-                        onBlur={checkResourceName}
                         onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors(prev => ({ ...prev, lastName: '' })); }}
                         placeholder="Enter last name"
                         className={`ar-field${errors.lastName ? ' ar-error' : ''}`}
@@ -890,7 +855,7 @@ function Addresource() {
                     {errors.file && <p className="text-red-600 text-sm mt-1">{errors.file}</p>}
                   </div>
 
-                  {/* Comments — optional, no * and no validation */}
+                  {/* Comments */}
                   <div>
                     <label className="font-semibold mb-1 block">Comments</label>
                     <textarea

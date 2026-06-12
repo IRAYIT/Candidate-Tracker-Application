@@ -5,27 +5,27 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const PERMISSIONS = {
   "1": [ // Admin — view, edit, delete
-    { title: 'MANAGE CANDIDATES', path: '/manageresources' },
+    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
-    { title: 'MANAGE PROJECTS', path: '/manageprojects' },
+    // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "2": [ // HR — view, edit
-    { title: 'MANAGE CANDIDATES', path: '/manageresources' },
+    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
-    { title: 'MANAGE PROJECTS', path: '/manageprojects' },
+    // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "3": [ // Manager — view, edit
-    { title: 'MANAGE CANDIDATES', path: '/manageresources' },
+    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
-    { title: 'MANAGE PROJECTS', path: '/manageprojects' },
+    // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "4": [ // Employee — view only (own profile + openings + projects + applied)
     { title: 'MY PROFILE', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
-    { title: 'MY PROJECTS', path: '/manageprojects' },
+    // { title: 'MY PROJECTS', path: '/manageprojects' },
   ],
 };
 
