@@ -5,19 +5,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const PERMISSIONS = {
   "1": [ // Admin — view, edit, delete
-    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
+    { title: 'MANAGE USERS', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "2": [ // HR — view, edit
-    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
+    { title: 'MANAGE USERS', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },
   ],
   "3": [ // Manager — view, edit
-    { title: 'MANAGE EMPLOYEES', path: '/manageresources' },
+    { title: 'MANAGE USERS', path: '/manageresources' },
     { title: 'CURRENT JOB OPENINGS', path: '/current_openings' },
     // { title: 'MANAGE PROJECTS', path: '/manageprojects' },
     { title: 'JOB APPLIED CANDIDATES', path: '/applied-candidates' },

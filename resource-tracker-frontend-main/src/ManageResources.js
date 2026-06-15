@@ -37,7 +37,8 @@ function ManageResources() {
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
-              resource.permissionId != "1"
+              resource.permissionId != "1" &&
+              String(resource.id) !== String(id)
           ) || [];
           setResources(transformResourceData(activeResources));
 
@@ -46,7 +47,8 @@ function ManageResources() {
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
-              resource.permissionId != "1"
+              resource.permissionId != "1" &&
+              String(resource.id) !== String(id)
           ) || [];
           setResources(transformResourceData(activeResources));
 
@@ -55,7 +57,9 @@ function ManageResources() {
             `http://localhost:8098/api/v1/resource/getAllResourcesByManagerId/${id}`
           );
           const activeResources = res.data.filter(
-            (resource) => resource.status?.toLowerCase() !== "terminated"
+            (resource) =>
+              resource.status?.toLowerCase() !== "terminated" &&
+              String(resource.id) !== String(id)
           );
           setResources(transformResourceData(activeResources));
 
@@ -85,7 +89,7 @@ function ManageResources() {
 
       return {
         ...res,
-        skill: skillArray.join(", "), // full string; column handles badge display
+        skill: skillArray.join(", "),
         technology: displayTechnology,
       };
     });
@@ -103,7 +107,8 @@ function ManageResources() {
           const activeResources = response.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
-              resource.permissionId != "1"
+              resource.permissionId != "1" &&
+              String(resource.id) !== String(id)
           ) || [];
           setResources(transformResourceData(activeResources));
         } else if (permissionid === "3") {
@@ -111,7 +116,9 @@ function ManageResources() {
             `http://localhost:8098/api/v1/resource/getAllResourcesByManagerId/${id}`
           );
           const activeResources = response.data.filter(
-            (resource) => resource.status?.toLowerCase() !== "terminated"
+            (resource) =>
+              resource.status?.toLowerCase() !== "terminated" &&
+              String(resource.id) !== String(id)
           );
           setResources(transformResourceData(activeResources));
         } else {
@@ -151,31 +158,22 @@ function ManageResources() {
         </header>
 
         <main className="flex-1 bg-gray-50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-            <div className="space-x-3">
-
-              {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
-                <button
-                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer"
-                  onClick={() => navigate("/emailall")}
-                >
-                  Email All
-                </button>
-              )}
-
-              {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+          {/* Filter + Add User button — shown for Admin, HR, Manager */}
+          {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+            <div className="flex items-center justify-between mb-6">
+              <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
+              <div className="space-x-3">
                 <button
                   className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-md px-4 py-2 font-medium hover:from-yellow-500 hover:to-yellow-700 transition cursor-pointer"
                   onClick={() => navigate("/addresource")}
                 >
-                  Add Employee
+                  Add User
                 </button>
-              )}
-
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Table — shown for all roles except self-view (permissionid 4+) */}
           {loading ? (
             <div className="flex justify-center items-center h-[400px]">
               <ClipLoader size={60} color="#FACC15" />
@@ -212,19 +210,21 @@ function ManageResources() {
                         <td className="px-6 py-4 text-sm">
                           <div className="flex gap-2 flex-nowrap overflow-x-auto">
 
-                            {/* View — all roles */}
-                            <button
-                              onClick={() => {
-                                navigate("/resource_view");
-                                localStorage.setItem("rid", `${row.original.id}`);
-                              }}
-                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                            >
-                              View
-                            </button>
+                            {/* View — Admin (1) and HR (2) */}
+                            {(permissionid === "1" || permissionid === "2") && (
+                              <button
+                                onClick={() => {
+                                  navigate("/resource_view");
+                                  localStorage.setItem("rid", `${row.original.id}`);
+                                }}
+                                className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+                              >
+                                View
+                              </button>
+                            )}
 
-                            {/* Edit — Admin (1), HR (2), Manager (3) */}
-                            {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                            {/* Edit — Admin only (1) */}
+                            {permissionid === "1" && (
                               <button
                                 onClick={() => {
                                   navigate("/resource_edit");
@@ -236,27 +236,16 @@ function ManageResources() {
                               </button>
                             )}
 
-                            {/* Attachments — all roles */}
-                            <button
-                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                              onClick={() => {
-                                localStorage.setItem("attachments_id", `${row.original.id}`);
-                                navigate("/attachments");
-                              }}
-                            >
-                              Attachments
-                            </button>
-
-                            {/* Email Me — Admin (1), HR (2), Manager (3) */}
-                            {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                            {/* Attachments — Admin only (1) */}
+                            {permissionid === "1" && (
                               <button
                                 className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
                                 onClick={() => {
-                                  navigate("/sendemail");
-                                  localStorage.setItem("emp_email", `${row.original.email}`);
+                                  localStorage.setItem("attachments_id", `${row.original.id}`);
+                                  navigate("/attachments");
                                 }}
                               >
-                                Email Me
+                                Attachments
                               </button>
                             )}
 
@@ -322,7 +311,7 @@ function ManageResources() {
         </main>
 
         {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
+        {permissionid === "1" && showDeleteModal && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
             style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden" }}

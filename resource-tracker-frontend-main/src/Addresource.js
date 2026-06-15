@@ -584,7 +584,7 @@ function Addresource() {
           <main className="flex-1 bg-white p-8">
             <div className="max-w-5xl mx-auto my-8 p-8 bg-white rounded-lg shadow-md">
               <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 mb-6 shadow">
-                Add Employee
+                Add User
               </h2>
 
               {loading ? (
@@ -799,8 +799,8 @@ function Addresource() {
                       <option value="">Select Role</option>
                       <option value="Admin">Admin</option>
                       <option value="HR">HR</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Employee">Employee</option>
+                      {/* <option value="Manager">Manager</option>
+                      <option value="Employee">Employee</option> */}
                     </select>
                   </div>
 

@@ -7,6 +7,19 @@ import { ClipLoader } from "react-spinners";
 const BASE_URL = "http://localhost:8098/api/public/apply";
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
 
+// Helper to safely parse "YYYY-MM-DD HH:mm:ss.SSSSSS" style dates
+const parseDate = (d) => {
+  if (!d) return new Date(0);
+  return new Date(d.replace(" ", "T"));
+};
+
+// Sort candidates by createdAt, most recent first
+const sortByCreatedAt = (data) => {
+  return [...data].sort(
+    (a, b) => parseDate(b.createdAt) - parseDate(a.createdAt)
+  );
+};
+
 function AppliedCandidates() {
   const [permissionid, setPermissionid] = useState("");
   const [candidates, setCandidates] = useState([]);
@@ -22,7 +35,7 @@ function AppliedCandidates() {
 
   const navigate = useNavigate();
 
-useEffect(() => {
+  useEffect(() => {
     const temp_permissionid = localStorage.getItem("permissionid");
     setPermissionid(temp_permissionid);
 
@@ -36,22 +49,22 @@ useEffect(() => {
     } else {
         fetchCandidates();                     // ← all candidates
     }
-}, []);
+  }, []);
 
-const fetchCandidatesByOpening = async (openingId) => {
+  const fetchCandidatesByOpening = async (openingId) => {
     try {
         setLoading(true);
         setError(null);
         const res = await fetch(`http://localhost:8098/api/public/apply/byOpening/${openingId}`);
         if (!res.ok) throw new Error("Failed to fetch candidates");
         const data = await res.json();
-        setCandidates(data);
+        setCandidates(sortByCreatedAt(data));
     } catch (err) {
         setError(err.message);
     } finally {
         setLoading(false);
     }
-};
+  };
 
   const fetchCandidates = async () => {
     try {
@@ -60,7 +73,7 @@ const fetchCandidatesByOpening = async (openingId) => {
       const res = await fetch(`${BASE_URL}/getAllCandidate`);
       if (!res.ok) throw new Error("Failed to fetch candidates");
       const data = await res.json();
-      setCandidates(data);
+      setCandidates(sortByCreatedAt(data));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -69,14 +82,14 @@ const fetchCandidatesByOpening = async (openingId) => {
   };
 
   const filtered = candidates.filter((c) => {
-  const q = search.toLowerCase();
-  return (
-    c.firstName?.toLowerCase().includes(q) ||
-    c.lastName?.toLowerCase().includes(q) ||
-    c.email?.toLowerCase().includes(q) ||
-    c.skills?.toLowerCase().includes(q)           // add skills search
-  );
-});
+    const q = search.toLowerCase();
+    return (
+      c.firstName?.toLowerCase().includes(q) ||
+      c.lastName?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.skills?.toLowerCase().includes(q)           // add skills search
+    );
+  });
 
   const handleView = (candidateId) => {
     localStorage.setItem("view_candidate_id", candidateId);
@@ -148,26 +161,25 @@ const fetchCandidatesByOpening = async (openingId) => {
           <Header />
         </header>
 
-{filterOpeningName && (
-    <div className="flex items-center justify-between mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-md">
-        <span className="text-sm text-gray-700">
-            Showing candidates for: <span className="text-blue-600 font-semibold">{filterOpeningName}</span>
-        </span>
-        <button
-            onClick={() => {
-                localStorage.removeItem("filter_opening_id");
-                localStorage.removeItem("filter_opening_name");
-                setFilterOpeningName("");
-                setFilterOpeningId(null);
-                fetchCandidates();
-            }}
-            className="text-xs text-red-500 hover:underline cursor-pointer ml-4"
-        >
-            ✕ Clear Filter
-        </button>
-    </div>
-)}
-
+        {filterOpeningName && (
+            <div className="flex items-center justify-between mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-md">
+                <span className="text-sm text-gray-700">
+                    Showing candidates for: <span className="text-blue-600 font-semibold">{filterOpeningName}</span>
+                </span>
+                <button
+                    onClick={() => {
+                        localStorage.removeItem("filter_opening_id");
+                        localStorage.removeItem("filter_opening_name");
+                        setFilterOpeningName("");
+                        setFilterOpeningId(null);
+                        fetchCandidates();
+                    }}
+                    className="text-xs text-red-500 hover:underline cursor-pointer ml-4"
+                >
+                    ✕ Clear Filter
+                </button>
+            </div>
+        )}
 
         <main className="flex-1 bg-gray-50 p-6 overflow-x-auto">
           {/* Search bar */}

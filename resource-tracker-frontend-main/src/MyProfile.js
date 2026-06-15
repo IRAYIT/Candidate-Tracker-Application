@@ -101,7 +101,7 @@ function MyProfile() {
                 {/* Row 1: Resource Name + First Name */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className={labelClass}>Resource Name</label>
+                    <label className={labelClass}>User Name</label>
                     <input type="text" value={resData.resourceName || ''} disabled className={disabledInput} />
                   </div>
                   <div className="w-full md:w-[48%]">

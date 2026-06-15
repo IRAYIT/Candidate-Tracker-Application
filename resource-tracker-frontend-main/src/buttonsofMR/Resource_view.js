@@ -10,6 +10,7 @@ function Resource_view() {
   const [storedId, setStoredId]         = useState("");
   const [assignedEmployees, setAssignedEmployees] = useState([]);
   const [loadingEmployees, setLoadingEmployees]   = useState(false);
+  const [permissionid] = useState(localStorage.getItem("permissionid"));
   const navigate = useNavigate();
 
   /* ── fetch resource ─────────────────────────────────────────────── */
@@ -43,8 +44,6 @@ function Resource_view() {
     ? resData.skill.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
-
-
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-gradient-to-b from-blue-500 to-yellow-400 min-h-screen">
@@ -61,7 +60,7 @@ function Resource_view() {
 
             {/* ── Page title ── */}
             <h2 className="text-xl font-bold p-6 text-gray-900 rounded-t bg-gradient-to-r from-blue-400 to-yellow-400 mb-6 shadow">
-              Employee Details
+              User Details
             </h2>
 
             {resData && (
@@ -154,15 +153,19 @@ function Resource_view() {
                   >
                     Back
                   </button>
-                  <button
-                    onClick={() => {
-                      navigate("/resource_edit");
-                      localStorage.setItem("temp_id_for_use", storedId);
-                    }}
-                    className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
-                  >
-                    Edit
-                  </button>
+
+                  {/* Edit — Admin only */}
+                  {permissionid === "1" && (
+                    <button
+                      onClick={() => {
+                        navigate("/resource_edit");
+                        localStorage.setItem("temp_id_for_use", storedId);
+                      }}
+                      className="border-2 rounded-2xl border-gray-900 px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
 
               </div>
