@@ -7,16 +7,10 @@ import { ClipLoader } from "react-spinners";
 const BASE_URL = "http://localhost:8098/api/public/apply";
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
 
-// Helper to safely parse "YYYY-MM-DD HH:mm:ss.SSSSSS" style dates
-const parseDate = (d) => {
-  if (!d) return new Date(0);
-  return new Date(d.replace(" ", "T"));
-};
-
-// Sort candidates by createdAt, most recent first
-const sortByCreatedAt = (data) => {
-  return [...data].sort(
-    (a, b) => parseDate(b.createdAt) - parseDate(a.createdAt)
+// Sort candidates alphabetically by first name
+const sortByFirstName = (data) => {
+  return [...data].sort((a, b) =>
+    (a.firstName || "").localeCompare(b.firstName || "", undefined, { sensitivity: "base" })
   );
 };
 
@@ -58,7 +52,7 @@ function AppliedCandidates() {
         const res = await fetch(`http://localhost:8098/api/public/apply/byOpening/${openingId}`);
         if (!res.ok) throw new Error("Failed to fetch candidates");
         const data = await res.json();
-        setCandidates(sortByCreatedAt(data));
+        setCandidates(sortByFirstName(data));
     } catch (err) {
         setError(err.message);
     } finally {
@@ -73,7 +67,7 @@ function AppliedCandidates() {
       const res = await fetch(`${BASE_URL}/getAllCandidate`);
       if (!res.ok) throw new Error("Failed to fetch candidates");
       const data = await res.json();
-      setCandidates(sortByCreatedAt(data));
+      setCandidates(sortByFirstName(data));
     } catch (err) {
       setError(err.message);
     } finally {
