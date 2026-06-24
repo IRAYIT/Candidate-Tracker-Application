@@ -260,13 +260,13 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
 // ─── Main Addopening Component ────────────────────────────────────────────────
 function Addopening() {
   const [openingname, setOpeningname]       = useState('');
-  const [hours, setHours]                   = useState('');
-  const [shifttimings, setShifttimings]     = useState('');
-  const [payment, setPayment]               = useState('');
-  const [paymenttype, setPaymenttype]       = useState('');
+  // const [hours, setHours]                   = useState('');          // Removed by HR
+  // const [shifttimings, setShifttimings]     = useState('');          // Removed by HR
+  // const [payment, setPayment]               = useState('');          // Removed by HR
+  // const [paymenttype, setPaymenttype]       = useState('');          // Removed by HR
   const [technology, setTechnology]         = useState('');
   const [experience, setExperience]         = useState('');
-  const [employmenttype, setEmploymenttype] = useState('Freelancing');
+  // const [employmenttype, setEmploymenttype] = useState('Freelancing'); // Removed by HR
   const [skills, setSkills]                 = useState('');
   const [location, setLocation]             = useState('');
   const [status, setStatus]                 = useState('');
@@ -277,20 +277,20 @@ function Addopening() {
   const [loading, setLoading]               = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [createdPublicUrl, setCreatedPublicUrl] = useState('');
-  const [currency, setCurrency]             = useState('INR');
+  // const [currency, setCurrency]             = useState('INR');       // Removed by HR
 
   const navigate = useNavigate();
 
   const validateFields = () => {
     const newErrors = {};
     if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
-    if (!hours?.trim())          newErrors.hours          = "Hours are required.";
-    if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";
-    if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";
+    // if (!hours?.trim())          newErrors.hours          = "Hours are required.";          // Removed by HR
+    // if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";  // Removed by HR
+    // if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";     // Removed by HR
     if (!technology?.trim())     newErrors.technology     = "Technology is required.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
                                  newErrors.experience     = "Valid experience is required.";
-    if (!employmenttype?.trim()) newErrors.employmenttype = "Employment type is required.";
+    // if (!employmenttype?.trim()) newErrors.employmenttype = "Employment type is required.";  // Removed by HR
     if (!skills?.trim())         newErrors.skills         = "Skills are required.";
     if (!location?.trim())       newErrors.location       = "Location is required.";
     if (!status?.trim())         newErrors.status         = "Status is required.";
@@ -298,11 +298,20 @@ function Addopening() {
   };
 
   const resetForm = () => {
-    setOpeningname(''); setHours(''); setShifttimings(''); setPayment('');
-    setPaymenttype(''); setTechnology(''); setExperience('');
-    setEmploymenttype('Freelancing'); setSkills(''); setLocation('');
-    setStatus(''); setDescription(''); setCustomTech('');
-    setCurrency('INR');
+    setOpeningname('');
+    // setHours('');            // Removed by HR
+    // setShifttimings('');     // Removed by HR
+    // setPayment('');          // Removed by HR
+    // setPaymenttype('');      // Removed by HR
+    setTechnology('');
+    setExperience('');
+    // setEmploymenttype('Freelancing'); // Removed by HR
+    setSkills('');
+    setLocation('');
+    setStatus('');
+    setDescription('');
+    setCustomTech('');
+    // setCurrency('INR');      // Removed by HR
     setErrors({});
   };
 
@@ -320,17 +329,17 @@ function Addopening() {
 
     const payload = {
       name:           openingname,
-      hours:          hours,
-payment: payment?.trim() ? `${payment} ${currency}` : '',
-      paymentType:    paymenttype,
-      shiftTimings:   shifttimings,
+      // hours:          hours,                                         // Removed by HR
+      // payment:        payment?.trim() ? `${payment} ${currency}` : '', // Removed by HR
+      // paymentType:    paymenttype,                                   // Removed by HR
+      // shiftTimings:   shifttimings,                                  // Removed by HR
       startDate,
       endDate,
       skill:          skills,
       location:       location,
       technology:     technology === 'Other' ? customTech : technology,
       experience:     experience,
-      employmentType: employmenttype,
+      // employmentType: employmenttype,                                // Removed by HR
       status:         status,
       description:    description,
       createdAt:      new Date(),
@@ -339,7 +348,7 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
       updatedBy:      creatorId,
     };
 
-    axios.post("http://localhost:8098/api/v1/openings", payload)
+    axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings", payload)
       .then((response) => {
         const publicUrlKey = response.data?.publicUrlKey;
         const publicUrl    = `http://localhost:3000/apply/${publicUrlKey}`;
@@ -351,7 +360,7 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
           error?.response?.data?.errorMessage?.includes('Mail') ||
           error?.response?.data?.details?.toString().includes('Failed to send email')
         ) {
-          axios.get("http://localhost:8098/api/v1/openings")
+          axios.get("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings")
             .then((res) => {
               const latest = res.data[res.data.length - 1];
               if (latest?.publicUrlKey) {
@@ -411,157 +420,117 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
                   </div>
                 )}
 
-                {/* Row 1: Opening Name + Hours */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
-                    <input type="text" value={openingname} placeholder="Enter name"
-                      onChange={(e) => { setOpeningname(e.target.value); if (errors.openingname) setErrors(prev => ({ ...prev, openingname: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.openingname && <p className="text-red-600 text-sm mt-1">{errors.openingname}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Hours <span className="text-pink-800">*</span></label>
-                    <input type="text" value={hours} placeholder="Enter hours"
-                      onChange={(e) => { setHours(e.target.value); if (errors.hours) setErrors(prev => ({ ...prev, hours: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.hours ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
-                  </div>
+                {/* Row 1: Opening Name (full width — Hours removed) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
+                  <input type="text" value={openingname} placeholder="Enter name"
+                    onChange={(e) => { setOpeningname(e.target.value); if (errors.openingname) setErrors(prev => ({ ...prev, openingname: '' })); }}
+                    className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
+                  {errors.openingname && <p className="text-red-600 text-sm mt-1">{errors.openingname}</p>}
                 </div>
 
-                {/* Row 2: Shift Timings + Payment */}
-                <div className="flex flex-wrap gap-4 justify-between">
+                {/* Removed by HR:
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Shift Timings <span className="text-pink-800">*</span></label>
-                    <input type="text" value={shifttimings} placeholder="Enter timings"
-                      onChange={(e) => { setShifttimings(e.target.value); if (errors.shifttimings) setErrors(prev => ({ ...prev, shifttimings: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.shifttimings ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.shifttimings && <p className="text-red-600 text-sm mt-1">{errors.shifttimings}</p>}
+                    <label>Hours *</label>
+                    <input type="text" value={hours} ... />
                   </div>
                   <div className="w-full md:w-[48%]">
-<label className="font-semibold mb-1 block">Payment</label>
-                    <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <select
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                        className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"
-                        style={{ borderRight: '2px solid #facc15' }}
-                      >
-                        <option value="INR">₹ INR</option>
-                        <option value="SEK">kr SEK</option>
-                        <option value="USD">$ USD</option>
-                      </select>
-                      <input
-                        type="text"
-                        value={payment}
-                        placeholder="Amount"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (/^[a-zA-Z0-9]*$/.test(val)) {
-                            setPayment(val);
-                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
-                          }
-                        }}
-                        className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
-                        style={{ boxShadow: 'none' }}
-                      />
-                    </div>
-                    {errors.payment && <p className="text-red-600 text-sm mt-1">{errors.payment}</p>}
+                    <label>Shift Timings *</label>
+                    <input type="text" value={shifttimings} ... />
                   </div>
+                  <div className="w-full md:w-[48%]">
+                    <label>Payment</label>
+                    <div> currency select + amount input </div>
+                  </div>
+                  <div className="w-full md:w-[48%]">
+                    <label>Payment Type *</label>
+                    <input type="text" value={paymenttype} ... />
+                  </div>
+                */}
+
+                {/* Row 2: Technology (full width — Payment Type removed) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
+                  <select
+                    value={technology}
+                    onChange={(e) => {
+                      setTechnology(e.target.value);
+                      if (e.target.value !== 'Other') setCustomTech('');
+                      if (errors.technology) setErrors(prev => ({ ...prev, technology: '' }));
+                    }}
+                    className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
+                  >
+                    <option value="">Select Technology</option>
+                    <optgroup label="Java Ecosystem">
+                      <option value="JAVA">Java</option>
+                      <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
+                      <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
+                      <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
+                    </optgroup>
+                    <optgroup label=".NET Ecosystem">
+                      <option value="DOTNET">ASP.NET</option>
+                      <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
+                      <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
+                      <option value="DOTNET CORE">ASP.NET Core</option>
+                    </optgroup>
+                    <optgroup label="Python Ecosystem">
+                      <option value="PYTHON">Python</option>
+                      <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
+                      <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
+                      <option value="PYTHON DJANGO">Python + Django</option>
+                      <option value="PYTHON FLASK">Python + Flask</option>
+                    </optgroup>
+                    <optgroup label="Node.js Ecosystem">
+                      <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
+                      <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
+                      <option value="MERN">MERN Stack</option>
+                      <option value="MEAN">MEAN Stack</option>
+                      <option value="MEVN">MEVN Stack</option>
+                    </optgroup>
+                    <optgroup label="Frontend">
+                      <option value="ANGULAR">Angular</option>
+                      <option value="REACTJS">React.js</option>
+                      <option value="VUEJS">Vue.js</option>
+                      <option value="NEXTJS">Next.js</option>
+                      <option value="NUXTJS">Nuxt.js</option>
+                    </optgroup>
+                    <optgroup label="Mobile Development">
+                      <option value="ANDROID">Android</option>
+                      <option value="IOS SWIFT">iOS (Swift)</option>
+                      <option value="REACT NATIVE">React Native</option>
+                      <option value="FLUTTER">Flutter</option>
+                    </optgroup>
+                    <optgroup label="Database &amp; Data Engineering">
+                      <option value="SQL DEVELOPER">SQL Developer</option>
+                      <option value="DATA ENGINEER">Data Engineer</option>
+                      <option value="DATA SCIENCE">Data Science</option>
+                      <option value="ML AI">Machine Learning / AI</option>
+                      <option value="POWER BI">Power BI / Tableau</option>
+                    </optgroup>
+                    <optgroup label="DevOps &amp; Cloud">
+                      <option value="AWS DEVOPS">AWS DevOps</option>
+                      <option value="AZURE DEVOPS">Azure DevOps</option>
+                      <option value="GCP DEVOPS">GCP DevOps</option>
+                      <option value="DEVOPS">DevOps (General)</option>
+                      <option value="CLOUD ARCHITECT">Cloud Architect</option>
+                    </optgroup>
+                    <optgroup label="Testing">
+                      <option value="TESTING">Manual Testing</option>
+                      <option value="AUTOMATION TESTING">Automation Testing</option>
+                      <option value="PERFORMANCE TESTING">Performance Testing</option>
+                      <option value="API TESTING">API Testing</option>
+                    </optgroup>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
+                  {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
+                  {technology === 'Other' && (
+                    <input type="text" className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
+                      placeholder="Enter custom technology" value={customTech}
+                      onChange={(e) => setCustomTech(e.target.value)} />
+                  )}
                 </div>
 
-                {/* Row 3: Payment Type + Technology */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Payment Type <span className="text-pink-800">*</span></label>
-                    <input type="text" value={paymenttype} placeholder="Enter type"
-                      onChange={(e) => { setPaymenttype(e.target.value); if (errors.paymenttype) setErrors(prev => ({ ...prev, paymenttype: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.paymenttype ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.paymenttype && <p className="text-red-600 text-sm mt-1">{errors.paymenttype}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
-                    <select
-                      value={technology}
-                      onChange={(e) => {
-                        setTechnology(e.target.value);
-                        if (e.target.value !== 'Other') setCustomTech('');
-                        if (errors.technology) setErrors(prev => ({ ...prev, technology: '' }));
-                      }}
-                      className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
-                    >
-                      <option value="">Select Technology</option>
-                      <optgroup label="Java Ecosystem">
-                        <option value="JAVA">Java</option>
-                        <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
-                        <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
-                        <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
-                      </optgroup>
-                      <optgroup label=".NET Ecosystem">
-                        <option value="DOTNET">ASP.NET</option>
-                        <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
-                        <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
-                        <option value="DOTNET CORE">ASP.NET Core</option>
-                      </optgroup>
-                      <optgroup label="Python Ecosystem">
-                        <option value="PYTHON">Python</option>
-                        <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
-                        <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
-                        <option value="PYTHON DJANGO">Python + Django</option>
-                        <option value="PYTHON FLASK">Python + Flask</option>
-                      </optgroup>
-                      <optgroup label="Node.js Ecosystem">
-                        <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
-                        <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
-                        <option value="MERN">MERN Stack</option>
-                        <option value="MEAN">MEAN Stack</option>
-                        <option value="MEVN">MEVN Stack</option>
-                      </optgroup>
-                      <optgroup label="Frontend">
-                        <option value="ANGULAR">Angular</option>
-                        <option value="REACTJS">React.js</option>
-                        <option value="VUEJS">Vue.js</option>
-                        <option value="NEXTJS">Next.js</option>
-                        <option value="NUXTJS">Nuxt.js</option>
-                      </optgroup>
-                      <optgroup label="Mobile Development">
-                        <option value="ANDROID">Android</option>
-                        <option value="IOS SWIFT">iOS (Swift)</option>
-                        <option value="REACT NATIVE">React Native</option>
-                        <option value="FLUTTER">Flutter</option>
-                      </optgroup>
-                      <optgroup label="Database &amp; Data Engineering">
-                        <option value="SQL DEVELOPER">SQL Developer</option>
-                        <option value="DATA ENGINEER">Data Engineer</option>
-                        <option value="DATA SCIENCE">Data Science</option>
-                        <option value="ML AI">Machine Learning / AI</option>
-                        <option value="POWER BI">Power BI / Tableau</option>
-                      </optgroup>
-                      <optgroup label="DevOps &amp; Cloud">
-                        <option value="AWS DEVOPS">AWS DevOps</option>
-                        <option value="AZURE DEVOPS">Azure DevOps</option>
-                        <option value="GCP DEVOPS">GCP DevOps</option>
-                        <option value="DEVOPS">DevOps (General)</option>
-                        <option value="CLOUD ARCHITECT">Cloud Architect</option>
-                      </optgroup>
-                      <optgroup label="Testing">
-                        <option value="TESTING">Manual Testing</option>
-                        <option value="AUTOMATION TESTING">Automation Testing</option>
-                        <option value="PERFORMANCE TESTING">Performance Testing</option>
-                        <option value="API TESTING">API Testing</option>
-                      </optgroup>
-                      <option value="Other">Other (Custom)</option>
-                    </select>
-                    {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
-                    {technology === 'Other' && (
-                      <input type="text" className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
-                        placeholder="Enter custom technology" value={customTech}
-                        onChange={(e) => setCustomTech(e.target.value)} />
-                    )}
-                  </div>
-                </div>
-
-                {/* Row 4: Experience + Employment Type */}
+                {/* Row 3: Experience + Location (Employment Type removed) */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
@@ -570,31 +539,15 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
                       className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                   </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Employment Type <span className="text-pink-800">*</span></label>
-                    <select value={employmenttype}
-                      onChange={(e) => { setEmploymenttype(e.target.value); if (errors.employmenttype) setErrors(prev => ({ ...prev, employmenttype: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <option value="">Select Employment Type</option>
-                      <option value="Freelancing">Freelancing</option>
-                      <option value="Consultant">Consultant</option>
-                      <option value="Sweden-FullTime">Sweden-FullTime</option>
-                      <option value="India-FullTime">India-FullTime</option>
-                      <option value="USA-FullTime">USA-FullTime</option>
-                    </select>
-                    {errors.employmenttype && <p className="text-red-600 text-sm mt-1">{errors.employmenttype}</p>}
-                  </div>
-                </div>
-
-                {/* Row 5: Skills + Location */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
-                    <SkillTagInput value={skills}
-                      onChange={(val) => { setSkills(val); if (errors.skills) setErrors(prev => ({ ...prev, skills: '' })); }}
-                      error={errors.skills} />
-                    {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}
-                  </div>
+                  {/* Removed by HR:
+                    <div className="w-full md:w-[48%]">
+                      <label>Employment Type *</label>
+                      <select value={employmenttype} ...>
+                        <option value="Freelancing">Freelancing</option>
+                        ...
+                      </select>
+                    </div>
+                  */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Location <span className="text-pink-800">*</span></label>
                     <select value={location}
@@ -609,7 +562,16 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
                   </div>
                 </div>
 
-                {/* Row 6: Status (full width) */}
+                {/* Row 4: Skills (full width) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
+                  <SkillTagInput value={skills}
+                    onChange={(val) => { setSkills(val); if (errors.skills) setErrors(prev => ({ ...prev, skills: '' })); }}
+                    error={errors.skills} />
+                  {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}
+                </div>
+
+                {/* Row 5: Status (full width) */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
                   <select value={status}
@@ -622,7 +584,7 @@ payment: payment?.trim() ? `${payment} ${currency}` : '',
                   {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
                 </div>
 
-                {/* Row 7: Description (full width) */}
+                {/* Row 6: Description (full width) */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Description</label>
                   <textarea

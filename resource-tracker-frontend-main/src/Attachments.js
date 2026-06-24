@@ -25,7 +25,7 @@ const Attachments = (props) => {
   const fetchAttachments = async (resid) => {
     try {
       const res = await axios.get(
-        `http://localhost:8098/api/v1/attachment/getListAttachments/${resid}`
+        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/attachment/getListAttachments/${resid}`
       );
       setAttachments(res.data);
     } catch (err) {
@@ -40,7 +40,7 @@ const Attachments = (props) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8098/api/v1/attachment/${attachmentId}`);
+      await axios.delete(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/attachment/${attachmentId}`);
       fetchAttachments(resId);
     } catch (err) {
       console.error("Delete failed:", err);
@@ -60,7 +60,7 @@ const Attachments = (props) => {
       formData.append("attachments", file[i]);
     }
     try {
-      await axios.post("http://localhost:8098/api/v1/attachment/upload", formData);
+      await axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/attachment/upload", formData);
       fetchAttachments(resId);
       setShowUploadForm(false);
       setFile([]);
@@ -72,7 +72,7 @@ const Attachments = (props) => {
 
   const handleView = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:8098/api/v1/attachment/${id}`);
+      const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/attachment/${id}`);
       const blob = b64toBlob(res.data.attachment, res.data.contentType);
       const blobUrl = URL.createObjectURL(blob);
       window.open(blobUrl);

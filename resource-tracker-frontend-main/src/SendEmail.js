@@ -33,7 +33,7 @@ function SendEmail() {
       };
       setSending(true);
       axios
-        .post("http://localhost:8098/api/v1/resource/sendEmail", payload)
+        .post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/sendEmail", payload)
         .then(() => {
           setSending(false);
           navigate('/manageresources');

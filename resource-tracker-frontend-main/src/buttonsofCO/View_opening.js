@@ -23,7 +23,7 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
   useEffect(() => {
     const openingid = localStorage.getItem("opening_id");
     axios
-      .get(`http://localhost:8098/api/v1/openings/${openingid}`)
+      .get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings/${openingid}`)
       .then((res) => {
         setOpeningname(res.data.name);
         setHours(res.data.hours);

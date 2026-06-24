@@ -301,7 +301,7 @@ function EditProfile() {
   const [searchTerm, setSearchTerm]             = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:8098/api/v1/resource/getAllUnassignedResources')
+    axios.get('https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
         setEmployeeList(onlyEmployees);
@@ -312,7 +312,7 @@ function EditProfile() {
   useEffect(() => {
     const resourceid = localStorage.getItem("employeeid");
     if (resourceid) {
-      axios.get(`http://localhost:8098/api/v1/resource/${resourceid}`)
+      axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/${resourceid}`)
         .then((res) => {
           const data = res.data;
           setResourceName(data.resourceName || "");
@@ -436,7 +436,7 @@ function EditProfile() {
     formData.append("attachments", new Blob([]), "empty.txt");
 
     axios
-      .put("http://localhost:8098/api/v1/resource/update/upload", formData)
+      .put("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/update/upload", formData)
       .then(() => navigate('/manageresources'))
       .catch((error) => console.error("Error updating resource:", error))
       .finally(() => setLoading(false));

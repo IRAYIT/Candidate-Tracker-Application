@@ -35,8 +35,8 @@ function Current_openings() {
 
 const getAllOpenings = async (pid = permissionid) => {
   const url = pid === "1"
-    ? `http://localhost:8098/api/v1/openings/all`
-    : `http://localhost:8098/api/v1/openings`;
+    ? `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings/all`
+    : `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings`;
   const res = await axios.get(url);
   
   // Sort: ACTIVE first, TERMINATED after
@@ -55,7 +55,7 @@ const getAllOpenings = async (pid = permissionid) => {
   const deleteopening = (openingId) => {
     setLoading(true);
     axios
-      .delete(`http://localhost:8098/api/v1/openings/${openingId}`)
+      .delete(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings/${openingId}`)
       .then((res) => {
         if (res.status === 200) {
           getAllOpenings();

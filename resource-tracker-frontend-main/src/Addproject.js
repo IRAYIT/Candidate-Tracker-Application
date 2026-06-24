@@ -426,7 +426,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     if (!effectiveTech || skills.length === 0) return;
     onUpdate(index, { loading: true, resourcePool: [], selectedResourceIds: [] });
     try {
-      const res = await axios.post("http://localhost:8098/api/v1/projects/getResourceNames", {
+      const res = await axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects/getResourceNames", {
         permissionId: 3,
         technology: effectiveTech,
         skill: skills.join(","),
@@ -664,7 +664,7 @@ function Addproject() {
         resourceIds: r.selectedResourceIds,
       })),
     };
-    axios.post("http://localhost:8098/api/v1/projects/createproject", payload)
+    axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects/createproject", payload)
       .then(() => navigate("/manageprojects"))
       .catch(console.log)
       .finally(() => setLoading(false));

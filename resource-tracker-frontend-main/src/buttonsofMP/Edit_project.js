@@ -398,7 +398,7 @@ function RoleCard({ role, index, isFirst, onUpdate, onRemove, roleError }) {
     if (!skills || skills.length === 0) return;
     onUpdate(index, { loading: true, resourcePool: [] });
     try {
-      const res = await axios.post("http://localhost:8098/api/v1/projects/getResourceNames", {
+      const res = await axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects/getResourceNames", {
         permissionId: 3,
         skill: skills.join(","),
         technology: role.technology === "Other" ? role.customTech : role.technology,
@@ -562,7 +562,7 @@ function Edit_project() {
 
   const fetchProject = async (pid) => {
     try {
-      const res  = await axios.get(`http://localhost:8098/api/v1/projects/${pid}`);
+      const res  = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects/${pid}`);
       const data = res.data;
       setProjectId(data.id || 0);
       setProjectName(data.name || "");
@@ -641,7 +641,7 @@ function Edit_project() {
       })),
     };
 
-    axios.put("http://localhost:8098/api/v1/projects", payload)
+    axios.put("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects", payload)
       .then(() => navigate("/manageprojects"))
       .catch((err) => console.error("Update failed:", err))
       .finally(() => setLoading(false));
