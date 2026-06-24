@@ -33,7 +33,7 @@ function ManageResources() {
     const fetchResources = async () => {
       try {
         if (permissionid === "1") {
-          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/list`);
+          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
@@ -43,7 +43,7 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else if (permissionid === "2") {
-          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/list`);
+          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
@@ -103,7 +103,7 @@ function ManageResources() {
       );
       if (deleteResponse.status === 200) {
         if (permissionid === "1") {
-          const response = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/list`);
+          const response = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/list`);
           const activeResources = response.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
