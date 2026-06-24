@@ -36,7 +36,7 @@ useEffect(() => {
   <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-400 to-yellow-400 shadow">
       <div className="flex space-x-6 text-gray-800 font-medium text-sm">
         <p>Current Role: {role}</p>
-        <p>Resource Name: {resourcename}</p>
+        <p>Name: {resourcename}</p>
       </div>
 
       <div className="relative inline-block text-left" ref={menuRef}>
@@ -60,10 +60,12 @@ useEffect(() => {
               <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer" onClick={() =>navigate('/editprofile')}>
                 Edit Profile
               </button>
-              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
+              {/* <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
                 Change Picture
-              </button>
-              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer">
+              </button> */}
+              <button className="block w-full text-left px-4 py-2 hover:bg-white/50 cursor-pointer"
+                onClick={() => navigate('/forgotpassword')}  
+              >
                 Change Password
               </button>
               <button className="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 font-semibold cursor-pointer" onClick={() =>navigate('/')}>

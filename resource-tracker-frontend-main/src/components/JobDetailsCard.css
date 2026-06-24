@@ -64,3 +64,37 @@
   color: #6b7280;
   line-height: 1.75;
 }
+
+/* ── Add these to your existing JobDetailsCard.css ── */
+
+/* Closed banner inside the job card */
+.jd-card__closed-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 10px;
+}
+
+.jd-card__closed-banner-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.jd-card__closed-banner-title {
+  margin: 0 0 2px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #9f1239;
+}
+
+.jd-card__closed-banner-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #be123c;
+  line-height: 1.5;
+}

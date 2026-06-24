@@ -5,6 +5,28 @@ import JobDetailsCard from '../components/JobDetailsCard';
 import ApplicationForm from '../components/ApplicationForm';
 import './ApplicationPage.css';
 
+// ─── Company Name by Country ──────────────────────────────────────────────────
+const COMPANY_BY_COUNTRY = {
+  "India":  "I-Ray IT Solutions",
+  "Sweden": "I-Ray IT Solutions AB",
+  "USA":    "I-Ray IT Solutions INC",
+};
+
+// ─── Country Code by Location ─────────────────────────────────────────────────
+const COUNTRY_CODE_BY_LOCATION = {
+  "India":  "IN",
+  "Sweden": "SE",
+  "USA":    "US",
+};
+
+function getCompanyName(country) {
+  return COMPANY_BY_COUNTRY[country] || "I-Ray IT Solutions";
+}
+
+function getCountryCode(location) {
+  return COUNTRY_CODE_BY_LOCATION[location] || "IN";
+}
+
 function ApplicationPage() {
   const { publicUrlKey } = useParams();
   const [opening, setOpening] = useState(null);
@@ -26,6 +48,10 @@ function ApplicationPage() {
     else { setError('Invalid job link.'); setLoading(false); }
   }, [publicUrlKey]);
 
+  const companyName = getCompanyName(opening?.location);
+  const countryCode = getCountryCode(opening?.location);
+  const isTerminated = (opening?.status || '').toUpperCase() === 'TERMINATED';
+
   if (loading) {
     return (
       <div className="ap-center">
@@ -41,7 +67,7 @@ function ApplicationPage() {
     return (
       <div className="ap-center">
         <div className="ap-error-box">
-          <span style={{fontSize:'2rem'}}>⚠</span>
+          <span style={{ fontSize: '2rem' }}>⚠</span>
           <h2>Oops!</h2>
           <p>{error}</p>
           <small>Please check the link or contact the hiring team.</small>
@@ -56,14 +82,19 @@ function ApplicationPage() {
       <div className="ap-blob ap-blob--2" />
       <div className="ap-container">
         <header className="ap-header">
-          <span className="ap-header__brand">I-Ray IT Solutions</span>
-          <span className="ap-header__divider" />
-          <span className="ap-header__label">Career Portal</span>
+          <span className="ap-header__brand">{companyName}</span>
+          {/* <span className="ap-header__divider" /> */}
+          {/* <span className="ap-header__label">Career Portal</span> */}
         </header>
+
         <JobDetailsCard opening={opening} />
-        <ApplicationForm publicUrlKey={publicUrlKey} />
+
+        {!isTerminated && (
+          <ApplicationForm publicUrlKey={publicUrlKey} country={countryCode} />
+        )}
+
         <footer className="ap-footer">
-          <p>© {new Date().getFullYear()} I-Ray IT Solutions · Resource Tracker</p>
+          <p>© {new Date().getFullYear()} {companyName} · Resource Tracker</p>
         </footer>
       </div>
     </div>

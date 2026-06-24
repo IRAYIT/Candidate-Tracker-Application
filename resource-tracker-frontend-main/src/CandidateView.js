@@ -3,7 +3,12 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://localhost:8098/api/public/apply";
+const BASE_URL = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/public/apply";
+
+const isOldFormat = (languagesKnown) => {
+  if (!languagesKnown) return false;
+  return !languagesKnown.includes('(');
+};
 
 function CandidateView() {
   const [candidate, setCandidate] = useState(null);
@@ -22,7 +27,7 @@ function CandidateView() {
     }
   }, []);
 
-  // ── DOCUMENT HELPERS ─────────────────────────────────────────────────────
+  // ── DOCUMENT HELPERS ──────────────────────────────────────────────────────
   const openDocument = async (url) => {
     try {
       const res = await fetch(url);
@@ -47,6 +52,32 @@ function CandidateView() {
       alert("Error downloading document: " + err.message);
     }
   };
+
+  // ── Derived display values (safe — candidate may still be null) ───────────
+  const displaySkills = candidate
+    ? candidate.skills || (isOldFormat(candidate.languagesKnown) ? candidate.languagesKnown : '')
+    : '';
+
+  const displayLanguages = candidate
+    ? (isOldFormat(candidate.languagesKnown) ? '' : (candidate.languagesKnown || ''))
+    : '';
+
+  // ── Tag renderer helper ───────────────────────────────────────────────────
+  const TagList = ({ value, bg, border, color }) =>
+    value ? (
+      <div className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 min-h-[38px] flex flex-wrap gap-1">
+        {value.split(',').map(s => s.trim()).filter(Boolean).map(item => (
+          <span key={item} style={{
+            background: bg, color, fontSize: '0.75rem',
+            fontWeight: '600', padding: '2px 10px',
+            borderRadius: '999px', border: `1px solid ${border}`
+          }}>{item}</span>
+        ))}
+      </div>
+    ) : (
+      <input type="text" value="Not provided" disabled
+        className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic" />
+    );
 
   return (
     <div className="min-h-screen flex">
@@ -76,21 +107,13 @@ function CandidateView() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={candidate.firstName || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.firstName || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={candidate.lastName || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.lastName || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
@@ -98,135 +121,103 @@ function CandidateView() {
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Email</label>
-                    <input
-                      type="text"
-                      value={candidate.email || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.email || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Phone</label>
-                    <input
-                      type="text"
-                      value={candidate.phone || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.phone || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
                 {/* Row 3 - Current Salary / Expected Salary */}
                 <div className="flex flex-wrap gap-4 justify-between">
-                   <div className="w-full md:w-[48%]">
+                  <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Current Salary</label>
-                    <input
-                      type="text"
+                    <input type="text"
                       value={candidate.currentSalary ? `${candidate.currentSalaryCurrency || '₹'}${candidate.currentSalary.toLocaleString()}` : ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                      disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
-                 
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Expected Salary</label>
-                    <input
-                      type="text"
+                    <input type="text"
                       value={candidate.expectedSalary ? `${candidate.expectedSalaryCurrency || '₹'}${candidate.expectedSalary.toLocaleString()}` : ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                      disabled className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
-                 {/* Row 4  - Experience}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  bled<div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Experience (Years)</label>
-                    <input
-                      type="text"
-                      value={candidate.experience ?? ""}
-                      disa
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
-                  </div>
-
-                {/* Row 4 - Skills / Location */}
+                {/* Row 4 - Experience / Location */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Skills</label>
-                    <input
-                      type="text"
-                      value={candidate.languagesKnown || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <label className="font-semibold block text-gray-700 mb-1">Experience (Years)</label>
+                    <input type="text" value={candidate.experience ?? ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Location</label>
-                    <input
-                      type="text"
-                      value={candidate.location || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
+                    <input type="text" value={candidate.location || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
+                  </div>
+                </div>
+
+                {/* Row 5 - Skills / Languages Known */}
+                <div className="flex flex-wrap gap-4 justify-between">
+                  <div className="w-full md:w-[48%]">
+                    <label className="font-semibold block text-gray-700 mb-1">Skills</label>
+                    <TagList
+                      value={displaySkills}
+                      bg="white" color="#374151" border="#d1d5db"
+                    />
+                    {/* Warn when old record — skills were stored in languagesKnown */}
+                    {isOldFormat(candidate.languagesKnown) && !candidate.skills && (
+                      <p className="text-xs text-amber-600 mt-1">
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-full md:w-[48%]">
+                    <label className="font-semibold block text-gray-700 mb-1">Languages Known</label>
+                    <TagList
+                      value={displayLanguages}
+                      bg="white" color="#374151" border="#d1d5db"
                     />
                   </div>
                 </div>
 
-                {/* Row 5 - Employment Type / Notice Period */}
+                {/* Row 6 - Employment Type / Notice Period */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Employment Type</label>
-                    <input
-                      type="text"
-                      value={candidate.employmentType || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.employmentType || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Notice Period (Days)</label>
-                    <input
-                      type="text"
-                      value={candidate.noticePeriod ?? ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.noticePeriod ?? ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
-                {/* Row 6 - Visa Status / Source */}
+                {/* Row 7 - Visa Status / Source */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Visa Status</label>
-                    <input
-                      type="text"
-                      value={candidate.visaStatus || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.visaStatus || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Source</label>
-                    <input
-                      type="text"
-                      value={candidate.source || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.source || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
-                {/* Row 7 - Application Status (full width) */}
+                {/* Row 8 - Application Status */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Application Status</label>
-                    <input
-                      type="text"
-                      value={candidate.applicationStatus || ""}
-                      disabled
-                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
-                    />
+                    <input type="text" value={candidate.applicationStatus || ""} disabled
+                      className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm" />
                   </div>
                 </div>
 
@@ -242,27 +233,19 @@ function CandidateView() {
                         <div className="border-2 border-yellow-400 p-3 rounded bg-gray-100">
                           <p className="text-sm text-gray-700 mb-2 truncate">📄 {candidate.cvName}</p>
                           <div className="flex gap-2">
-                            <button
-                              onClick={() => openDocument(`${BASE_URL}/resume/${candidate.id}`)}
-                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => openDocument(`${BASE_URL}/resume/${candidate.id}`)}
+                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer">
                               View
                             </button>
-                            <button
-                              onClick={() => downloadDocument(`${BASE_URL}/resume/${candidate.id}`, candidate.cvName)}
-                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => downloadDocument(`${BASE_URL}/resume/${candidate.id}`, candidate.cvName)}
+                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer">
                               ⬇ Download
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <input
-                          type="text"
-                          value="Not uploaded"
-                          disabled
-                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic"
-                        />
+                        <input type="text" value="Not uploaded" disabled
+                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic" />
                       )}
                     </div>
 
@@ -273,27 +256,19 @@ function CandidateView() {
                         <div className="border-2 border-yellow-400 p-3 rounded bg-gray-100">
                           <p className="text-sm text-gray-700 mb-2 truncate">📄 {candidate.coverLetterName}</p>
                           <div className="flex gap-2">
-                            <button
-                              onClick={() => openDocument(`${BASE_URL}/cover-letter/${candidate.id}`)}
-                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => openDocument(`${BASE_URL}/cover-letter/${candidate.id}`)}
+                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer">
                               View
                             </button>
-                            <button
-                              onClick={() => downloadDocument(`${BASE_URL}/cover-letter/${candidate.id}`, candidate.coverLetterName)}
-                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => downloadDocument(`${BASE_URL}/cover-letter/${candidate.id}`, candidate.coverLetterName)}
+                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer">
                               ⬇ Download
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <input
-                          type="text"
-                          value="Not uploaded"
-                          disabled
-                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic"
-                        />
+                        <input type="text" value="Not uploaded" disabled
+                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic" />
                       )}
                     </div>
 
@@ -304,27 +279,19 @@ function CandidateView() {
                         <div className="border-2 border-yellow-400 p-3 rounded bg-gray-100">
                           <p className="text-sm text-gray-700 mb-2 truncate">📄 {candidate.additionalDocumentName}</p>
                           <div className="flex gap-2">
-                            <button
-                              onClick={() => openDocument(`${BASE_URL}/additional-documents/${candidate.id}`)}
-                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => openDocument(`${BASE_URL}/additional-documents/${candidate.id}`)}
+                              className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 text-xs transition cursor-pointer">
                               View
                             </button>
-                            <button
-                              onClick={() => downloadDocument(`${BASE_URL}/additional-documents/${candidate.id}`, candidate.additionalDocumentName)}
-                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer"
-                            >
+                            <button onClick={() => downloadDocument(`${BASE_URL}/additional-documents/${candidate.id}`, candidate.additionalDocumentName)}
+                              className="px-3 py-1 rounded border text-blue-600 hover:bg-blue-50 text-xs transition cursor-pointer">
                               ⬇ Download
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <input
-                          type="text"
-                          value="Not uploaded"
-                          disabled
-                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic"
-                        />
+                        <input type="text" value="Not uploaded" disabled
+                          className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-400 text-sm italic" />
                       )}
                     </div>
 

@@ -26,25 +26,36 @@ function Current_openings() {
   useEffect(() => {
     const temp_permissionid = localStorage.getItem("permissionid");
     setPermissionid(temp_permissionid);
-    getAllOpenings();
+    getAllOpenings(temp_permissionid);
   }, []);
 
   useEffect(() => {
     document.body.style.overflow = showDeleteModal ? "hidden" : "auto";
   }, [showDeleteModal]);
 
-  const getAllOpenings = async () => {
-    const res = await axios.get(`http://localhost:8098/api/v1/openings`);
-    setOpenings(res.data);
-  };
+const getAllOpenings = async (pid = permissionid) => {
+  const url = pid === "1"
+    ? `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings/all`
+    : `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings`;
+  const res = await axios.get(url);
+  
+  // Sort: ACTIVE first, TERMINATED after
+  const sorted = [...res.data].sort((a, b) => {
+    if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+    if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+    return 0;
+  });
 
-  const columns = useMemo(() => OPENINGCOLUMNS, []);
+  setOpenings(sorted);
+};
+
+  const columns = useMemo(() => OPENINGCOLUMNS(permissionid), [permissionid]);
   const data = useMemo(() => openings, [openings]);
 
   const deleteopening = (openingId) => {
     setLoading(true);
     axios
-      .delete(`http://localhost:8098/api/v1/openings/${openingId}`)
+      .delete(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings/${openingId}`)
       .then((res) => {
         if (res.status === 200) {
           getAllOpenings();
@@ -82,16 +93,14 @@ function Current_openings() {
               <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
             </div>
             <div className="space-x-4">
-              {/* New Opening — Admin only */}
-             {/* New Opening — Admin (1) and HR (2) */}
-{(permissionid === "1" || permissionid === "2") && (
-  <button
-    className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 rounded-md px-4 py-2 hover:from-yellow-600 hover:to-yellow-500 cursor-pointer"
-    onClick={() => navigate("/addopening")}
-  >
-    New Opening
-  </button>
-)}
+              {(permissionid === "1" || permissionid === "2") && (
+                <button
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 rounded-md px-4 py-2 hover:from-yellow-600 hover:to-yellow-500 cursor-pointer"
+                  onClick={() => navigate("/addopening")}
+                >
+                  New Opening
+                </button>
+              )}
             </div>
           </div>
 

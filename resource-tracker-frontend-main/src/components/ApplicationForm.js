@@ -1,14 +1,59 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { submitApplication } from '../api/jobApi';
 import './ApplicationForm.css';
 
-const INITIAL_STATE = {
-  firstName: '', lastName: '', email: '', phone: '',
-  location: '', experience: '',currentSalary: '', expectedSalary: '',
-  languagesKnown: '', noticePeriod: '', visaStatus: '',
-  applicationStatus: 'APPLIED', employmentType: '', source: '',
-  phoneDialCode: '+91',
-  expectedSalaryCurrency: '₹',currentSalaryCurrency: '₹',
+// ── Locale config per country ─────────────────────────────────────────────────
+const LOCALE_CONFIG = {
+  IN: {
+    firstNamePlaceholder:  'e.g. Ravi',
+    lastNamePlaceholder:   'e.g. Kumar',
+    emailPlaceholder:      'you@example.com',
+    phonePlaceholder:      '98765 43210',
+    locationPlaceholder:   'e.g. Hyderabad',
+    salaryPlaceholder:     '50000',
+    experiencePlaceholder: 'e.g. 3',
+    noticePlaceholder:     'e.g. 30',
+    defaultDialCode:       '+91',
+    defaultCurrency:       '₹',
+  },
+  SE: {
+    firstNamePlaceholder:  'e.g. Erik',
+    lastNamePlaceholder:   'e.g. Lindqvist',
+    emailPlaceholder:      'you@example.se',
+    phonePlaceholder:      '70 123 45 67',
+    locationPlaceholder:   'e.g. Stockholm',
+    salaryPlaceholder:     '40000',
+    experiencePlaceholder: 'e.g. 3',
+    noticePlaceholder:     'e.g. 30',
+    defaultDialCode:       '+46',
+    defaultCurrency:       'kr',
+  },
+  US: {
+    firstNamePlaceholder:  'e.g. James',
+    lastNamePlaceholder:   'e.g. Carter',
+    emailPlaceholder:      'you@example.com',
+    phonePlaceholder:      '(555) 123-4567',
+    locationPlaceholder:   'e.g. New York, NY',
+    salaryPlaceholder:     '80000',
+    experiencePlaceholder: 'e.g. 3',
+    noticePlaceholder:     'e.g. 14',
+    defaultDialCode:       '+1',
+    defaultCurrency:       '$',
+  },
+};
+
+const getInitialState = (country = 'IN') => {
+  const locale = LOCALE_CONFIG[country] || LOCALE_CONFIG.IN;
+  return {
+    firstName: '', lastName: '', email: '', phone: '',
+    location: '', experience: '', currentSalary: '', expectedSalary: '',
+    skills: '',
+    noticePeriod: '', visaStatus: '',
+    applicationStatus: 'APPLIED', employmentType: '', source: '',
+    phoneDialCode:          locale.defaultDialCode,
+    expectedSalaryCurrency: locale.defaultCurrency,
+    currentSalaryCurrency:  locale.defaultCurrency,
+  };
 };
 
 const PHONE_COUNTRIES = [
@@ -18,7 +63,7 @@ const PHONE_COUNTRIES = [
 ];
 
 const CURRENCIES = [
-  { symbol: '₹', label: '₹ INR' },
+  { symbol: '₹',  label: '₹ INR' },
   { symbol: 'kr', label: 'kr SEK' },
   { symbol: '$',  label: '$ USD'  },
 ];
@@ -55,6 +100,212 @@ const SKILL_OPTIONS = [
   "WebSockets", "OAuth", "JWT", "Design Patterns", "System Design",
 ];
 
+const LANGUAGE_OPTIONS = [
+  "English", "Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Marathi",
+  "Bengali", "Gujarati", "Punjabi", "Urdu", "Odia", "Swedish", "German",
+  "French", "Spanish", "Portuguese", "Italian", "Dutch", "Russian",
+  "Chinese (Mandarin)", "Chinese (Cantonese)", "Japanese", "Korean",
+  "Arabic", "Turkish", "Polish", "Czech", "Romanian", "Hungarian",
+];
+
+const PROFICIENCY_LEVELS = [
+  { value: 'Native',       label: 'Native or Bilingual' },
+  { value: 'Fluent',       label: 'Fluent' },
+  { value: 'Professional', label: 'Professional Working' },
+  { value: 'Basic',        label: 'Basic' },
+  { value: 'Beginner',     label: 'Beginner' },
+];
+
+// ── LanguageInput ─────────────────────────────────────────────────────────────
+function LanguageInput({ value, onChange, error }) {
+  const [entries, setEntries] = useState(() => {
+    try { return JSON.parse(value) || []; } catch { return []; }
+  });
+  const [inputValue, setInputValue]             = useState('');
+  const [showDropdown, setShowDropdown]         = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const inputRef     = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    onChange(JSON.stringify(entries));
+  }, [entries]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+        setHighlightedIndex(-1);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectedLanguages = entries.map(e => e.language);
+
+  const filteredOptions = LANGUAGE_OPTIONS.filter(
+    lang =>
+      lang.toLowerCase().includes(inputValue.toLowerCase()) &&
+      !selectedLanguages.includes(lang)
+  );
+
+  const showOtherOption =
+    inputValue.trim().length > 0 &&
+    !LANGUAGE_OPTIONS.some(l => l.toLowerCase() === inputValue.trim().toLowerCase()) &&
+    !selectedLanguages.includes(inputValue.trim());
+
+  const allOptions = showOtherOption
+    ? [...filteredOptions, '__OTHER__']
+    : filteredOptions;
+
+  const addLanguage = (lang) => {
+    if (!selectedLanguages.includes(lang)) {
+      setEntries(prev => [...prev, { language: lang, proficiency: '' }]);
+    }
+    setInputValue('');
+    setShowDropdown(false);
+    setHighlightedIndex(-1);
+    inputRef.current?.focus();
+  };
+
+  const removeEntry = (lang) => {
+    setEntries(prev => prev.filter(e => e.language !== lang));
+  };
+
+  const updateProficiency = (lang, proficiency) => {
+    setEntries(prev =>
+      prev.map(e => e.language === lang ? { ...e, proficiency } : e)
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showDropdown) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(i => (i + 1) % allOptions.length);
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(i => (i - 1 + allOptions.length) % allOptions.length);
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && allOptions[highlightedIndex]) {
+        const sel = allOptions[highlightedIndex];
+        addLanguage(sel === '__OTHER__' ? inputValue.trim() : sel);
+      } else if (inputValue.trim()) {
+        addLanguage(inputValue.trim());
+      }
+    }
+    if (e.key === 'Escape') {
+      setShowDropdown(false);
+      setHighlightedIndex(-1);
+    }
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      {entries.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+          {entries.map(({ language, proficiency }) => (
+            <div key={language} style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              background: proficiency ? '#f0f9ff' : '#fff7ed',
+              border: `1px solid ${proficiency ? '#bae6fd' : '#fed7aa'}`,
+              borderRadius: '8px', padding: '8px 12px',
+            }}>
+              <span style={{ flex: 1, fontSize: '0.88rem', fontWeight: '600', color: '#0369a1', minWidth: '80px' }}>
+                {language}
+              </span>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {!proficiency && (
+                  <span style={{ fontSize: '0.72rem', color: '#ea580c', fontStyle: 'italic', marginRight: '4px' }}>
+                    Select proficiency:
+                  </span>
+                )}
+                {PROFICIENCY_LEVELS.map(level => (
+                  <button
+                    key={level.value}
+                    type="button"
+                    onClick={() => updateProficiency(language, level.value)}
+                    style={{
+                      fontSize: '0.72rem', fontWeight: '600', padding: '3px 10px',
+                      borderRadius: '999px',
+                      border: proficiency === level.value ? '1.5px solid #0369a1' : '1px solid #cbd5e1',
+                      background: proficiency === level.value ? '#0369a1' : 'white',
+                      color: proficiency === level.value ? 'white' : '#64748b',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                  >
+                    {level.value}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => removeEntry(language)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#94a3b8', fontSize: '1.1rem', lineHeight: 1,
+                  padding: '0 2px', flexShrink: 0,
+                }}
+                title="Remove language"
+              >×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div
+        className={`af-input ${error ? 'af-input--error' : ''}`}
+        style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'text', minHeight: '42px', padding: '6px 10px' }}
+        onClick={() => { setShowDropdown(true); inputRef.current?.focus(); }}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          placeholder="Search and add languages…"
+          onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
+          onFocus={() => setShowDropdown(true)}
+          onKeyDown={handleKeyDown}
+          style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '0.9rem', flex: 1, minWidth: '120px' }}
+        />
+      </div>
+
+      {showDropdown && allOptions.length > 0 && (
+        <ul style={{
+          position: 'absolute', zIndex: 50, width: '100%',
+          background: 'white', border: '1px solid #e2e8f0',
+          borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          overflowY: 'auto', maxHeight: '180px', marginTop: '4px',
+          padding: 0, listStyle: 'none',
+        }}>
+          {allOptions.map((lang, index) => (
+            <li
+              key={lang}
+              onMouseDown={(e) => { e.preventDefault(); addLanguage(lang === '__OTHER__' ? inputValue.trim() : lang); }}
+              onMouseEnter={() => setHighlightedIndex(index)}
+              onMouseLeave={() => setHighlightedIndex(-1)}
+              style={{
+                padding: '8px 14px', fontSize: '0.88rem', cursor: 'pointer',
+                color: lang === '__OTHER__' || highlightedIndex === index ? '#2563eb' : '#374151',
+                background: highlightedIndex === index ? '#eff6ff' : 'white',
+                fontWeight: lang === '__OTHER__' ? '600' : '400',
+                borderTop: lang === '__OTHER__' ? '1px solid #f1f5f9' : 'none',
+              }}
+            >
+              {lang === '__OTHER__' ? `+ Add "${inputValue.trim()}" as custom language` : lang}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ── SkillTagInput ─────────────────────────────────────────────────────────────
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue]             = useState('');
   const [showDropdown, setShowDropdown]         = useState(false);
@@ -144,14 +395,9 @@ function SkillTagInput({ value, onChange, error }) {
 
   return (
     <div style={{ position: 'relative' }} ref={containerRef}>
-
-      {/* Tags + input box */}
       <div
         className={`af-input ${error ? 'af-input--error' : ''}`}
-        style={{
-          display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-          gap: '6px', cursor: 'text', minHeight: '42px', padding: '6px 10px'
-        }}
+        style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', cursor: 'text', minHeight: '42px', padding: '6px 10px' }}
         onClick={() => { setShowDropdown(true); inputRef.current?.focus(); }}
       >
         {selectedSkills.map(skill => (
@@ -179,10 +425,7 @@ function SkillTagInput({ value, onChange, error }) {
           onChange={(e) => { setInputValue(e.target.value); setShowDropdown(true); setHighlightedIndex(-1); }}
           onFocus={() => setShowDropdown(true)}
           onKeyDown={handleKeyDown}
-          style={{
-            border: 'none', outline: 'none', background: 'transparent',
-            fontSize: '0.9rem', flex: 1, minWidth: '120px'
-          }}
+          style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '0.9rem', flex: 1, minWidth: '120px' }}
         />
         {selectedSkills.length > 0 && (
           <button type="button"
@@ -196,7 +439,6 @@ function SkillTagInput({ value, onChange, error }) {
         )}
       </div>
 
-      {/* Search box shown below tags when dropdown is open */}
       {selectedSkills.length > 0 && showDropdown && (
         <input
           type="text"
@@ -210,7 +452,6 @@ function SkillTagInput({ value, onChange, error }) {
         />
       )}
 
-      {/* Dropdown list */}
       {showDropdown && allOptions.length > 0 && (
         <ul ref={dropdownRef} style={{
           position: 'absolute', zIndex: 50, width: '100%',
@@ -245,15 +486,22 @@ function SkillTagInput({ value, onChange, error }) {
   );
 }
 
-function ApplicationForm({ publicUrlKey }) {
-  const [form, setForm]               = useState(INITIAL_STATE);
-  const [resume, setResume]           = useState(null);
-  const [coverLetter, setCoverLetter] = useState(null);
+// ── ApplicationForm ───────────────────────────────────────────────────────────
+function ApplicationForm({ publicUrlKey, country = 'IN' }) {
+  const locale = LOCALE_CONFIG[country] || LOCALE_CONFIG.IN;
+
+  const [form, setForm]                     = useState(() => getInitialState(country));
+  const [resume, setResume]                 = useState(null);
+  const [coverLetter, setCoverLetter]       = useState(null);
   const [additionalDocs, setAdditionalDocs] = useState(null);
-  const [errors, setErrors]           = useState({});
-  const [submitting, setSubmitting]   = useState(false);
-  const [submitted, setSubmitted]     = useState(false);
-  const [serverError, setServerError] = useState('');
+  const [languagesKnown, setLanguagesKnown] = useState('[]');
+  const [errors, setErrors]                 = useState({});
+  const [submitting, setSubmitting]         = useState(false);
+  const [submitted, setSubmitted]           = useState(false);
+  const [serverError, setServerError]       = useState('');
+  const [showRetainPopup, setShowRetainPopup]   = useState(false);
+  const [retainCvForFuture, setRetainCvForFuture] = useState(null);
+  const [isDuplicate, setIsDuplicate]           = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -280,7 +528,10 @@ function ApplicationForm({ publicUrlKey }) {
       return;
     }
 
-    if (type === 'resume')         setResume(file);
+    if (type === 'resume') {
+      setResume(file);
+      if (retainCvForFuture === null) setShowRetainPopup(true);
+    }
     if (type === 'coverLetter')    setCoverLetter(file);
     if (type === 'additionalDocs') setAdditionalDocs(file);
 
@@ -296,7 +547,6 @@ function ApplicationForm({ publicUrlKey }) {
     if (!form.phone.trim())         e.phone          = 'Phone is required.';
     if (!form.location.trim())      e.location       = 'Location is required.';
     if (form.experience === '')     e.experience     = 'Experience is required.';
-    if (form.currentSalary === '')  e.currentSalary  = 'Current salary is required.';
     if (form.expectedSalary === '') e.expectedSalary = 'Expected salary is required.';
     if (form.noticePeriod === '')   e.noticePeriod   = 'Notice period is required.';
     if (!resume)                    e.resume         = 'Please upload your resume.';
@@ -313,23 +563,35 @@ function ApplicationForm({ publicUrlKey }) {
       return;
     }
 
+    let parsedLanguages = [];
+    try { parsedLanguages = JSON.parse(languagesKnown) || []; } catch {}
+    const languagesString = parsedLanguages
+      .map(l => `${l.language} (${l.proficiency})`)
+      .join(', ');
+
     const payload = JSON.stringify({
-      firstName:         form.firstName,
-      lastName:          form.lastName,
-      email:             form.email,
-      phone: `${form.phoneDialCode} ${form.phone}`,
-      location:          form.location,
-      experience:        form.experience,
-      currentSalary:     form.currentSalary,
-     currentSalaryCurrency: form.currentSalaryCurrency,
-     expectedSalary: form.expectedSalary,
-     expectedSalaryCurrency: form.expectedSalaryCurrency,
-      languagesKnown:    form.languagesKnown,
-      noticePeriod:      form.noticePeriod,
-      visaStatus:        form.visaStatus,
-      applicationStatus: form.applicationStatus,
-      employmentType:    form.employmentType,
-      source:            form.source,
+      firstName:              form.firstName,
+      lastName:               form.lastName,
+      email:                  form.email,
+      phone:                  `${form.phoneDialCode} ${form.phone}`,
+      location:               form.location,
+      experience:             form.experience,
+      currentSalary:          form.currentSalary,
+      currentSalaryCurrency:  form.currentSalaryCurrency,
+      expectedSalary:         form.expectedSalary,
+      expectedSalaryCurrency: form.expectedSalaryCurrency,
+      skills:                 form.skills,
+      languagesKnown:         languagesString,
+      noticePeriod:           form.noticePeriod,
+      visaStatus:             form.visaStatus === 'Other'
+                                ? (form.visaStatusOther || 'Other')
+                                : form.visaStatus,
+      applicationStatus:      form.applicationStatus,
+      employmentType:         form.employmentType,
+      source:                 form.source === 'Other'
+                                ? (form.sourceOther || 'Other')
+                                : form.source,
+      retainCvForFuture:      retainCvForFuture === true,
     });
 
     const formData = new FormData();
@@ -341,13 +603,20 @@ function ApplicationForm({ publicUrlKey }) {
     try {
       setSubmitting(true);
       const response = await fetch(
-        `http://localhost:8098/api/public/apply/${publicUrlKey}`,
+        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/public/apply/${publicUrlKey}`,
         { method: 'POST', body: formData }
       );
+
       if (!response.ok) {
         const errorText = await response.text();
+        // ── Duplicate detected from backend ──
+        if (response.status === 409 || errorText?.toLowerCase().includes('already applied')) {
+          setIsDuplicate(true);
+          return;
+        }
         throw new Error(errorText || `Submission failed (status ${response.status})`);
       }
+
       setSubmitted(true);
     } catch (err) {
       setServerError(err.message || 'Something went wrong. Please try again.');
@@ -356,7 +625,7 @@ function ApplicationForm({ publicUrlKey }) {
     }
   }
 
-  // ── Success screen ──────────────────────────────────────
+  // ── Success screen ─────────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="af-success">
@@ -367,9 +636,10 @@ function ApplicationForm({ publicUrlKey }) {
     );
   }
 
-  // ── Form ────────────────────────────────────────────────
+  // ── Form ───────────────────────────────────────────────────────────────────
   return (
     <form className="af-form" onSubmit={handleSubmit} noValidate>
+
       <div className="af-form__header">
         <h2 className="af-form__title">Apply for this Position</h2>
         <p className="af-form__subtitle">Fields marked <span style={{color:'#4f8ef7'}}>*</span> are required.</p>
@@ -378,49 +648,45 @@ function ApplicationForm({ publicUrlKey }) {
       {/* ── Personal Information ── */}
       <div className="af-section-title">Personal Information</div>
       <div className="af-grid">
+
         <Field label="First Name" required error={errors.firstName}>
           <input className={`af-input ${errors.firstName ? 'af-input--error' : ''}`}
             type="text" name="firstName" value={form.firstName}
-            onChange={handleChange} placeholder="e.g. Ravi" />
+            onChange={handleChange} placeholder={locale.firstNamePlaceholder} />
         </Field>
 
         <Field label="Last Name" required error={errors.lastName}>
           <input className={`af-input ${errors.lastName ? 'af-input--error' : ''}`}
             type="text" name="lastName" value={form.lastName}
-            onChange={handleChange} placeholder="e.g. Kumar" />
+            onChange={handleChange} placeholder={locale.lastNamePlaceholder} />
         </Field>
 
         <Field label="Email Address" required error={errors.email}>
           <input className={`af-input ${errors.email ? 'af-input--error' : ''}`}
             type="email" name="email" value={form.email}
-            onChange={handleChange} placeholder="you@example.com" />
+            onChange={handleChange} placeholder={locale.emailPlaceholder} />
         </Field>
 
-<Field label="Phone Number" required error={errors.phone}>
-  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
-       className={errors.phone ? 'af-input--error' : ''}>
-    <select
-      name="phoneDialCode"
-      value={form.phoneDialCode}
-      onChange={handleChange}
-      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 8px',
-               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
-      {PHONE_COUNTRIES.map(c => (
-        <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
-      ))}
-    </select>
-    <input
-      className="af-input"
-      style={{ border: 'none', borderRadius: 0, flex: 1 }}
-      type="tel" name="phone" value={form.phone}
-      onChange={handleChange} placeholder="98765 43210" />
-  </div>
-</Field>
+        <Field label="Phone Number" required error={errors.phone}>
+          <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
+               className={errors.phone ? 'af-input--error' : ''}>
+            <select name="phoneDialCode" value={form.phoneDialCode} onChange={handleChange}
+              style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 8px',
+                       borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+              {PHONE_COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>{c.flag} {c.label}</option>
+              ))}
+            </select>
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
+              type="tel" name="phone" value={form.phone}
+              onChange={handleChange} placeholder={locale.phonePlaceholder} />
+          </div>
+        </Field>
 
         <Field label="Current Location" required error={errors.location}>
           <input className={`af-input ${errors.location ? 'af-input--error' : ''}`}
             type="text" name="location" value={form.location}
-            onChange={handleChange} placeholder="e.g. Hyderabad" />
+            onChange={handleChange} placeholder={locale.locationPlaceholder} />
         </Field>
 
         <Field label="Visa / Work Authorization" error={errors.visaStatus}>
@@ -429,97 +695,75 @@ function ApplicationForm({ publicUrlKey }) {
             {['Citizen', 'Permanent Resident', 'H1B', 'L1', 'OPT / CPT', 'Other'].map(v =>
               <option key={v} value={v}>{v}</option>)}
           </select>
+          {form.visaStatus === 'Other' && (
+            <input className="af-input" style={{ marginTop: '8px' }}
+              type="text" name="visaStatusOther" value={form.visaStatusOther || ''}
+              onChange={handleChange} placeholder="Please specify your visa / work authorization" />
+          )}
         </Field>
+
       </div>
 
       {/* ── Professional Details ── */}
       <div className="af-section-title">Professional Details</div>
       <div className="af-grid">
-       
-       <Field label="Current Salary" required error={errors.currentSalary}>
-  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
-       className={errors.currentSalary ? 'af-input--error' : ''}>
-    <select
-      name="currentSalaryCurrency"
-      value={form.currentSalaryCurrency}
-      onChange={handleChange}
-      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
-               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
-      {CURRENCIES.map(c => (
-        <option key={c.symbol} value={c.symbol}>{c.label}</option>
-      ))}
-    </select>
-    <input
-      className="af-input"
-      style={{ border: 'none', borderRadius: 0, flex: 1 }}
-      type="text"
-      name="currentSalary"
-      value={form.currentSalary}
-      onChange={(e) => {
-        const val = e.target.value;
-        if (/^[a-zA-Z0-9]*$/.test(val)) {
-          handleChange({ target: { name: 'currentSalary', value: val } });
-        }
-      }}
-      placeholder="50000"
-    />
-  </div>
-</Field>
 
-
-
-      <Field label="Expected Salary" required error={errors.expectedSalary}>
-  <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
-       className={errors.expectedSalary ? 'af-input--error' : ''}>
-    <select
-      name="expectedSalaryCurrency"
-      value={form.expectedSalaryCurrency}
-      onChange={handleChange}
-      style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
-               borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
-      {CURRENCIES.map(c => (
-        <option key={c.symbol} value={c.symbol}>{c.label}</option>
-      ))}
-    </select>
-    <input
-      className="af-input"
-      style={{ border: 'none', borderRadius: 0, flex: 1 }}
-      type="text"
-      name="expectedSalary"
-      value={form.expectedSalary}
-      onChange={(e) => {
-        const val = e.target.value;
-        if (/^[a-zA-Z0-9]*$/.test(val)) {
-          handleChange({ target: { name: 'expectedSalary', value: val } });
-        }
-      }}
-      placeholder="50000"
-    />
-  </div>
-</Field>
-
-
- <Field label="Years of Experience" required error={errors.experience}>
-          <input className={`af-input ${errors.experience ? 'af-input--error' : ''}`}
-            type="number" name="experience" value={form.experience}
-            onChange={handleChange} placeholder="e.g. 3" min="0" />
+        <Field label="Current Salary" error={errors.currentSalary} hint="Optional">
+          <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+            <select name="currentSalaryCurrency" value={form.currentSalaryCurrency} onChange={handleChange}
+              style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
+                       borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+              {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
+            </select>
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
+              type="text" name="currentSalary" value={form.currentSalary}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[a-zA-Z0-9]*$/.test(val))
+                  handleChange({ target: { name: 'currentSalary', value: val } });
+              }}
+              placeholder={locale.salaryPlaceholder} />
+          </div>
         </Field>
 
+        <Field label="Expected Salary" required error={errors.expectedSalary}>
+          <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}
+               className={errors.expectedSalary ? 'af-input--error' : ''}>
+            <select name="expectedSalaryCurrency" value={form.expectedSalaryCurrency} onChange={handleChange}
+              style={{ border: 'none', outline: 'none', background: '#f8fafc', padding: '0 10px',
+                       borderRight: '1px solid #e2e8f0', fontSize: '0.9rem', cursor: 'pointer' }}>
+              {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
+            </select>
+            <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
+              type="text" name="expectedSalary" value={form.expectedSalary}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[a-zA-Z0-9]*$/.test(val))
+                  handleChange({ target: { name: 'expectedSalary', value: val } });
+              }}
+              placeholder={locale.salaryPlaceholder} />
+          </div>
+        </Field>
+
+        <Field label="Years of Experience" required error={errors.experience}>
+          <input className={`af-input ${errors.experience ? 'af-input--error' : ''}`}
+            type="number" name="experience" value={form.experience}
+            onChange={handleChange} placeholder={locale.experiencePlaceholder} min="0" />
+        </Field>
 
         <Field label="Notice Period (days)" required error={errors.noticePeriod}>
           <input className={`af-input ${errors.noticePeriod ? 'af-input--error' : ''}`}
             type="number" name="noticePeriod" value={form.noticePeriod}
-            onChange={handleChange} placeholder="e.g. 30" min="0" />
+            onChange={handleChange} placeholder={locale.noticePlaceholder} min="0" />
         </Field>
 
         <Field label="Employment Type" error={errors.employmentType}>
           <select className="af-input" name="employmentType" value={form.employmentType} onChange={handleChange}>
             <option value="">Select type</option>
-            {['Full-Time', 'Part-Time', 'Freelancing', 'Contract', 'Internship'].map(t =>
+            {['Full-Time', 'Part-Time', 'Freelancing', 'Consultant', 'Internship'].map(t =>
               <option key={t} value={t}>{t}</option>)}
           </select>
         </Field>
-
 
         <Field label="How did you hear about us?" error={errors.source}>
           <select className="af-input" name="source" value={form.source} onChange={handleChange}>
@@ -527,91 +771,163 @@ function ApplicationForm({ publicUrlKey }) {
             {['LinkedIn', 'Naukri', 'Indeed', 'Company Website', 'Referral', 'Other'].map(s =>
               <option key={s} value={s}>{s}</option>)}
           </select>
+          {form.source === 'Other' && (
+            <input className="af-input" style={{ marginTop: '8px' }}
+              type="text" name="sourceOther" value={form.sourceOther || ''}
+              onChange={handleChange} placeholder="Please specify how you heard about us" />
+          )}
         </Field>
-      </div>
 
-
-      <Field label="Skills" error={errors.languagesKnown} hint="Search and select your skills">
+        <Field label="Skills" error={errors.skills} hint="Search and select your skills">
           <SkillTagInput
-            value={form.languagesKnown}
+            value={form.skills}
             onChange={(val) => {
-              setForm(prev => ({ ...prev, languagesKnown: val }));
-              if (errors.languagesKnown) setErrors(prev => ({ ...prev, languagesKnown: '' }));
+              setForm(prev => ({ ...prev, skills: val }));
+              if (errors.skills) setErrors(prev => ({ ...prev, skills: '' }));
             }}
-            error={errors.languagesKnown}
+            error={errors.skills}
           />
         </Field>
 
+        <Field label="Languages Known" error={errors.languagesKnownField} hint="Add a language, then select proficiency">
+          <LanguageInput
+            value={languagesKnown}
+            onChange={(val) => {
+              setLanguagesKnown(val);
+              if (errors.languagesKnownField) setErrors(prev => ({ ...prev, languagesKnownField: '' }));
+            }}
+            error={errors.languagesKnownField}
+          />
+        </Field>
+
+      </div>
 
       {/* ── Documents ── */}
       <div className="af-section-title">Documents</div>
 
-      {/* Resume — Required */}
       <Field label="Resume / CV" required error={errors.resume} hint="PDF, DOC or DOCX · Max 5MB">
         <label className={`af-file-label ${resume ? 'af-file-label--has-file' : ''} ${errors.resume ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{resume ? '📄' : '⬆️'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {resume ? resume.name : 'Click to upload Resume / CV'}
-            </span>
-            {resume && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(resume.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{resume ? resume.name : 'Click to upload Resume / CV'}</span>
+            {resume && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(resume.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'resume')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'resume')} style={{display:'none'}} />
         </label>
       </Field>
 
-      {/* Cover Letter — Optional */}
       <Field label="Cover Letter" error={errors.coverLetter} hint="Optional · PDF, DOC or DOCX · Max 5MB">
         <label className={`af-file-label ${coverLetter ? 'af-file-label--has-file' : ''} ${errors.coverLetter ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{coverLetter ? '📄' : '📝'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {coverLetter ? coverLetter.name : 'Click to upload Cover Letter (optional)'}
-            </span>
-            {coverLetter && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(coverLetter.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{coverLetter ? coverLetter.name : 'Click to upload Cover Letter (optional)'}</span>
+            {coverLetter && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(coverLetter.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'coverLetter')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'coverLetter')} style={{display:'none'}} />
         </label>
       </Field>
 
-      {/* Additional Documents — Optional */}
       <Field label="Additional Documents" error={errors.additionalDocs} hint="Optional · PDF, DOC or DOCX · Max 5MB">
         <label className={`af-file-label ${additionalDocs ? 'af-file-label--has-file' : ''} ${errors.additionalDocs ? 'af-file-label--error' : ''}`}>
           <span style={{fontSize:'1.4rem'}}>{additionalDocs ? '📄' : '📎'}</span>
           <div style={{flex:1}}>
-            <span className="af-file-text">
-              {additionalDocs ? additionalDocs.name : 'Click to upload Additional Documents (optional)'}
-            </span>
-            {additionalDocs && (
-              <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>
-                {(additionalDocs.size / 1024).toFixed(0)} KB
-              </span>
-            )}
+            <span className="af-file-text">{additionalDocs ? additionalDocs.name : 'Click to upload Additional Documents (optional)'}</span>
+            {additionalDocs && <span style={{display:'block', fontSize:'0.72rem', color:'#38e8c5'}}>{(additionalDocs.size/1024).toFixed(0)} KB</span>}
           </div>
-          <input type="file" accept=".pdf,.doc,.docx"
-            onChange={(e) => handleFileChange(e, 'additionalDocs')} style={{display:'none'}} />
+          <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'additionalDocs')} style={{display:'none'}} />
         </label>
       </Field>
 
       {serverError && <div className="af-server-error">⚠ {serverError}</div>}
 
+      {/* ── Retain CV Popup ── */}
+      {showRetainPopup && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.5)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+        }}>
+          <div style={{
+            background: 'white', padding: '24px', borderRadius: '12px',
+            width: '90%', maxWidth: '420px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)', textAlign: 'center',
+          }}>
+            <h3 style={{ marginBottom: '12px', color: '#1e293b' }}>Keep CV for Future Openings?</h3>
+            <p style={{ marginBottom: '24px', color: '#64748b', lineHeight: '1.5' }}>
+              Would you like us to retain your CV and contact you for future job opportunities?
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button type="button"
+                onClick={() => { setRetainCvForFuture(true); setShowRetainPopup(false); }}
+                style={{ padding: '10px 22px', border: 'none', borderRadius: '8px',
+                         background: '#2563eb', color: 'white', cursor: 'pointer',
+                         fontWeight: '600', fontSize: '0.9rem' }}>Yes</button>
+              <button type="button"
+                onClick={() => { setRetainCvForFuture(false); setShowRetainPopup(false); }}
+                style={{ padding: '10px 22px', border: '1px solid #cbd5e1', borderRadius: '8px',
+                         background: 'white', color: '#334155', cursor: 'pointer',
+                         fontWeight: '600', fontSize: '0.9rem' }}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+ {/* ── Already Applied Popup ── */}
+{isDuplicate && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    background: 'rgba(0,0,0,0.35)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+    backdropFilter: 'blur(1px)',
+  }}>
+    <div style={{
+      background: 'white', borderRadius: '14px',
+      width: '90%', maxWidth: '400px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+      overflow: 'hidden', animation: 'fadeInUp 0.2s ease',
+      textAlign: 'center',
+    }}>
+      <div style={{ padding: '32px 28px' }}>
+
+        <p style={{ margin: '0 0 12px', fontWeight: '700', color: '#1e293b', fontSize: '1.05rem' }}>
+          Already Applied
+        </p>
+
+        <p style={{ margin: '0 0 28px', color: '#64748b', fontSize: '0.875rem', lineHeight: '1.7' }}>
+          You have already applied for this job using{' '}
+          <span style={{ fontWeight: '600', color: '#334155' }}>{form.email}</span>.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setIsDuplicate(false)}
+          style={{
+            width: '100%', padding: '12px',
+            background: '#3b82f6',
+            color: 'white', border: 'none', borderRadius: '10px',
+            fontWeight: '600', fontSize: '0.95rem', cursor: 'pointer',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = '#2563eb'}
+          onMouseLeave={e => e.currentTarget.style.background = '#3b82f6'}
+        >
+          OK, Got it
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
+
       <button type="submit" className="af-submit-btn" disabled={submitting}>
         {submitting ? '⏳ Submitting…' : 'Submit Application →'}
       </button>
+
     </form>
   );
 }
 
+// ── Field ─────────────────────────────────────────────────────────────────────
 function Field({ label, required, error, hint, children }) {
   return (
     <div className={`af-field ${error ? 'af-field--error' : ''}`}>
