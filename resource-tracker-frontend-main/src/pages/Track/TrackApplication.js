@@ -1,8 +1,9 @@
+/* eslint-disable */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:8098";
+const API_BASE = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net";
 
 // ─── Company Name by Country ──────────────────────────────────────────────────
 const COMPANY_BY_COUNTRY = {
@@ -180,7 +181,7 @@ function StatusBadge({ status }) {
   );
 }
 
-// ─── Full-page Spinner (shown during auto-fetch from email link) ──────────────
+// ─── Full-page Spinner ────────────────────────────────────────────────────────
 function PageSpinner() {
   return (
     <div style={{
@@ -204,14 +205,13 @@ function PageSpinner() {
 
 // ─── Main TrackApplication Component ─────────────────────────────────────────
 function TrackApplication() {
-  // If URL already has ?token=, start in loading state so entry card never flashes
   const urlToken = new URLSearchParams(window.location.search).get("token") || "";
 
   const [token,          setToken]          = useState(urlToken);
   const [inputFocus,     setInputFocus]     = useState(false);
   const [data,           setData]           = useState(null);
   const [loading,        setLoading]        = useState(false);
-  const [initialLoading, setInitialLoading] = useState(!!urlToken); // ← true from frame 1 if token in URL
+  const [initialLoading, setInitialLoading] = useState(!!urlToken);
   const [error,          setError]          = useState("");
 
   const navigate = useNavigate();
@@ -220,7 +220,6 @@ function TrackApplication() {
     const t = (overrideToken ?? token).trim();
     if (!t) { setError("Please enter your tracking ID."); return; }
 
-    // Auto-fetch (from email link) uses initialLoading so entry card never flashes
     if (isAuto) setInitialLoading(true);
     else        setLoading(true);
 
@@ -243,7 +242,6 @@ function TrackApplication() {
     }
   }, [token]);
 
-  // Auto-fetch on mount if token was in URL
   useEffect(() => {
     if (urlToken) doFetch(urlToken, true);
   }, []);
@@ -268,12 +266,10 @@ function TrackApplication() {
       padding: "32px 16px",
       position: "relative",
     }}>
-
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet"
       />
-
       <div style={{
         position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
         background:
@@ -306,7 +302,6 @@ function TrackApplication() {
           </a>
         </div>
 
-        {/* ── Auto-fetch spinner: entry card is completely hidden during this ── */}
         {initialLoading && (
           <div style={{
             background: "#fff", borderRadius: 14,
@@ -317,7 +312,6 @@ function TrackApplication() {
           </div>
         )}
 
-        {/* ── Entry Card: hidden while auto-fetching OR after data loads ── */}
         {!initialLoading && !data && (
           <div style={{
             background: "#fff", borderRadius: 14,
@@ -509,24 +503,6 @@ function TrackApplication() {
                   )}
                 </div>
               )}
-
-              {/* <div style={{ display: "flex", gap: 20, marginTop: 24, alignItems: "center" }}>
-                <button
-                  onClick={handleReset}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    fontSize: "0.82rem", color: "#1e4adb", fontWeight: 500,
-                    background: "none", border: "none", padding: 0, cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  Track another application
-                </button>
-              </div> */}
             </div>
           </div>
         )}

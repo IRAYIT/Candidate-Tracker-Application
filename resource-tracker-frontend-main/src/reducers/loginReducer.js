@@ -1,6 +1,7 @@
+/* eslint-disable */
 export default function loginReducer(state = {
   currentManagerId:51,
-    isLoggedIn:false,
+  isLoggedIn:false,
   login_response: {},
   isFirstLoggedIn:false
 }, action) {
