@@ -513,9 +513,9 @@
   .rounded-2xl {
     border-radius: var(--radius-2xl);
   }
-  .rounded-full {
-    border-radius: calc(infinity * 1px);
-  }
+.rounded-full {
+  border-radius: 9999px;
+}
   .rounded-lg {
     border-radius: var(--radius-lg);
   }
