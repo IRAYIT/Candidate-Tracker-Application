@@ -66,9 +66,8 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-400 to-yellow-400 p-1 sm:p-2 md:p-4">
-      <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden">
-
-        <div className="md:w-1/2 w-full p-8 md:p-12">
+<div className="bg-white rounded-2xl shadow-2xl flex flex-row w-full max-w-4xl overflow-hidden">
+<div className="w-1/2 bg-white flex flex-col items-center justify-center p-6 border-l">
           <h2 className="text-3xl font-extrabold text-center mb-6 cursor-pointer">Login</h2>
 
           <div className="space-y-4">
