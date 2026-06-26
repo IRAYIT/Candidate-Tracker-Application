@@ -9,7 +9,7 @@ In the project directory, you can run:
 ### `npm start`
 
 Runs the app in the development mode.\
-Open [https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net](https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net) to view it in your browser.
+Open [https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/](https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/) to view it in your browser.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.

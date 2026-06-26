@@ -3,7 +3,7 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/public/apply";
+const BASE_URL = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply";
 
 const isOldFormat = (languagesKnown) => {
   if (!languagesKnown) return false;

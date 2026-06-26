@@ -4,7 +4,7 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
 
-const BASE_URL = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/public/apply";
+const BASE_URL = "https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply";
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
 
 // Sort candidates alphabetically by first name
@@ -49,7 +49,7 @@ function AppliedCandidates() {
     try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/public/apply/byOpening/${openingId}`);
+        const res = await fetch(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/byOpening/${openingId}`);
         if (!res.ok) throw new Error("Failed to fetch candidates");
         const data = await res.json();
         setCandidates(sortByFirstName(data));

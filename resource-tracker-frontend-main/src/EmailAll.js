@@ -27,7 +27,7 @@ function EmailAll() {
       };
       setSending(true);
       axios
-        .post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/sendEmail", payload)
+        .post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/sendEmail", payload)
         .then(() => {
           setSending(false);
           navigate('/manageresources');

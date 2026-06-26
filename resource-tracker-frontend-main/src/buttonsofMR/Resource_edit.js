@@ -412,7 +412,7 @@ function Resource_edit() {
   const [employeePool, setEmployeePool]           = useState([]);
 
   useEffect(() => {
-    axios.get('https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/getAllUnassignedResources')
+    axios.get('https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
         setEmployeePool(onlyEmployees);
@@ -424,7 +424,7 @@ function Resource_edit() {
     const resourceid = localStorage.getItem("temp_id_for_use");
     if (!resourceid) return;
 
-    axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/${resourceid}`)
+    axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/${resourceid}`)
       .then((res) => {
         const data = res.data;
         setResData(data);
@@ -465,7 +465,7 @@ function Resource_edit() {
         setSelectedRole(permissionToRole[data.permissionId] || '');
 
         if (data.permissionId === 3) {
-          axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/getAllResourcesByManagerId/${resourceid}`)
+          axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${resourceid}`)
             .then(empRes => setAssignedEmployees(empRes.data ?? []))
             .catch(() => {});
         }
@@ -552,7 +552,7 @@ function Resource_edit() {
     // formData.append("attachments", new Blob([]), "empty.txt");
 
     axios
-      .put("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/resource/update/upload", formData)
+      .put("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/update/upload", formData)
       .then(() => navigate('/manageresources'))
       .catch(() => {})
       .finally(() => setLoading(false));

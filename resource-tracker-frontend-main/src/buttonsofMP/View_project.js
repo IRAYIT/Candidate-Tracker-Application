@@ -17,7 +17,7 @@ function View_project() {
 
   const fetchProject = async (pid) => {
     try {
-      const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/projects/${pid}`);
+      const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/projects/${pid}`);
       setProject(res.data);
     } catch (err) {
       console.error("Error fetching project:", err);

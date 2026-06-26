@@ -348,10 +348,10 @@ function Addopening() {
       updatedBy:      creatorId,
     };
 
-    axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings", payload)
+    axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings", payload)
       .then((response) => {
         const publicUrlKey = response.data?.publicUrlKey;
-        const publicUrl    = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/apply/${publicUrlKey}`;
+        const publicUrl    = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net//apply/${publicUrlKey}`;
         setCreatedPublicUrl(publicUrl);
         setShowSharePopup(true);
       })
@@ -360,11 +360,11 @@ function Addopening() {
           error?.response?.data?.errorMessage?.includes('Mail') ||
           error?.response?.data?.details?.toString().includes('Failed to send email')
         ) {
-          axios.get("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.netapi/v1/openings")
+          axios.get("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings")
             .then((res) => {
               const latest = res.data[res.data.length - 1];
               if (latest?.publicUrlKey) {
-                const publicUrl = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/apply/${latest.publicUrlKey}`;
+                const publicUrl = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net//apply/${latest.publicUrlKey}`;
                 setCreatedPublicUrl(publicUrl);
                 setShowSharePopup(true);
               }
