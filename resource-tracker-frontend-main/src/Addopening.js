@@ -260,13 +260,8 @@ function ShareUrlPopup({ publicUrl, onClose, onGoToOpenings }) {
 // ─── Main Addopening Component ────────────────────────────────────────────────
 function Addopening() {
   const [openingname, setOpeningname]       = useState('');
-  // const [hours, setHours]                   = useState('');          // Removed by HR
-  // const [shifttimings, setShifttimings]     = useState('');          // Removed by HR
-  // const [payment, setPayment]               = useState('');          // Removed by HR
-  // const [paymenttype, setPaymenttype]       = useState('');          // Removed by HR
   const [technology, setTechnology]         = useState('');
   const [experience, setExperience]         = useState('');
-  // const [employmenttype, setEmploymenttype] = useState('Freelancing'); // Removed by HR
   const [skills, setSkills]                 = useState('');
   const [location, setLocation]             = useState('');
   const [status, setStatus]                 = useState('');
@@ -277,20 +272,15 @@ function Addopening() {
   const [loading, setLoading]               = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [createdPublicUrl, setCreatedPublicUrl] = useState('');
-  // const [currency, setCurrency]             = useState('INR');       // Removed by HR
 
   const navigate = useNavigate();
 
   const validateFields = () => {
     const newErrors = {};
     if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
-    // if (!hours?.trim())          newErrors.hours          = "Hours are required.";          // Removed by HR
-    // if (!shifttimings?.trim())   newErrors.shifttimings   = "Shift timings are required.";  // Removed by HR
-    // if (!paymenttype?.trim())    newErrors.paymenttype    = "Payment type is required.";     // Removed by HR
     if (!technology?.trim())     newErrors.technology     = "Technology is required.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
                                  newErrors.experience     = "Valid experience is required.";
-    // if (!employmenttype?.trim()) newErrors.employmenttype = "Employment type is required.";  // Removed by HR
     if (!skills?.trim())         newErrors.skills         = "Skills are required.";
     if (!location?.trim())       newErrors.location       = "Location is required.";
     if (!status?.trim())         newErrors.status         = "Status is required.";
@@ -299,19 +289,13 @@ function Addopening() {
 
   const resetForm = () => {
     setOpeningname('');
-    // setHours('');            // Removed by HR
-    // setShifttimings('');     // Removed by HR
-    // setPayment('');          // Removed by HR
-    // setPaymenttype('');      // Removed by HR
     setTechnology('');
     setExperience('');
-    // setEmploymenttype('Freelancing'); // Removed by HR
     setSkills('');
     setLocation('');
     setStatus('');
     setDescription('');
     setCustomTech('');
-    // setCurrency('INR');      // Removed by HR
     setErrors({});
   };
 
@@ -322,24 +306,18 @@ function Addopening() {
 
     setLoading(true);
 
-    // startDate = today, endDate = 1 year from now (sent silently, not shown in form)
     const startDate = new Date();
     const endDate   = new Date();
     endDate.setFullYear(endDate.getFullYear() + 1);
 
     const payload = {
       name:           openingname,
-      // hours:          hours,                                         // Removed by HR
-      // payment:        payment?.trim() ? `${payment} ${currency}` : '', // Removed by HR
-      // paymentType:    paymenttype,                                   // Removed by HR
-      // shiftTimings:   shifttimings,                                  // Removed by HR
       startDate,
       endDate,
       skill:          skills,
       location:       location,
       technology:     technology === 'Other' ? customTech : technology,
       experience:     experience,
-      // employmentType: employmenttype,                                // Removed by HR
       status:         status,
       description:    description,
       createdAt:      new Date(),
@@ -350,8 +328,8 @@ function Addopening() {
 
     axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings", payload)
       .then((response) => {
-        const publicUrlKey = response.data?.publicUrlKey;
-        const publicUrl    = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/${publicUrlKey}`;
+        // ✅ FIX: Use publicUrl directly from backend response
+        const publicUrl = response.data?.publicUrl;
         setCreatedPublicUrl(publicUrl);
         setShowSharePopup(true);
       })
@@ -363,9 +341,9 @@ function Addopening() {
           axios.get("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings")
             .then((res) => {
               const latest = res.data[res.data.length - 1];
-              if (latest?.publicUrlKey) {
-                const publicUrl = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/${latest.publicUrlKey}`;
-                setCreatedPublicUrl(publicUrl);
+              // ✅ FIX: Use publicUrl from backend response
+              if (latest?.publicUrl) {
+                setCreatedPublicUrl(latest.publicUrl);
                 setShowSharePopup(true);
               }
             })
@@ -420,7 +398,7 @@ function Addopening() {
                   </div>
                 )}
 
-                {/* Row 1: Opening Name (full width — Hours removed) */}
+                {/* Row 1: Opening Name */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
                   <input type="text" value={openingname} placeholder="Enter name"
@@ -429,26 +407,7 @@ function Addopening() {
                   {errors.openingname && <p className="text-red-600 text-sm mt-1">{errors.openingname}</p>}
                 </div>
 
-                {/* Removed by HR:
-                  <div className="w-full md:w-[48%]">
-                    <label>Hours *</label>
-                    <input type="text" value={hours} ... />
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label>Shift Timings *</label>
-                    <input type="text" value={shifttimings} ... />
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label>Payment</label>
-                    <div> currency select + amount input </div>
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label>Payment Type *</label>
-                    <input type="text" value={paymenttype} ... />
-                  </div>
-                */}
-
-                {/* Row 2: Technology (full width — Payment Type removed) */}
+                {/* Row 2: Technology */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
                   <select
@@ -530,7 +489,7 @@ function Addopening() {
                   )}
                 </div>
 
-                {/* Row 3: Experience + Location (Employment Type removed) */}
+                {/* Row 3: Experience + Location */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
@@ -539,15 +498,6 @@ function Addopening() {
                       className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                   </div>
-                  {/* Removed by HR:
-                    <div className="w-full md:w-[48%]">
-                      <label>Employment Type *</label>
-                      <select value={employmenttype} ...>
-                        <option value="Freelancing">Freelancing</option>
-                        ...
-                      </select>
-                    </div>
-                  */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Location <span className="text-pink-800">*</span></label>
                     <select value={location}
@@ -562,7 +512,7 @@ function Addopening() {
                   </div>
                 </div>
 
-                {/* Row 4: Skills (full width) */}
+                {/* Row 4: Skills */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
                   <SkillTagInput value={skills}
@@ -571,7 +521,7 @@ function Addopening() {
                   {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}
                 </div>
 
-                {/* Row 5: Status (full width) */}
+                {/* Row 5: Status */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
                   <select value={status}
@@ -584,7 +534,7 @@ function Addopening() {
                   {errors.status && <p className="text-red-600 text-sm mt-1">{errors.status}</p>}
                 </div>
 
-                {/* Row 6: Description (full width) */}
+                {/* Row 6: Description */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Description</label>
                   <textarea

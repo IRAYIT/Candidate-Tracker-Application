@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import { BrowserRouter, Route ,Routes , Link } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Link } from 'react-router-dom';
 import Login from './Login';
 import ManageResources from './ManageResources';
 import Forgotpassword from './Forgotpassword';
@@ -26,39 +26,42 @@ import AppliedCandidates from './AppliedCandidates';
 import CandidateView from './CandidateView';
 import TrackApplication from "./pages/Track/TrackApplication";
 import SetNewPassword from './Setnewpassword';
+
 function App() {
   return (
-    
-      <BrowserRouter>
-      
+    <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Login/>}></Route>
-        <Route path='/manageresources' element={<ManageResources/>}></Route>
-        <Route path='/forgotpassword' element={<Forgotpassword/>}></Route>
-        <Route path='/header' element={<Header/>}></Route>
-        <Route path='/resource_view' element={<Resource_view/>}></Route>
-        <Route path='/resource_edit' element={<Resource_edit/>}></Route>
-        <Route path='/current_openings' element={<Current_openings/>}></Route>
-        <Route path='/manageprojects' element={<ManageProjects/>}></Route>
-        <Route path='/view_project' element={<View_project/>}></Route>
-        <Route path='/edit_project' element={<Edit_project/>}></Route>
-        <Route path='/addproject' element={<Addproject/>}></Route>
-        <Route path='/addopening' element={<Addopening/>}></Route>
-        <Route path='/addresource' element={<Addresource/>}></Route>
-        <Route path='/view_opening' element={<View_opening/>}></Route>
-        <Route path='/edit_opening' element={<Edit_opening/>}></Route>
-        <Route path='/myprofile' element={<MyProfile/>}></Route>
-        <Route path='/editprofile' element={<EditProfile/>}></Route>
-        <Route path='/sendemail' element={<SendEmail/>}></Route>
-        <Route path='/emailall' element={<EmailAll/>}></Route>
-        <Route path='/attachments' element={<Attachments/>}></Route>
-        <Route path='/apply/:publicUrlKey' element={<ApplicationPage/>}></Route>
+        <Route path='/' element={<Login />} />
+        <Route path='/manageresources' element={<ManageResources />} />
+        <Route path='/forgotpassword' element={<Forgotpassword />} />
+        <Route path='/header' element={<Header />} />
+        <Route path='/resource_view' element={<Resource_view />} />
+        <Route path='/resource_edit' element={<Resource_edit />} />
+        <Route path='/current_openings' element={<Current_openings />} />
+        <Route path='/manageprojects' element={<ManageProjects />} />
+        <Route path='/view_project' element={<View_project />} />
+        <Route path='/edit_project' element={<Edit_project />} />
+        <Route path='/addproject' element={<Addproject />} />
+        <Route path='/addopening' element={<Addopening />} />
+        <Route path='/addresource' element={<Addresource />} />
+        <Route path='/view_opening' element={<View_opening />} />
+        <Route path='/edit_opening' element={<Edit_opening />} />
+        <Route path='/myprofile' element={<MyProfile />} />
+        <Route path='/editprofile' element={<EditProfile />} />
+        <Route path='/sendemail' element={<SendEmail />} />
+        <Route path='/emailall' element={<EmailAll />} />
+        <Route path='/attachments' element={<Attachments />} />
+
+        {/* Public job application routes — both paths supported */}
+        <Route path='/apply/:publicUrlKey' element={<ApplicationPage />} />
+        <Route path='/jobs/apply/:publicUrlKey' element={<ApplicationPage />} />
+
         <Route path="/candidate-view" element={<CandidateView />} />
         <Route path="/applied-candidates" element={<AppliedCandidates />} />
         <Route path="/track" element={<TrackApplication />} />
         <Route path='/setnewpassword' element={<SetNewPassword />} />
       </Routes>
-      </BrowserRouter>
+    </BrowserRouter>
   );
 }
 
