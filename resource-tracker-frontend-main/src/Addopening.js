@@ -351,7 +351,7 @@ function Addopening() {
     axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings", payload)
       .then((response) => {
         const publicUrlKey = response.data?.publicUrlKey;
-        const publicUrl    = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/apply/${publicUrlKey}`;
+        const publicUrl    = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/${publicUrlKey}`;
         setCreatedPublicUrl(publicUrl);
         setShowSharePopup(true);
       })
