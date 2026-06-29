@@ -364,7 +364,7 @@ function Addopening() {
             .then((res) => {
               const latest = res.data[res.data.length - 1];
               if (latest?.publicUrlKey) {
-                const publicUrl = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/apply/${latest.publicUrlKey}`;
+                const publicUrl = `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/${latest.publicUrlKey}`;
                 setCreatedPublicUrl(publicUrl);
                 setShowSharePopup(true);
               }
