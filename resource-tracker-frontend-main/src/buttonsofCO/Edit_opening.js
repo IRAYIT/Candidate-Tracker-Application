@@ -200,14 +200,14 @@ function SkillTagInput({ value, onChange, error }) {
 // ─── Main Edit_opening Component ──────────────────────────────────────────────
 function Edit_opening() {
   const [openingname, setOpeningname]       = useState('');
-  const [hours, setHours]                   = useState('');
-  const [shifttimings, setShifttimings]     = useState('');
-  const [payment, setPayment]               = useState('');
-  const [currency, setCurrency]             = useState('INR');
-  const [paymenttype, setPaymenttype]       = useState('');
+  // const [hours, setHours]                   = useState('');          // Removed by HR
+  // const [shifttimings, setShifttimings]     = useState('');          // Removed by HR
+  // const [payment, setPayment]               = useState('');          // Removed by HR
+  // const [currency, setCurrency]             = useState('INR');       // Removed by HR
+  // const [paymenttype, setPaymenttype]       = useState('');          // Removed by HR
   const [technology, setTechnology]         = useState('');
   const [experience, setExperience]         = useState('');
-  const [employmenttype, setEmploymenttype] = useState('');
+  // const [employmenttype, setEmploymenttype] = useState('');          // Removed by HR
   const [skills, setSkills]                 = useState('');
   const [status, setStatus]                 = useState('');
   const [location, setLocation]             = useState('');
@@ -221,15 +221,16 @@ function Edit_opening() {
 
   const navigate = useNavigate();
 
-  const parsePayment = (raw) => {
-    if (!raw) return { amount: '', curr: 'INR' };
-    const parts = raw.trim().split(' ');
-    const knownCurrencies = ['INR', 'SEK', 'USD'];
-    if (parts.length >= 2 && knownCurrencies.includes(parts[parts.length - 1])) {
-      return { amount: parts.slice(0, parts.length - 1).join(' '), curr: parts[parts.length - 1] };
-    }
-    return { amount: raw, curr: 'INR' };
-  };
+  // Removed by HR — was used to split "amount + currency" from payment string
+  // const parsePayment = (raw) => {
+  //   if (!raw) return { amount: '', curr: 'INR' };
+  //   const parts = raw.trim().split(' ');
+  //   const knownCurrencies = ['INR', 'SEK', 'USD'];
+  //   if (parts.length >= 2 && knownCurrencies.includes(parts[parts.length - 1])) {
+  //     return { amount: parts.slice(0, parts.length - 1).join(' '), curr: parts[parts.length - 1] };
+  //   }
+  //   return { amount: raw, curr: 'INR' };
+  // };
 
   useEffect(() => {
     const openingid = localStorage.getItem("opening_id");
@@ -238,17 +239,17 @@ function Edit_opening() {
       .then((res) => {
         setOpeningId(openingid);
         setOpeningname(res.data.name);
-        setHours(res.data.hours);
-        setShifttimings(res.data.shiftTimings);
+        // setHours(res.data.hours);                       // Removed by HR
+        // setShifttimings(res.data.shiftTimings);          // Removed by HR
 
-        const { amount, curr } = parsePayment(res.data.payment);
-        setPayment(amount);
-        setCurrency(curr);
+        // const { amount, curr } = parsePayment(res.data.payment); // Removed by HR
+        // setPayment(amount);                              // Removed by HR
+        // setCurrency(curr);                                // Removed by HR
 
-        setPaymenttype(res.data.paymentType);
+        // setPaymenttype(res.data.paymentType);             // Removed by HR
         setDescription(res.data.description || '');
         setSkills(res.data.skill);
-        setEmploymenttype(res.data.employmentType);
+        // setEmploymenttype(res.data.employmentType);       // Removed by HR
         setExperience(res.data.experience);
         setStatus(res.data.status === 'TERMINATED' ? 'TERMINATED' : 'ACTIVE');
         setPublicUrlKey(res.data.publicUrlKey || '');
@@ -266,15 +267,15 @@ function Edit_opening() {
   const validateFields = () => {
     const newErrors = {};
     if (!openingname?.trim())        newErrors.openingname    = "Opening name is required.";
-    if (!hours?.toString().trim())   newErrors.hours          = "Hours are required.";
-    if (!shifttimings?.trim())       newErrors.shifttimings   = "Shift timings are required.";
-    if (!payment?.toString().trim()) newErrors.payment        = "Payment is required.";
-    if (!paymenttype?.trim())        newErrors.paymenttype    = "Payment type is required.";
+    // if (!hours?.toString().trim())   newErrors.hours          = "Hours are required.";          // Removed by HR
+    // if (!shifttimings?.trim())       newErrors.shifttimings   = "Shift timings are required.";  // Removed by HR
+    // if (!payment?.toString().trim()) newErrors.payment        = "Payment is required.";          // Removed by HR
+    // if (!paymenttype?.trim())        newErrors.paymenttype    = "Payment type is required.";     // Removed by HR
     if (!technology?.trim())         newErrors.technology     = "Technology is required.";
     if (technology === 'Other' && !customTech?.trim()) newErrors.technology = "Please enter custom technology.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = "Valid experience is required.";
-    if (!employmenttype?.trim())     newErrors.employmenttype = "Employment type is required.";
+    // if (!employmenttype?.trim())     newErrors.employmenttype = "Employment type is required.";  // Removed by HR
     if (!skills?.trim())             newErrors.skills         = "Skills are required.";
     if (!location?.trim())           newErrors.location       = "Location is required.";
     if (!status?.trim())             newErrors.status         = "Status is required.";
@@ -298,17 +299,17 @@ function Edit_opening() {
     const payload = {
       id: openingId,
       name: openingname,
-      hours,
-      payment: `${payment} ${currency}`,
-      paymentType: paymenttype,
-      shiftTimings: shifttimings,
+      // hours,                                       // Removed by HR
+      // payment: `${payment} ${currency}`,            // Removed by HR
+      // paymentType: paymenttype,                     // Removed by HR
+      // shiftTimings: shifttimings,                   // Removed by HR
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       skill: skills,
       location,
       technology: finalTech,
       experience,
-      employmentType: employmenttype,
+      // employmentType: employmenttype,               // Removed by HR
       status,
       description,
       publicUrlKey,
@@ -348,154 +349,127 @@ function Edit_opening() {
             ) : (
               <div className="space-y-6">
 
-                {/* Row 1: Opening Name + Hours */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
-                    <input type="text" value={openingname} placeholder="Enter name"
-                      onChange={(e) => { setOpeningname(e.target.value); setErrors(prev => ({ ...prev, openingname: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.openingname && <p className="text-red-600 text-sm">{errors.openingname}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Hours <span className="text-pink-800">*</span></label>
-                    <input type="text" value={hours} placeholder="Enter hours"
-                      onChange={(e) => { setHours(e.target.value); setErrors(prev => ({ ...prev, hours: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.hours ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.hours && <p className="text-red-600 text-sm">{errors.hours}</p>}
-                  </div>
+                {/* Row 1: Opening Name (full width — Hours removed) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Opening Name <span className="text-pink-800">*</span></label>
+                  <input type="text" value={openingname} placeholder="Enter name"
+                    onChange={(e) => { setOpeningname(e.target.value); setErrors(prev => ({ ...prev, openingname: '' })); }}
+                    className={`border-2 p-2 rounded w-full ${errors.openingname ? 'border-red-500' : 'border-yellow-400'}`} />
+                  {errors.openingname && <p className="text-red-600 text-sm">{errors.openingname}</p>}
                 </div>
 
-                {/* Row 2: Shift Timings + Payment */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Shift Timings <span className="text-pink-800">*</span></label>
-                    <input type="text" value={shifttimings} placeholder="Enter timings"
-                      onChange={(e) => { setShifttimings(e.target.value); setErrors(prev => ({ ...prev, shifttimings: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.shifttimings ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.shifttimings && <p className="text-red-600 text-sm">{errors.shifttimings}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Payment </label>
-                    <div className={`flex items-center border-2 rounded ${errors.payment ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <select value={currency} onChange={(e) => setCurrency(e.target.value)}
-                        className="border-none outline-none bg-yellow-50 text-sm font-medium px-2 py-2 cursor-pointer"
-                        style={{ borderRight: '2px solid #facc15' }}>
-                        <option value="INR">₹ INR</option>
-                        <option value="SEK">kr SEK</option>
-                        <option value="USD">$ USD</option>
-                      </select>
-                      <input type="text" value={payment} placeholder="Amount"
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (/^[a-zA-Z0-9]*$/.test(val)) {
-                            setPayment(val);
-                            if (errors.payment) setErrors(prev => ({ ...prev, payment: '' }));
-                          }
-                        }}
-                        className="flex-1 border-none outline-none bg-white text-sm px-2 py-2"
-                        style={{ boxShadow: 'none' }} />
+                {/* Removed by HR:
+                  <div className="flex flex-wrap gap-4 justify-between">
+                    <div className="w-full md:w-[48%]">
+                      <label>Hours *</label>
+                      <input type="text" value={hours} ... />
                     </div>
-                    {errors.payment && <p className="text-red-600 text-sm mt-1">{errors.payment}</p>}
                   </div>
+                  <div className="flex flex-wrap gap-4 justify-between">
+                    <div className="w-full md:w-[48%]">
+                      <label>Shift Timings *</label>
+                      <input type="text" value={shifttimings} ... />
+                    </div>
+                    <div className="w-full md:w-[48%]">
+                      <label>Payment</label>
+                      <div> currency select + amount input </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-4 justify-between">
+                    <div className="w-full md:w-[48%]">
+                      <label>Payment Type *</label>
+                      <input type="text" value={paymenttype} ... />
+                    </div>
+                  </div>
+                */}
+
+                {/* Row 2: Technology (full width — Payment Type removed) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
+                  <select
+                    value={technology}
+                    onChange={(e) => {
+                      setTechnology(e.target.value);
+                      if (e.target.value !== 'Other') setCustomTech('');
+                      setErrors(prev => ({ ...prev, technology: '' }));
+                    }}
+                    className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
+                  >
+                    <option value="">Select technology</option>
+                    <optgroup label="Java Ecosystem">
+                      <option value="JAVA">Java</option>
+                      <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
+                      <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
+                      <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
+                    </optgroup>
+                    <optgroup label=".NET Ecosystem">
+                      <option value="DOTNET">ASP.NET</option>
+                      <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
+                      <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
+                      <option value="DOTNET CORE">ASP.NET Core</option>
+                    </optgroup>
+                    <optgroup label="Python Ecosystem">
+                      <option value="PYTHON">Python</option>
+                      <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
+                      <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
+                      <option value="PYTHON DJANGO">Python + Django</option>
+                      <option value="PYTHON FASTAPI">Python + FastAPI</option>
+                      <option value="PYTHON FLASK">Python + Flask</option>
+                    </optgroup>
+                    <optgroup label="Node.js Ecosystem">
+                      <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
+                      <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
+                      <option value="MERN">MERN Stack</option>
+                      <option value="MEAN">MEAN Stack</option>
+                      <option value="MEVN">MEVN Stack</option>
+                    </optgroup>
+                    <optgroup label="Frontend">
+                      <option value="ANGULAR">Angular</option>
+                      <option value="REACTJS">React.js</option>
+                      <option value="VUEJS">Vue.js</option>
+                      <option value="NEXTJS">Next.js</option>
+                      <option value="NUXTJS">Nuxt.js</option>
+                      <option value="FRONTEND">Frontend (HTML / CSS / JS)</option>
+                    </optgroup>
+                    <optgroup label="Mobile Development">
+                      <option value="ANDROID">Android</option>
+                      <option value="IOS SWIFT">iOS (Swift)</option>
+                      <option value="REACT NATIVE">React Native</option>
+                      <option value="FLUTTER">Flutter</option>
+                    </optgroup>
+                    <optgroup label="Database &amp; Data Engineering">
+                      <option value="SQL DEVELOPER">SQL Developer</option>
+                      <option value="DATA ENGINEER">Data Engineer</option>
+                      <option value="DATA SCIENCE">Data Science</option>
+                      <option value="ML AI">Machine Learning / AI</option>
+                      <option value="POWER BI">Power BI / Tableau</option>
+                    </optgroup>
+                    <optgroup label="DevOps &amp; Cloud">
+                      <option value="AWS DEVOPS">AWS DevOps</option>
+                      <option value="AZURE DEVOPS">Azure DevOps</option>
+                      <option value="GCP DEVOPS">GCP DevOps</option>
+                      <option value="DEVOPS">DevOps (General)</option>
+                      <option value="CLOUD ARCHITECT">Cloud Architect</option>
+                    </optgroup>
+                    <optgroup label="Testing">
+                      <option value="TESTING">Manual Testing</option>
+                      <option value="AUTOMATION TESTING">Automation Testing</option>
+                      <option value="PERFORMANCE TESTING">Performance Testing</option>
+                      <option value="API TESTING">API Testing</option>
+                    </optgroup>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
+                  {technology === 'Other' && (
+                    <input type="text"
+                      className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
+                      placeholder="Enter custom technology"
+                      value={customTech}
+                      onChange={(e) => setCustomTech(e.target.value)} />
+                  )}
+                  {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
                 </div>
 
-                {/* Row 3: Payment Type + Technology */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Payment Type <span className="text-pink-800">*</span></label>
-                    <input type="text" value={paymenttype} placeholder="Enter type"
-                      onChange={(e) => { setPaymenttype(e.target.value); setErrors(prev => ({ ...prev, paymenttype: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.paymenttype ? 'border-red-500' : 'border-yellow-400'}`} />
-                    {errors.paymenttype && <p className="text-red-600 text-sm">{errors.paymenttype}</p>}
-                  </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
-                    <select
-                      value={technology}
-                      onChange={(e) => {
-                        setTechnology(e.target.value);
-                        if (e.target.value !== 'Other') setCustomTech('');
-                        setErrors(prev => ({ ...prev, technology: '' }));
-                      }}
-                      className={`border-2 p-2 rounded w-full ${errors.technology ? 'border-red-500' : 'border-yellow-400'}`}
-                    >
-                      <option value="">Select technology</option>
-                      <optgroup label="Java Ecosystem">
-                        <option value="JAVA">Java</option>
-                        <option value="JAVA FULLSTACK ANGULAR">Java Full Stack + Angular</option>
-                        <option value="JAVA FULLSTACK REACT">Java Full Stack + React</option>
-                        <option value="JAVA SPRING BOOT">Java + Spring Boot</option>
-                      </optgroup>
-                      <optgroup label=".NET Ecosystem">
-                        <option value="DOTNET">ASP.NET</option>
-                        <option value="DOTNET FULLSTACK ANGULAR">ASP.NET Full Stack + Angular</option>
-                        <option value="DOTNET FULLSTACK REACT">ASP.NET Full Stack + React</option>
-                        <option value="DOTNET CORE">ASP.NET Core</option>
-                      </optgroup>
-                      <optgroup label="Python Ecosystem">
-                        <option value="PYTHON">Python</option>
-                        <option value="PYTHON FULLSTACK ANGULAR">Python Full Stack + Angular</option>
-                        <option value="PYTHON FULLSTACK REACT">Python Full Stack + React</option>
-                        <option value="PYTHON DJANGO">Python + Django</option>
-                        <option value="PYTHON FASTAPI">Python + FastAPI</option>
-                        <option value="PYTHON FLASK">Python + Flask</option>
-                      </optgroup>
-                      <optgroup label="Node.js Ecosystem">
-                        <option value="NODE FULLSTACK ANGULAR">Node.js Full Stack + Angular</option>
-                        <option value="NODE FULLSTACK REACT">Node.js Full Stack + React</option>
-                        <option value="MERN">MERN Stack</option>
-                        <option value="MEAN">MEAN Stack</option>
-                        <option value="MEVN">MEVN Stack</option>
-                      </optgroup>
-                      <optgroup label="Frontend">
-                        <option value="ANGULAR">Angular</option>
-                        <option value="REACTJS">React.js</option>
-                        <option value="VUEJS">Vue.js</option>
-                        <option value="NEXTJS">Next.js</option>
-                        <option value="NUXTJS">Nuxt.js</option>
-                        <option value="FRONTEND">Frontend (HTML / CSS / JS)</option>
-                      </optgroup>
-                      <optgroup label="Mobile Development">
-                        <option value="ANDROID">Android</option>
-                        <option value="IOS SWIFT">iOS (Swift)</option>
-                        <option value="REACT NATIVE">React Native</option>
-                        <option value="FLUTTER">Flutter</option>
-                      </optgroup>
-                      <optgroup label="Database &amp; Data Engineering">
-                        <option value="SQL DEVELOPER">SQL Developer</option>
-                        <option value="DATA ENGINEER">Data Engineer</option>
-                        <option value="DATA SCIENCE">Data Science</option>
-                        <option value="ML AI">Machine Learning / AI</option>
-                        <option value="POWER BI">Power BI / Tableau</option>
-                      </optgroup>
-                      <optgroup label="DevOps &amp; Cloud">
-                        <option value="AWS DEVOPS">AWS DevOps</option>
-                        <option value="AZURE DEVOPS">Azure DevOps</option>
-                        <option value="GCP DEVOPS">GCP DevOps</option>
-                        <option value="DEVOPS">DevOps (General)</option>
-                        <option value="CLOUD ARCHITECT">Cloud Architect</option>
-                      </optgroup>
-                      <optgroup label="Testing">
-                        <option value="TESTING">Manual Testing</option>
-                        <option value="AUTOMATION TESTING">Automation Testing</option>
-                        <option value="PERFORMANCE TESTING">Performance Testing</option>
-                        <option value="API TESTING">API Testing</option>
-                      </optgroup>
-                      <option value="Other">Other (Custom)</option>
-                    </select>
-                    {technology === 'Other' && (
-                      <input type="text"
-                        className="mt-2 border-2 border-yellow-400 p-2 rounded w-full text-sm"
-                        placeholder="Enter custom technology"
-                        value={customTech}
-                        onChange={(e) => setCustomTech(e.target.value)} />
-                    )}
-                    {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
-                  </div>
-                </div>
-
-                {/* Row 4: Experience + Employment Type */}
+                {/* Row 3: Experience + Location (Employment Type removed) */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
@@ -504,33 +478,15 @@ function Edit_opening() {
                       className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Employment Type <span className="text-pink-800">*</span></label>
-                    <select value={employmenttype}
-                      onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmenttype: '' })); }}
-                      className={`border-2 p-2 rounded w-full ${errors.employmenttype ? 'border-red-500' : 'border-yellow-400'}`}>
-                      <option value="">Select employment type</option>
-                      <option value="Freelancing">Freelancing</option>
-                      <option value="Consultant">Consultant</option>
-                      <option value="Sweden-FullTime">Sweden-FullTime</option>
-                      <option value="India-FullTime">India-FullTime</option>
-                      <option value="USA-FullTime">USA-FullTime</option>
-                    </select>
-                    {errors.employmenttype && <p className="text-red-600 text-sm">{errors.employmenttype}</p>}
-                  </div>
-                </div>
-
-                {/* Row 5: Skills + Location */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
-                    <SkillTagInput
-                      value={skills}
-                      onChange={(val) => { setSkills(val); setErrors(prev => ({ ...prev, skills: '' })); }}
-                      error={errors.skills}
-                    />
-                    {errors.skills && <p className="text-red-600 text-sm">{errors.skills}</p>}
-                  </div>
+                  {/* Removed by HR:
+                    <div className="w-full md:w-[48%]">
+                      <label>Employment Type *</label>
+                      <select value={employmenttype} ...>
+                        <option value="Freelancing">Freelancing</option>
+                        ...
+                      </select>
+                    </div>
+                  */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Location <span className="text-pink-800">*</span></label>
                     <select value={location}
@@ -545,7 +501,18 @@ function Edit_opening() {
                   </div>
                 </div>
 
-                {/* Row 6: Status (full width) */}
+                {/* Row 4: Skills (full width) */}
+                <div className="w-full">
+                  <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
+                  <SkillTagInput
+                    value={skills}
+                    onChange={(val) => { setSkills(val); setErrors(prev => ({ ...prev, skills: '' })); }}
+                    error={errors.skills}
+                  />
+                  {errors.skills && <p className="text-red-600 text-sm">{errors.skills}</p>}
+                </div>
+
+                {/* Row 5: Status (full width) */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Status <span className="text-pink-800">*</span></label>
                   <select value={status}
@@ -558,7 +525,7 @@ function Edit_opening() {
                   {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
                 </div>
 
-                {/* Row 7: Description (full width) */}
+                {/* Row 6: Description (full width) */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Description</label>
                   <textarea value={description} placeholder="Enter job description"

@@ -6,13 +6,13 @@ import Header from "../Header";
 
 function View_opening() {
   const [openingname, setOpeningname]       = useState('');
-  const [hours, setHours]                   = useState('');
-  const [shifttimings, setShifttimings]     = useState('');
-  const [payment, setPayment]               = useState('');
-  const [paymenttype, setPaymenttype]       = useState('');
+  // const [hours, setHours]                   = useState('');          // Removed by HR
+  // const [shifttimings, setShifttimings]     = useState('');          // Removed by HR
+  // const [payment, setPayment]               = useState('');          // Removed by HR
+  // const [paymenttype, setPaymenttype]       = useState('');          // Removed by HR
   const [technology, setTechnology]         = useState('');
   const [experience, setExperience]         = useState('');
-  const [employmenttype, setEmploymenttype] = useState('');
+  // const [employmenttype, setEmploymenttype] = useState('');          // Removed by HR
   const [skills, setSkills]                 = useState('');
   const [status, setStatus]                 = useState('');
   const [location, setLocation]             = useState('');
@@ -26,13 +26,13 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
       .get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings/${openingid}`)
       .then((res) => {
         setOpeningname(res.data.name);
-        setHours(res.data.hours);
-        setShifttimings(res.data.shiftTimings);
-        setPayment(res.data.payment);
-        setPaymenttype(res.data.paymentType);
+        // setHours(res.data.hours);                    // Removed by HR
+        // setShifttimings(res.data.shiftTimings);       // Removed by HR
+        // setPayment(res.data.payment);                 // Removed by HR
+        // setPaymenttype(res.data.paymentType);         // Removed by HR
         setTechnology(res.data.technology);
         setSkills(res.data.skill);
-        setEmploymenttype(res.data.employmentType);
+        // setEmploymenttype(res.data.employmentType);   // Removed by HR
         setExperience(res.data.experience);
         setStatus(res.data.status);
         setLocation(res.data.location);
@@ -75,62 +75,66 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
 
             <div className="space-y-6">
 
-              <div className="flex flex-wrap gap-4 justify-between">
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Opening Name *" value={openingname} />
-                </div>
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Hours *" value={hours} />
-                </div>
+              {/* Row: Opening Name (full width — Hours removed) */}
+              <div className="w-full">
+                <ReadField label="Opening Name *" value={openingname} />
               </div>
 
-              <div className="flex flex-wrap gap-4 justify-between">
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Shift Timings *" value={shifttimings} />
+              {/* Removed by HR:
+                <div className="flex flex-wrap gap-4 justify-between">
+                  <div className="w-full md:w-[48%]">
+                    <ReadField label="Hours *" value={hours} />
+                  </div>
                 </div>
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Payment" value={payment} />
+                <div className="flex flex-wrap gap-4 justify-between">
+                  <div className="w-full md:w-[48%]">
+                    <ReadField label="Shift Timings *" value={shifttimings} />
+                  </div>
+                  <div className="w-full md:w-[48%]">
+                    <ReadField label="Payment" value={payment} />
+                  </div>
                 </div>
-              </div>
+                <div className="flex flex-wrap gap-4 justify-between">
+                  <div className="w-full md:w-[48%]">
+                    <ReadField label="Payment Type *" value={paymenttype} />
+                  </div>
+                </div>
+              */}
 
-              <div className="flex flex-wrap gap-4 justify-between">
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Payment Type *" value={paymenttype} />
-                </div>
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Technology *" value={technology} />
-                </div>
+              {/* Row: Technology (full width — Payment Type removed) */}
+              <div className="w-full">
+                <ReadField label="Technology *" value={technology} />
               </div>
 
               <div className="flex flex-wrap gap-4 justify-between">
                 <div className="w-full md:w-[48%]">
                   <ReadField label="Experience *" value={experience} />
                 </div>
+                {/* Removed by HR:
+                  <div className="w-full md:w-[48%]">
+                    <ReadField label="Employment Type *" value={employmenttype} />
+                  </div>
+                */}
                 <div className="w-full md:w-[48%]">
-                  <ReadField label="Employment Type *" value={employmenttype} />
+                  <ReadField label="Location *" value={location} />
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4 justify-between">
-                <div className="w-full md:w-[48%]">
-                  <label className="font-semibold mb-1 block">Skills *</label>
-                  <div className="border-2 border-yellow-400 rounded p-2 min-h-[42px] bg-gray-50 flex flex-wrap gap-2">
-                    {skillList.length > 0 ? (
-                      skillList.map((skill) => (
-                        <span
-                          key={skill}
-                          className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-3 py-1 rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-gray-400 text-sm">No skills listed</span>
-                    )}
-                  </div>
-                </div>
-                <div className="w-full md:w-[48%]">
-                  <ReadField label="Location *" value={location} />
+              <div className="w-full">
+                <label className="font-semibold mb-1 block">Skills *</label>
+                <div className="border-2 border-yellow-400 rounded p-2 min-h-[42px] bg-gray-50 flex flex-wrap gap-2">
+                  {skillList.length > 0 ? (
+                    skillList.map((skill) => (
+                      <span
+                        key={skill}
+                        className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-3 py-1 rounded-full"
+                      >
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 text-sm">No skills listed</span>
+                  )}
                 </div>
               </div>
 
