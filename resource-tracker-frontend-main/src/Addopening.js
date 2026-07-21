@@ -326,7 +326,7 @@ function Addopening() {
       updatedBy:      creatorId,
     };
 
-    axios.post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings", payload)
+    axios.post("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings", payload)
       .then((response) => {
         // ✅ FIX: Use publicUrl directly from backend response
         const publicUrl = response.data?.publicUrl;
@@ -338,7 +338,7 @@ function Addopening() {
           error?.response?.data?.errorMessage?.includes('Mail') ||
           error?.response?.data?.details?.toString().includes('Failed to send email')
         ) {
-          axios.get("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings")
+          axios.get("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings")
             .then((res) => {
               const latest = res.data[res.data.length - 1];
               // ✅ FIX: Use publicUrl from backend response

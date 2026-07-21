@@ -23,7 +23,7 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
   useEffect(() => {
     const openingid = localStorage.getItem("opening_id");
     axios
-      .get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings/${openingid}`)
+      .get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/${openingid}`)
       .then((res) => {
         setOpeningname(res.data.name);
         // setHours(res.data.hours);                    // Removed by HR

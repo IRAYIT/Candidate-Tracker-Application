@@ -60,7 +60,7 @@ function Forgotpassword() {
 
     setLoading(true);
     axios
-      .post(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/user/sendOtp?email=${email}`)
+      .post(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/sendOtp?email=${email}`)
       .then((res) => {
         if (res.data === "OTP sent to your email") {
           setStep(2);
@@ -85,7 +85,7 @@ function Forgotpassword() {
 
     setLoading(true);
     axios
-      .post(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/user/verifyOtp?email=${email}&otp=${otp}`)
+      .post(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/verifyOtp?email=${email}&otp=${otp}`)
       .then((res) => {
         if (res.data === "OTP Verified") {
           setStep(3);
@@ -109,7 +109,7 @@ function Forgotpassword() {
 
     setLoading(true);
     axios
-      .post("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/user/forgotPassword", {
+      .post("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/forgotPassword", {
         email,
         password: newPassword,
       })
@@ -135,7 +135,7 @@ function Forgotpassword() {
     setError("");
     setLoading(true);
     axios
-      .post(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/user/sendOtp?email=${email}`)
+      .post(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/sendOtp?email=${email}`)
       .then(() => { setResendTimer(30); setLoading(false); })
       .catch(() => { setError("Failed to resend OTP."); setLoading(false); });
   };

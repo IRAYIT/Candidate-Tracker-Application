@@ -50,7 +50,7 @@ function MyProfile() {
     const fetchEmployeeData = async () => {
       try {
         const employee = localStorage.getItem("employeeid");
-        const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/${employee}`);
+        const res = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/${employee}`);
         const data = res.data;
 
         const permissionToRole = { 1: 'Admin', 2: 'HR', 3: 'Manager', 4: 'Employee' };

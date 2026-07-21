@@ -336,7 +336,7 @@ function Addresource() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/getAllUnassignedResources')
+    axios.get('https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/getAllUnassignedResources')
       .then(res => {
         const onlyEmployees = (res.data || []).filter(emp => emp.permissionId === 4);
         setEmployeeList(onlyEmployees);
@@ -393,7 +393,7 @@ function Addresource() {
       setErrors(prev => ({ ...prev, email: 'Email is required.' }));
       return;
     }
-    axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/emailCheck/${email}`)
+    axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/emailCheck/${email}`)
       .then(res => {
         if (res.status === 200) {
           setErrors(prev => ({
@@ -480,7 +480,7 @@ function Addresource() {
 
     formData.append('payload', JSON.stringify(payload));
 
-    axios.post('https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/upload', formData)
+    axios.post('https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/upload', formData)
       .then(() => { navigate('/manageresources'); })
       .catch((err) => {
         const data = err.response?.data;

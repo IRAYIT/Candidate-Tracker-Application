@@ -41,7 +41,7 @@ function ManageProjects() {
 
   const fetchProjects = async () => {
     try {
-      const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/projects/list`);
+      const res = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/projects/list`);
       console.log("=== PROJECTS FETCHED ===", res.data);
       if (res.data.length > 0) {
         console.log("=== FIRST PROJECT OBJECT ===", res.data[0]);
@@ -57,7 +57,7 @@ function ManageProjects() {
     try {
       const id = localStorage.getItem("employeeid");
       const res = await axios.get(
-        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/projects/getProjectsByResourceId/${id}`
+        `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/projects/getProjectsByResourceId/${id}`
       );
       console.log("=== RESOURCE PROJECTS FETCHED ===", res.data);
       setProjects(res.data);
@@ -78,7 +78,7 @@ function ManageProjects() {
     setLoading(true);
     try {
       const res = await axios.delete(
-        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/projects/${projectId}`
+        `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/projects/${projectId}`
       );
       console.log("=== DELETE RESPONSE ===", res.status, res.data);
       if (res.status === 200) {

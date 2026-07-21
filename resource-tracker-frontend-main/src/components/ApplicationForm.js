@@ -603,7 +603,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
     try {
       setSubmitting(true);
       const response = await fetch(
-        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/public/apply/${publicUrlKey}`,
+        `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/public/apply/${publicUrlKey}`,
         { method: 'POST', body: formData }
       );
 

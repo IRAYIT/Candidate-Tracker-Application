@@ -235,7 +235,7 @@ function Edit_opening() {
   useEffect(() => {
     const openingid = localStorage.getItem("opening_id");
     axios
-      .get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings/${openingid}`)
+      .get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/${openingid}`)
       .then((res) => {
         setOpeningId(openingid);
         setOpeningname(res.data.name);
@@ -320,7 +320,7 @@ function Edit_opening() {
     };
 
     axios
-      .put("https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/openings", payload)
+      .put("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings", payload)
       .then(() => navigate('/current_openings'))
       .catch((err) => { console.error("Edit failed:", err); setLoading(false); });
   };

@@ -33,7 +33,7 @@ function ManageResources() {
     const fetchResources = async () => {
       try {
         if (permissionid === "1") {
-          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net//api/v1/resource/list`);
+          const res = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net//api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
@@ -43,7 +43,7 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else if (permissionid === "2") {
-          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net//api/v1/resource/list`);
+          const res = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net//api/v1/resource/list`);
           const activeResources = res.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
@@ -54,7 +54,7 @@ function ManageResources() {
 
         } else if (permissionid === "3") {
           const res = await axios.get(
-            `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${id}`
+            `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${id}`
           );
           const activeResources = res.data.filter(
             (resource) =>
@@ -64,7 +64,7 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
 
         } else {
-          const res = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/${id}`);
+          const res = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/${id}`);
           setResources([res.data]);
         }
       } catch (error) {
@@ -99,11 +99,11 @@ function ManageResources() {
     try {
       setLoading(true);
       const deleteResponse = await axios.delete(
-        `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/${resourceId}`
+        `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/${resourceId}`
       );
       if (deleteResponse.status === 200) {
         if (permissionid === "1") {
-          const response = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net//api/v1/resource/list`);
+          const response = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net//api/v1/resource/list`);
           const activeResources = response.data?.filter(
             (resource) =>
               resource.status?.toLowerCase() !== "terminated" &&
@@ -113,7 +113,7 @@ function ManageResources() {
           setResources(transformResourceData(activeResources));
         } else if (permissionid === "3") {
           const response = await axios.get(
-            `https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${id}`
+            `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${id}`
           );
           const activeResources = response.data.filter(
             (resource) =>
@@ -122,7 +122,7 @@ function ManageResources() {
           );
           setResources(transformResourceData(activeResources));
         } else {
-          const response = await axios.get(`https://candiate-tracker-aea8hqfwbxd4dqhu.centralindia-01.azurewebsites.net/api/v1/resource/${id}`);
+          const response = await axios.get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/${id}`);
           setResources([response.data]);
         }
         setLoading(false);
