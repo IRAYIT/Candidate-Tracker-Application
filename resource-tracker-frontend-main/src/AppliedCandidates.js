@@ -14,20 +14,33 @@ const sortByFirstName = (data) => {
   );
 };
 
-// Format skills as "Java, Spring Boot, Spring MVC, +7 more"
-const formatSkills = (skillsStr, visibleCount = 3) => {
-  if (!skillsStr) return "—";
-  const skillsArr = skillsStr
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+// Renders a skills list as up to `visibleCount` skills followed by a
+// "+N more" pill badge (full remaining list available via title tooltip).
+const renderSkillsCell = (skillStr, visibleCount = 3) => {
+  const allSkills = skillStr
+    ? skillStr.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
 
-  if (skillsArr.length === 0) return "—";
-  if (skillsArr.length <= visibleCount) return skillsArr.join(", ");
+  if (allSkills.length === 0) return <span className="text-gray-400">—</span>;
 
-  const visible = skillsArr.slice(0, visibleCount).join(", ");
-  const remaining = skillsArr.length - visibleCount;
-  return `${visible}, +${remaining} more`;
+  const visible = allSkills.slice(0, visibleCount);
+  const remaining = allSkills.length - visibleCount;
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-gray-800 text-sm">
+        {visible.join(", ")}
+      </span>
+      {remaining > 0 && (
+        <span
+          className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
+          title={allSkills.slice(visibleCount).join(", ")}
+        >
+          +{remaining} more
+        </span>
+      )}
+    </div>
+  );
 };
 
 function AppliedCandidates() {
@@ -253,11 +266,8 @@ function AppliedCandidates() {
                           <td className="px-6 py-4 text-sm">
                             {c.expectedSalaryCurrency || "₹"}{c.expectedSalary?.toLocaleString()}
                           </td>
-                          <td
-                            className="px-6 py-4 text-sm whitespace-nowrap"
-                            title={c.skills || c.skillSet || ""}
-                          >
-                            {formatSkills(c.skills || c.skillSet)}
+                          <td className="px-6 py-4 text-sm">
+                            {renderSkillsCell(c.skills || c.skillSet, 3)}
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase ${statusBadge(c.applicationStatus)}`}>
