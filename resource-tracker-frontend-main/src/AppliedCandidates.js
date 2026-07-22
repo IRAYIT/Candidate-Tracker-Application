@@ -14,6 +14,22 @@ const sortByFirstName = (data) => {
   );
 };
 
+// Format skills as "Java, Spring Boot, Spring MVC, +7 more"
+const formatSkills = (skillsStr, visibleCount = 3) => {
+  if (!skillsStr) return "—";
+  const skillsArr = skillsStr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (skillsArr.length === 0) return "—";
+  if (skillsArr.length <= visibleCount) return skillsArr.join(", ");
+
+  const visible = skillsArr.slice(0, visibleCount).join(", ");
+  const remaining = skillsArr.length - visibleCount;
+  return `${visible}, +${remaining} more`;
+};
+
 function AppliedCandidates() {
   const [permissionid, setPermissionid] = useState("");
   const [candidates, setCandidates] = useState([]);
@@ -237,7 +253,12 @@ function AppliedCandidates() {
                           <td className="px-6 py-4 text-sm">
                             {c.expectedSalaryCurrency || "₹"}{c.expectedSalary?.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 text-sm">{c.skills || c.skillSet || "—"}</td>
+                          <td
+                            className="px-6 py-4 text-sm whitespace-nowrap"
+                            title={c.skills || c.skillSet || ""}
+                          >
+                            {formatSkills(c.skills || c.skillSet)}
+                          </td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase ${statusBadge(c.applicationStatus)}`}>
                               {c.applicationStatus}
