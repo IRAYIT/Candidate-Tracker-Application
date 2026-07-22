@@ -1,6 +1,38 @@
+// Renders a skills list as up to `visibleCount` skills followed by a
+// "+N more" pill (full list available via title tooltip on the pill).
+const renderSkillsCell = (skillStr, visibleCount = 3) => {
+  const allSkills = skillStr
+    ? skillStr.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const visible = allSkills.slice(0, visibleCount);
+  const remaining = allSkills.length - visibleCount;
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-gray-800 text-sm">
+        {visible.join(", ")}
+      </span>
+      {remaining > 0 && (
+        <span
+          className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
+          title={allSkills.slice(visibleCount).join(", ")}
+        >
+          +{remaining} more
+        </span>
+      )}
+    </div>
+  );
+};
+
 export const OPENINGCOLUMNS = (permissionid) => [
   { id: 'name',          header: 'OPENING NAME', accessorKey: 'name'          },
-  { id: 'skill',         header: 'SKILL',        accessorKey: 'skill'         },
+  {
+    id: 'skill',
+    header: 'SKILL',
+    accessorKey: 'skill',
+    cell: ({ getValue }) => renderSkillsCell(getValue(), 3),
+  },
   { id: 'experience',    header: 'EXPERIENCE',   accessorKey: 'experience'    },
   { 
     id: 'status', 
@@ -59,30 +91,7 @@ export const MANAGERESOURCECOLUMNS = [
     id: 'skill',
     header: 'SKILLS',
     accessorKey: 'skill',
-    cell: ({ row }) => {
-      const allSkills = row.original.skill
-        ? row.original.skill.split(",").map((s) => s.trim()).filter(Boolean)
-        : [];
-
-      const visible = allSkills.slice(0, 2);
-      const remaining = allSkills.length - 2;
-
-      return (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-gray-800 text-sm">
-            {visible.join(", ")}
-          </span>
-          {remaining > 0 && (
-            <span
-              className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
-              title={allSkills.slice(2).join(", ")}
-            >
-              +{remaining} more
-            </span>
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => renderSkillsCell(row.original.skill, 3),
   },
   {
     id: 'experience',
