@@ -33,6 +33,21 @@ function ApplicationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
 
+  // Set the tab title as soon as this page mounts, so it's correct even
+  // during the loading spinner — don't wait for ApplicationForm to mount,
+  // since that only happens after the job details finish loading.
+  useEffect(() => {
+    document.title = 'Candidate Tracker';
+  }, []);
+
+  // Once the job details arrive, make the title more specific so someone
+  // with multiple job tabs open can tell them apart.
+  useEffect(() => {
+    if (opening?.name) {
+      document.title = `Apply — ${opening.name} | Candidate Tracker`;
+    }
+  }, [opening]);
+
   useEffect(() => {
     async function load() {
       try {
@@ -94,7 +109,7 @@ function ApplicationPage() {
         )}
 
         <footer className="ap-footer">
-          <p>© {new Date().getFullYear()} {companyName} · Resource Tracker</p>
+          <p>© {new Date().getFullYear()} {companyName} · Candidate Tracker</p>
         </footer>
       </div>
     </div>
