@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
+import { highlightMatch } from "./column";
 
 const BASE_URL = "https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/public/apply";
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
@@ -16,25 +17,47 @@ const sortByFirstName = (data) => {
 
 // Renders a skills list as up to `visibleCount` skills followed by a
 // "+N more" pill badge (full remaining list available via title tooltip).
-const renderSkillsCell = (skillStr, visibleCount = 3) => {
+// When `query` is set, matching skills are highlighted and floated to the
+// front of the visible slice so a match never gets stuck behind the pill.
+const renderSkillsCell = (skillStr, visibleCount = 3, query = "") => {
   const allSkills = skillStr
     ? skillStr.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
   if (allSkills.length === 0) return <span className="text-gray-400">—</span>;
 
-  const visible = allSkills.slice(0, visibleCount);
-  const remaining = allSkills.length - visibleCount;
+  const trimmedQuery = query ? query.trim().toLowerCase() : "";
+
+  let orderedSkills = allSkills;
+  if (trimmedQuery) {
+    const matching = allSkills.filter((s) => s.toLowerCase().includes(trimmedQuery));
+    const nonMatching = allSkills.filter((s) => !s.toLowerCase().includes(trimmedQuery));
+    orderedSkills = [...matching, ...nonMatching];
+  }
+
+  const visible = orderedSkills.slice(0, visibleCount);
+  const hidden = orderedSkills.slice(visibleCount);
+  const remaining = hidden.length;
+  const hiddenHasMatch = trimmedQuery && hidden.some((s) => s.toLowerCase().includes(trimmedQuery));
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <span className="text-gray-800 text-sm">
-        {visible.join(", ")}
+        {visible.map((skill, idx) => (
+          <span key={idx}>
+            {highlightMatch(skill, query)}
+            {idx < visible.length - 1 ? ", " : ""}
+          </span>
+        ))}
       </span>
       {remaining > 0 && (
         <span
-          className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
-          title={allSkills.slice(visibleCount).join(", ")}
+          className={`text-xs font-normal px-2 py-0.5 rounded-full ${
+            hiddenHasMatch
+              ? "bg-yellow-200 text-yellow-800 font-semibold"
+              : "bg-gray-100 text-gray-400"
+          }`}
+          title={hidden.join(", ")}
         >
           +{remaining} more
         </span>
@@ -55,6 +78,10 @@ function AppliedCandidates() {
   const [newStatus, setNewStatus] = useState("");
   const [editLoading, setEditLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, candidateId: null });
+  const [restoreModal, setRestoreModal] = useState({ open: false, candidateId: null });
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [pageIndex, setPageIndex] = useState(0);
 
   const navigate = useNavigate();
 
@@ -104,6 +131,41 @@ function AppliedCandidates() {
     }
   };
 
+  // Fetches soft-deleted candidates (is_deleted = true) via a dedicated
+  // backend endpoint. Requires a native-query repository method since
+  // @SQLRestriction on the entity excludes deleted rows from normal queries.
+  const fetchDeletedCandidates = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`${BASE_URL}/deleted`);
+      if (!res.ok) throw new Error("Failed to fetch deleted candidates");
+      const data = await res.json();
+      setCandidates(sortByFirstName(data));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggles between the active candidate list and the deleted (soft-deleted)
+  // list. Resets search/pagination so stale filters don't carry over.
+  const toggleDeletedView = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    setSearch("");
+    setPageIndex(0);
+
+    if (next) {
+      fetchDeletedCandidates();
+    } else if (filterOpeningId) {
+      fetchCandidatesByOpening(filterOpeningId);
+    } else {
+      fetchCandidates();
+    }
+  };
+
   const filtered = candidates.filter((c) => {
     const q = search.toLowerCase();
     return (
@@ -113,6 +175,23 @@ function AppliedCandidates() {
       c.skills?.toLowerCase().includes(q)           // add skills search
     );
   });
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  // Whenever the search term or the underlying candidate list changes, the
+  // number of matching rows can shrink — jump back to page 1 rather than
+  // stranding the user on a now-empty page.
+  useEffect(() => {
+    setPageIndex(0);
+  }, [search, candidates.length]);
+
+  // Clamp in case pageSize grows/shrinks the page count out from under the
+  // current index (e.g. switching from "Show 5" to "Show 20" on page 3).
+  useEffect(() => {
+    setPageIndex((prev) => Math.min(prev, pageCount - 1));
+  }, [pageCount]);
+
+  const paginated = filtered.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
   const handleView = (candidateId) => {
     localStorage.setItem("view_candidate_id", candidateId);
@@ -159,6 +238,21 @@ function AppliedCandidates() {
     }
   };
 
+  // Restores a soft-deleted candidate. Only meaningful while showDeleted is
+  // true, since that's the only view where the Restore button is shown.
+  const handleRestore = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/restore/${restoreModal.candidateId}`, {
+        method: "PATCH",
+      });
+      if (!res.ok) throw new Error("Failed to restore candidate");
+      setCandidates((prev) => prev.filter((c) => c.id !== restoreModal.candidateId));
+      setRestoreModal({ open: false, candidateId: null });
+    } catch (err) {
+      alert("Error restoring candidate: " + err.message);
+    }
+  };
+
   const statusBadge = (status) => {
     const map = {
       APPLIED: "bg-blue-100 text-blue-700",
@@ -184,7 +278,7 @@ function AppliedCandidates() {
           <Header />
         </header>
 
-        {filterOpeningName && (
+        {filterOpeningName && !showDeleted && (
             <div className="flex items-center justify-between mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-md">
                 <span className="text-sm text-gray-700">
                     Showing candidates for: <span className="text-blue-600 font-semibold">{filterOpeningName}</span>
@@ -204,6 +298,14 @@ function AppliedCandidates() {
             </div>
         )}
 
+        {showDeleted && (
+          <div className="flex items-center justify-between mb-4 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
+            <span className="text-sm text-gray-700">
+              Showing <span className="text-yellow-700 font-semibold">deleted</span> candidates
+            </span>
+          </div>
+        )}
+
         <main className="flex-1 bg-gray-50 p-6 overflow-x-auto">
           {/* Search bar */}
           <div className="flex items-center justify-between mb-6">
@@ -214,6 +316,20 @@ function AppliedCandidates() {
               onChange={(e) => setSearch(e.target.value)}
               className="border border-yellow-400 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 w-64"
             />
+
+            {/* Show Deleted toggle — Admin only */}
+            {permissionid === "1" && (
+              <button
+                onClick={toggleDeletedView}
+                className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition ${
+                  showDeleted
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {showDeleted ? "← Back to Active" : "🗑 Show Deleted"}
+              </button>
+            )}
           </div>
 
           {/* Error */}
@@ -221,7 +337,7 @@ function AppliedCandidates() {
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm flex items-center justify-between">
               <span>Error: {error}</span>
               <button
-                onClick={fetchCandidates}
+                onClick={showDeleted ? fetchDeletedCandidates : fetchCandidates}
                 className="ml-4 px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
               >
                 Retry
@@ -250,24 +366,24 @@ function AppliedCandidates() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {filtered.length === 0 ? (
+                    {paginated.length === 0 ? (
                       <tr>
                         <td colSpan={8} className="px-6 py-10 text-center text-gray-400 text-sm">
-                          No candidates found.
+                          {showDeleted ? "No deleted candidates found." : "No candidates found."}
                         </td>
                       </tr>
                     ) : (
-                      filtered.map((c) => (
+                      paginated.map((c) => (
                         <tr key={c.id} className="hover:bg-gray-50 transition">
-                          <td className="px-6 py-4 text-sm">{c.firstName}</td>
-                          <td className="px-6 py-4 text-sm">{c.lastName}</td>
-                          <td className="px-6 py-4 text-sm">{c.email}</td>
+                          <td className="px-6 py-4 text-sm">{highlightMatch(c.firstName, search)}</td>
+                          <td className="px-6 py-4 text-sm">{highlightMatch(c.lastName, search)}</td>
+                          <td className="px-6 py-4 text-sm">{highlightMatch(c.email, search)}</td>
                           <td className="px-6 py-4 text-sm">{c.experience} yrs</td>
                           <td className="px-6 py-4 text-sm">
                             {c.expectedSalaryCurrency || "₹"}{c.expectedSalary?.toLocaleString()}
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            {renderSkillsCell(c.skills || c.skillSet, 3)}
+                            {renderSkillsCell(c.skills || c.skillSet, 3, search)}
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold uppercase ${statusBadge(c.applicationStatus)}`}>
@@ -285,8 +401,8 @@ function AppliedCandidates() {
                                 View
                               </button>
 
-                              {/* Edit — Admin (1), HR (2), Manager (3) */}
-                              {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                              {/* Edit — Admin (1), HR (2), Manager (3); hidden for deleted rows */}
+                              {!showDeleted && (permissionid === "1" || permissionid === "2" || permissionid === "3") && (
                                 <button
                                   onClick={() => openEditModal(c)}
                                   className="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
@@ -295,14 +411,23 @@ function AppliedCandidates() {
                                 </button>
                               )}
 
-                              {/* Delete — Admin only (1) */}
+                              {/* Delete / Restore — Admin only (1) */}
                               {permissionid === "1" && (
-                                <button
-                                  onClick={() => setDeleteModal({ open: true, candidateId: c.id })}
-                                  className="px-3 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
-                                >
-                                  Delete
-                                </button>
+                                showDeleted ? (
+                                  <button
+                                    onClick={() => setRestoreModal({ open: true, candidateId: c.id })}
+                                    className="px-3 py-1 rounded border border-green-400 text-green-600 hover:bg-green-50 text-xs transition cursor-pointer"
+                                  >
+                                    Restore
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => setDeleteModal({ open: true, candidateId: c.id })}
+                                    className="px-3 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
+                                  >
+                                    Delete
+                                  </button>
+                                )
                               )}
 
                             </div>
@@ -315,8 +440,40 @@ function AppliedCandidates() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center px-6 py-4 border-t bg-gray-100 text-sm text-gray-600">
-                <span>Total: {filtered.length} candidate{filtered.length !== 1 ? "s" : ""}</span>
+              <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-100 text-sm text-gray-600">
+                <div className="flex items-center gap-4">
+                  <span>Total: {filtered.length} candidate{filtered.length !== 1 ? "s" : ""}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="border border-gray-300 rounded px-3 py-1 text-sm bg-white"
+                  >
+                    {[5, 10, 20].map((size) => (
+                      <option key={size} value={size}>
+                        Show {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-x-2 flex items-center">
+                  <button
+                    onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+                    disabled={pageIndex === 0}
+                    className="px-3 py-1 border border-gray-700 bg-white text-sm rounded disabled:opacity-50 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))}
+                    disabled={pageIndex >= pageCount - 1}
+                    className="px-3 py-1 border border-gray-700 bg-white text-sm rounded disabled:opacity-50 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Next
+                  </button>
+                  <span className="ml-2 text-sm text-gray-600">
+                    Page {pageIndex + 1} of {pageCount}
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -385,6 +542,33 @@ function AppliedCandidates() {
               </button>
               <button
                 onClick={() => setDeleteModal({ open: false, candidateId: null })}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restore Confirm Modal */}
+      {restoreModal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden" }}
+        >
+          <div className="bg-white rounded-lg shadow-lg text-center" style={{ width: "350px", padding: "24px" }}>
+            <h2 className="text-lg font-semibold text-blue-700 mb-4">Confirm Restore</h2>
+            <p className="text-gray-700 mb-6 text-sm">Restore this candidate to the active list?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleRestore}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm cursor-pointer"
+              >
+                Yes, Restore
+              </button>
+              <button
+                onClick={() => setRestoreModal({ open: false, candidateId: null })}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md text-sm cursor-pointer"
               >
                 Cancel

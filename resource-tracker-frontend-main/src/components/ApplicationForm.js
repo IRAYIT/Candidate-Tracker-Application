@@ -42,6 +42,19 @@ const LOCALE_CONFIG = {
   },
 };
 
+// Expected digit count for a valid phone number, keyed by dial code.
+// Sweden (+46, I-Ray IT Solutions AB) requires exactly 9 digits;
+// all other locations require exactly 10.
+const PHONE_LENGTH_RULES = {
+  '+91': { min: 10, max: 10 },
+  '+46': { min: 9,  max: 9  },
+  '+1':  { min: 10, max: 10 },
+};
+
+// Letters, spaces, hyphens and apostrophes only (e.g. "Anne-Marie", "O'Brien").
+// Must start with a letter so a lone space/hyphen can't pass as a name.
+const NAME_REGEX = /^[A-Za-z][A-Za-z\s'-]*$/;
+
 const getInitialState = (country = 'IN') => {
   const locale = LOCALE_CONFIG[country] || LOCALE_CONFIG.IN;
   return {
@@ -115,6 +128,69 @@ const PROFICIENCY_LEVELS = [
   { value: 'Basic',        label: 'Basic' },
   { value: 'Beginner',     label: 'Beginner' },
 ];
+
+// ── Field-level validation ─────────────────────────────────────────────────────
+// Shared by real-time (onBlur) checks and the final submit-time check, so the
+// two never drift out of sync with each other.
+function validateField(name, value, form) {
+  switch (name) {
+    case 'firstName':
+    case 'lastName': {
+      const label = name === 'firstName' ? 'First name' : 'Last name';
+      const trimmed = value.trim();
+      if (!trimmed) return `${label} is required.`;
+      if (!NAME_REGEX.test(trimmed)) return `${label} can only contain letters, spaces, hyphens and apostrophes.`;
+      return '';
+    }
+    case 'email': {
+      if (!value.trim()) return 'Email is required.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address.';
+      return '';
+    }
+    case 'phone': {
+      const digits = value.replace(/\D/g, '');
+      if (!digits) return 'Phone number is required.';
+      const rule = PHONE_LENGTH_RULES[form.phoneDialCode] || { min: 7, max: 15 };
+      if (digits.length < rule.min || digits.length > rule.max) {
+        return rule.min === rule.max
+          ? `Enter a valid ${rule.min}-digit phone number.`
+          : `Enter a valid phone number (${rule.min}-${rule.max} digits).`;
+      }
+      return '';
+    }
+    case 'location': {
+      if (!value.trim()) return 'Location is required.';
+      return '';
+    }
+    case 'currentSalary': {
+      if (!value) return ''; // optional field
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) return 'Enter a valid numeric amount.';
+      return '';
+    }
+    case 'expectedSalary': {
+      if (!value) return 'Expected salary is required.';
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) return 'Enter a valid numeric amount.';
+      if (Number(value) <= 0) return 'Expected salary must be greater than 0.';
+      return '';
+    }
+    case 'experience': {
+      if (value === '') return 'Experience is required.';
+      const num = Number(value);
+      if (Number.isNaN(num) || num < 0) return 'Experience cannot be negative.';
+      if (num > 50) return 'Enter a realistic number of years (0-50).';
+      return '';
+    }
+    case 'noticePeriod': {
+      if (value === '') return 'Notice period is required.';
+      const num = Number(value);
+      if (!Number.isInteger(num) || num < 0) return 'Notice period must be a whole number of days.';
+      if (num > 365) return 'Notice period seems too long (max 365 days).';
+      return '';
+    }
+    default:
+      return '';
+  }
+}
 
 // ── LanguageInput ─────────────────────────────────────────────────────────────
 function LanguageInput({ value, onChange, error }) {
@@ -503,10 +579,47 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
   const [retainCvForFuture, setRetainCvForFuture] = useState(null);
   const [isDuplicate, setIsDuplicate]           = useState(false);
 
+  // Force the browser tab title here at runtime — this overrides whatever
+  // static <title> is baked into this project's index.html (e.g. the
+  // create-react-app default "React App"), without needing to touch that file.
+  useEffect(() => {
+    document.title = 'Candidate Tracker';
+  }, []);
+
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    let nextValue = value;
+
+    // Sanitize as the person types so invalid characters can never land in
+    // these fields in the first place, rather than only catching them later.
+    if (name === 'firstName' || name === 'lastName') {
+      nextValue = value.replace(/[^A-Za-z\s'-]/g, '');
+    } else if (name === 'phone') {
+      nextValue = value.replace(/[^\d\s()-]/g, '');
+    } else if (name === 'currentSalary' || name === 'expectedSalary') {
+      nextValue = value.replace(/[^\d.]/g, '');
+      const parts = nextValue.split('.');
+      if (parts.length > 2) nextValue = `${parts[0]}.${parts.slice(1).join('')}`;
+    } else if (name === 'experience' || name === 'noticePeriod') {
+      // Whole numbers only — strips out '-', '+', 'e'/'E', and decimals that
+      // a native <input type="number"> would otherwise still let through.
+      nextValue = value.replace(/[^\d]/g, '');
+    }
+
+    const updatedForm = { ...form, [name]: nextValue };
+    setForm(updatedForm);
+
+    // Real-time feedback: once a field has been touched, keep its error
+    // message in sync on every keystroke instead of waiting for submit.
+    if (errors[name] !== undefined) {
+      setErrors((prev) => ({ ...prev, [name]: validateField(name, nextValue, updatedForm) }));
+    }
+  }
+
+  function handleBlur(e) {
+    const { name, value } = e.target;
+    const message = validateField(name, value, form);
+    setErrors((prev) => ({ ...prev, [name]: message }));
   }
 
   function handleFileChange(e, type) {
@@ -539,17 +652,16 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
   }
 
   function validate() {
+    const fieldsToCheck = [
+      'firstName', 'lastName', 'email', 'phone', 'location',
+      'currentSalary', 'expectedSalary', 'experience', 'noticePeriod',
+    ];
     const e = {};
-    if (!form.firstName.trim())     e.firstName      = 'First name is required.';
-    if (!form.lastName.trim())      e.lastName       = 'Last name is required.';
-    if (!form.email.trim())         e.email          = 'Email is required.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email.';
-    if (!form.phone.trim())         e.phone          = 'Phone is required.';
-    if (!form.location.trim())      e.location       = 'Location is required.';
-    if (form.experience === '')     e.experience     = 'Experience is required.';
-    if (form.expectedSalary === '') e.expectedSalary = 'Expected salary is required.';
-    if (form.noticePeriod === '')   e.noticePeriod   = 'Notice period is required.';
-    if (!resume)                    e.resume         = 'Please upload your resume.';
+    fieldsToCheck.forEach((field) => {
+      const message = validateField(field, form[field], form);
+      if (message) e[field] = message;
+    });
+    if (!resume) e.resume = 'Please upload your resume.';
     return e;
   }
 
@@ -652,19 +764,19 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <Field label="First Name" required error={errors.firstName}>
           <input className={`af-input ${errors.firstName ? 'af-input--error' : ''}`}
             type="text" name="firstName" value={form.firstName}
-            onChange={handleChange} placeholder={locale.firstNamePlaceholder} />
+            onChange={handleChange} onBlur={handleBlur} placeholder={locale.firstNamePlaceholder} />
         </Field>
 
         <Field label="Last Name" required error={errors.lastName}>
           <input className={`af-input ${errors.lastName ? 'af-input--error' : ''}`}
             type="text" name="lastName" value={form.lastName}
-            onChange={handleChange} placeholder={locale.lastNamePlaceholder} />
+            onChange={handleChange} onBlur={handleBlur} placeholder={locale.lastNamePlaceholder} />
         </Field>
 
         <Field label="Email Address" required error={errors.email}>
           <input className={`af-input ${errors.email ? 'af-input--error' : ''}`}
             type="email" name="email" value={form.email}
-            onChange={handleChange} placeholder={locale.emailPlaceholder} />
+            onChange={handleChange} onBlur={handleBlur} placeholder={locale.emailPlaceholder} />
         </Field>
 
         <Field label="Phone Number" required error={errors.phone}>
@@ -679,14 +791,14 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
             </select>
             <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
               type="tel" name="phone" value={form.phone}
-              onChange={handleChange} placeholder={locale.phonePlaceholder} />
+              onChange={handleChange} onBlur={handleBlur} placeholder={locale.phonePlaceholder} />
           </div>
         </Field>
 
         <Field label="Current Location" required error={errors.location}>
           <input className={`af-input ${errors.location ? 'af-input--error' : ''}`}
             type="text" name="location" value={form.location}
-            onChange={handleChange} placeholder={locale.locationPlaceholder} />
+            onChange={handleChange} onBlur={handleBlur} placeholder={locale.locationPlaceholder} />
         </Field>
 
         <Field label="Visa / Work Authorization" error={errors.visaStatus}>
@@ -716,12 +828,8 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
               {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
             </select>
             <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
-              type="text" name="currentSalary" value={form.currentSalary}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^[a-zA-Z0-9]*$/.test(val))
-                  handleChange({ target: { name: 'currentSalary', value: val } });
-              }}
+              type="text" inputMode="decimal" name="currentSalary" value={form.currentSalary}
+              onChange={handleChange} onBlur={handleBlur}
               placeholder={locale.salaryPlaceholder} />
           </div>
         </Field>
@@ -735,12 +843,8 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
               {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
             </select>
             <input className="af-input" style={{ border: 'none', borderRadius: 0, flex: 1 }}
-              type="text" name="expectedSalary" value={form.expectedSalary}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^[a-zA-Z0-9]*$/.test(val))
-                  handleChange({ target: { name: 'expectedSalary', value: val } });
-              }}
+              type="text" inputMode="decimal" name="expectedSalary" value={form.expectedSalary}
+              onChange={handleChange} onBlur={handleBlur}
               placeholder={locale.salaryPlaceholder} />
           </div>
         </Field>
@@ -748,13 +852,15 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
         <Field label="Years of Experience" required error={errors.experience}>
           <input className={`af-input ${errors.experience ? 'af-input--error' : ''}`}
             type="number" name="experience" value={form.experience}
-            onChange={handleChange} placeholder={locale.experiencePlaceholder} min="0" />
+            onChange={handleChange} onBlur={handleBlur}
+            placeholder={locale.experiencePlaceholder} min="0" max="50" />
         </Field>
 
         <Field label="Notice Period (days)" required error={errors.noticePeriod}>
           <input className={`af-input ${errors.noticePeriod ? 'af-input--error' : ''}`}
             type="number" name="noticePeriod" value={form.noticePeriod}
-            onChange={handleChange} placeholder={locale.noticePlaceholder} min="0" />
+            onChange={handleChange} onBlur={handleBlur}
+            placeholder={locale.noticePlaceholder} min="0" max="365" />
         </Field>
 
         <Field label="Employment Type" error={errors.employmentType}>

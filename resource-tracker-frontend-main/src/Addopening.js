@@ -272,6 +272,10 @@ function Addopening() {
   const [loading, setLoading]               = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [createdPublicUrl, setCreatedPublicUrl] = useState('');
+  // ✅ FIX: bump this key on every reset to force SkillTagInput to fully remount,
+  // which clears its internal selectedSkills state (that state doesn't otherwise
+  // re-sync from the `value` prop after the initial mount).
+  const [formResetKey, setFormResetKey]     = useState(0);
 
   const navigate = useNavigate();
 
@@ -279,8 +283,10 @@ function Addopening() {
     const newErrors = {};
     if (!openingname?.trim())    newErrors.openingname    = "Opening name is required.";
     if (!technology?.trim())     newErrors.technology     = "Technology is required.";
-    if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
-                                 newErrors.experience     = "Valid experience is required.";
+    if (!experience?.toString().trim())
+                                 newErrors.experience     = "Experience is required.";
+    else if (!/^\d*\.?\d+$/.test(experience.toString().trim()) || Number(experience) < 0)
+                                 newErrors.experience     = "Experience must be a valid number (no letters).";
     if (!skills?.trim())         newErrors.skills         = "Skills are required.";
     if (!location?.trim())       newErrors.location       = "Location is required.";
     if (!status?.trim())         newErrors.status         = "Status is required.";
@@ -297,6 +303,7 @@ function Addopening() {
     setDescription('');
     setCustomTech('');
     setErrors({});
+    setFormResetKey(prev => prev + 1); // ✅ FIX: remount SkillTagInput with clean state
   };
 
   const createopening = () => {
@@ -494,7 +501,30 @@ function Addopening() {
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
                     <input type="text" value={experience} placeholder="Enter experience"
-                      onChange={(e) => { setExperience(e.target.value); if (errors.experience) setErrors(prev => ({ ...prev, experience: '' })); }}
+                      onChange={(e) => {
+                        // ✅ Only allow digits (and an optional single decimal point, e.g. "2.5")
+                        const val = e.target.value;
+                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                          setExperience(val);
+                          if (errors.experience) setErrors(prev => ({ ...prev, experience: '' }));
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        // ✅ Block alphabet keys and other invalid characters outright
+                        if (
+                          !/[0-9.]/.test(e.key) &&
+                          !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        // ✅ Block pasting non-numeric text
+                        const pasted = e.clipboardData.getData('text');
+                        if (!/^\d*\.?\d*$/.test(pasted)) {
+                          e.preventDefault();
+                        }
+                      }}
                       className={`border-2 p-2 rounded w-full ${errors.experience ? 'border-red-500' : 'border-yellow-400'}`} />
                     {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                   </div>
@@ -515,7 +545,9 @@ function Addopening() {
                 {/* Row 4: Skills */}
                 <div className="w-full">
                   <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
-                  <SkillTagInput value={skills}
+                  <SkillTagInput
+                    key={formResetKey} // ✅ FIX: force remount on reset so internal state clears
+                    value={skills}
                     onChange={(val) => { setSkills(val); if (errors.skills) setErrors(prev => ({ ...prev, skills: '' })); }}
                     error={errors.skills} />
                   {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills}</p>}

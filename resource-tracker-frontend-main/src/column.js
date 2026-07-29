@@ -1,22 +1,78 @@
+// Escapes regex special characters in a raw search string.
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Wraps every case-insensitive occurrence of `query` inside `text` with a
+// <mark> so it's visually highlighted. Returns the original text untouched
+// if there's no query or nothing to render.
+export const highlightMatch = (text, query) => {
+  if (text === undefined || text === null || text === "") return text;
+  const str = String(text);
+  const trimmedQuery = query ? query.trim() : "";
+  if (!trimmedQuery) return str;
+
+  const regex = new RegExp(`(${escapeRegExp(trimmedQuery)})`, "gi");
+  const parts = str.split(regex);
+
+  if (parts.length === 1) return str;
+
+  return parts.map((part, idx) =>
+    part.toLowerCase() === trimmedQuery.toLowerCase() ? (
+      <mark key={idx} className="bg-yellow-200 text-inherit rounded px-0.5">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  );
+};
+
 // Renders a skills list as up to `visibleCount` skills followed by a
 // "+N more" pill (full list available via title tooltip on the pill).
-const renderSkillsCell = (skillStr, visibleCount = 3) => {
+// Matching skills are highlighted when `query` is provided.
+const renderSkillsCell = (skillStr, visibleCount = 3, query = "") => {
   const allSkills = skillStr
     ? skillStr.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
-  const visible = allSkills.slice(0, visibleCount);
-  const remaining = allSkills.length - visibleCount;
+  const trimmedQuery = query ? query.trim().toLowerCase() : "";
+
+  // When there's an active search, float matching skills to the front so
+  // they land in the visible slice instead of getting buried behind the
+  // "+N more" pill where the highlight would never be seen.
+  let orderedSkills = allSkills;
+  if (trimmedQuery) {
+    const matching = allSkills.filter((s) => s.toLowerCase().includes(trimmedQuery));
+    const nonMatching = allSkills.filter((s) => !s.toLowerCase().includes(trimmedQuery));
+    orderedSkills = [...matching, ...nonMatching];
+  }
+
+  const visible = orderedSkills.slice(0, visibleCount);
+  const hidden = orderedSkills.slice(visibleCount);
+  const remaining = hidden.length;
+
+  // If there are more matches than fit in the visible slice, some matches
+  // are still hidden inside the pill — flag the pill itself so it's clear
+  // a match is tucked away in there.
+  const hiddenHasMatch = trimmedQuery && hidden.some((s) => s.toLowerCase().includes(trimmedQuery));
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <span className="text-gray-800 text-sm">
-        {visible.join(", ")}
+        {visible.map((skill, idx) => (
+          <span key={idx}>
+            {highlightMatch(skill, query)}
+            {idx < visible.length - 1 ? ", " : ""}
+          </span>
+        ))}
       </span>
       {remaining > 0 && (
         <span
-          className="text-xs font-normal bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full"
-          title={allSkills.slice(visibleCount).join(", ")}
+          className={`text-xs font-normal px-2 py-0.5 rounded-full ${
+            hiddenHasMatch
+              ? "bg-yellow-200 text-yellow-800 font-semibold"
+              : "bg-gray-100 text-gray-400"
+          }`}
+          title={hidden.join(", ")}
         >
           +{remaining} more
         </span>
@@ -25,15 +81,25 @@ const renderSkillsCell = (skillStr, visibleCount = 3) => {
   );
 };
 
-export const OPENINGCOLUMNS = (permissionid) => [
-  { id: 'name',          header: 'OPENING NAME', accessorKey: 'name'          },
+export const OPENINGCOLUMNS = (permissionid, searchQuery = "") => [
+  {
+    id: 'name',
+    header: 'JOB TITLE',
+    accessorKey: 'name',
+    cell: ({ getValue }) => highlightMatch(getValue(), searchQuery),
+  },
   {
     id: 'skill',
-    header: 'SKILL',
+    header: 'REQUIRED SKILLS',
     accessorKey: 'skill',
-    cell: ({ getValue }) => renderSkillsCell(getValue(), 3),
+    cell: ({ getValue }) => renderSkillsCell(getValue(), 3, searchQuery),
   },
-  { id: 'experience',    header: 'EXPERIENCE',   accessorKey: 'experience'    },
+  {
+    id: 'experience',
+    header: 'EXPERIENCE REQUIRED',
+    accessorKey: 'experience',
+    cell: ({ getValue }) => highlightMatch(getValue(), searchQuery),
+  },
   { 
     id: 'status', 
     header: 'STATUS', 
@@ -45,11 +111,21 @@ export const OPENINGCOLUMNS = (permissionid) => [
       return status;
     }
   },
-  { id: 'createdByName', header: 'RECRUITER',    accessorKey: 'createdByName' },
-  { id: 'location',      header: 'LOCATION',     accessorKey: 'location'      },
+  {
+    id: 'createdByName',
+    header: 'RECRUITER NAME',
+    accessorKey: 'createdByName',
+    cell: ({ getValue }) => highlightMatch(getValue(), searchQuery),
+  },
+  {
+    id: 'location',
+    header: 'LOCATION',
+    accessorKey: 'location',
+    cell: ({ getValue }) => highlightMatch(getValue(), searchQuery),
+  },
   {
     id: 'candidateCount',
-    header: 'APPLIED',
+    header: 'APPLICATIONS RECEIVED',
     accessorKey: 'candidateCount',
     cell: ({ row, getValue }) => {
       const count = getValue();

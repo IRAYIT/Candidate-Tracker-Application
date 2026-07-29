@@ -19,8 +19,10 @@ function Current_openings() {
   const [openings, setOpenings] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedOpeningId, setSelectedOpeningId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,27 +32,48 @@ function Current_openings() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = showDeleteModal ? "hidden" : "auto";
-  }, [showDeleteModal]);
+    document.body.style.overflow = (showDeleteModal || showRestoreModal) ? "hidden" : "auto";
+  }, [showDeleteModal, showRestoreModal]);
 
-const getAllOpenings = async (pid = permissionid) => {
-  const url = pid === "1"
-    ? `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/all`
-    : `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings`;
-  const res = await axios.get(url);
-  
-  // Sort: ACTIVE first, TERMINATED after
-  const sorted = [...res.data].sort((a, b) => {
-    if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
-    if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
-    return 0;
-  });
+  const getAllOpenings = async (pid = permissionid) => {
+    const url = pid === "1"
+      ? `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/all`
+      : `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings`;
+    const res = await axios.get(url);
 
-  setOpenings(sorted);
-};
+    // Sort: ACTIVE first, TERMINATED after
+    const sorted = [...res.data].sort((a, b) => {
+      if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+      if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+      return 0;
+    });
 
-  const columns = useMemo(() => OPENINGCOLUMNS(permissionid), [permissionid]);
-  const data = useMemo(() => openings, [openings]);
+    setOpenings(sorted);
+  };
+
+  // Toggle between the Active view (everything except TERMINATED) and the
+  // Trash view (TERMINATED/closed openings only). Both views are derived
+  // client-side from the same `/all` fetch, since admins already get every
+  // status in one response.
+  const toggleTrashView = () => {
+    setShowTrash((prev) => !prev);
+    setGlobalFilter("");
+  };
+
+  // Pass the current search term into the columns so cell renderers can
+  // highlight matching text in the visible results.
+  const columns = useMemo(
+    () => OPENINGCOLUMNS(permissionid, globalFilter),
+    [permissionid, globalFilter]
+  );
+
+  const data = useMemo(
+    () =>
+      openings.filter((o) =>
+        showTrash ? o.status === "TERMINATED" : o.status !== "TERMINATED"
+      ),
+    [openings, showTrash]
+  );
 
   const deleteopening = (openingId) => {
     setLoading(true);
@@ -61,7 +84,21 @@ const getAllOpenings = async (pid = permissionid) => {
           getAllOpenings();
           setLoading(false);
         }
-      });
+      })
+      .catch(() => setLoading(false));
+  };
+
+  const restoreOpening = (openingId) => {
+    setLoading(true);
+    axios
+      .patch(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/restore/${openingId}`)
+      .then((res) => {
+        if (res.status === 200) {
+          getAllOpenings();
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false));
   };
 
   const table = useReactTable({
@@ -87,18 +124,40 @@ const getAllOpenings = async (pid = permissionid) => {
           <Header />
         </header>
 
+        {showTrash && (
+          <div className="flex items-center justify-between mx-4 mt-4 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
+            <span className="text-sm text-gray-700">
+              Showing <span className="text-yellow-700 font-semibold">closed</span> openings
+            </span>
+          </div>
+        )}
+
         <main className="flex-1 bg-white">
           <div className="flex px-10 py-5 items-center">
             <div className="flex-grow">
               <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
             </div>
-            <div className="space-x-4">
-              {(permissionid === "1" || permissionid === "2") && (
+            <div className="space-x-4 flex items-center">
+              {(permissionid === "1" || permissionid === "2") && !showTrash && (
                 <button
                   className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 rounded-md px-4 py-2 hover:from-yellow-600 hover:to-yellow-500 cursor-pointer"
                   onClick={() => navigate("/addopening")}
                 >
                   New Opening
+                </button>
+              )}
+
+              {/* Trash toggle — Admin only */}
+              {permissionid === "1" && (
+                <button
+                  onClick={toggleTrashView}
+                  className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition ${
+                    showTrash
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {showTrash ? "← Back to Active" : "🗑 Trash"}
                 </button>
               )}
             </div>
@@ -130,58 +189,78 @@ const getAllOpenings = async (pid = permissionid) => {
                     ))}
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white">
-                    {table.getRowModel().rows.map((row) => (
-                      <tr key={row.id} className="hover:bg-gray-50 transition">
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-
-                        <td className="px-2 py-4 text-sm">
-                          <div className="flex flex-row gap-2 mt-1">
-
-                            {/* View — all roles */}
-                            <button
-                              onClick={() => {
-                                navigate("/view_opening");
-                                localStorage.setItem("opening_id", row.original.id);
-                              }}
-                              className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                            >
-                              View
-                            </button>
-
-                            {/* Edit — Admin (1), HR (2), Manager (3) */}
-                            {(permissionid === "1" || permissionid === "2" || permissionid === "3") && (
-                              <button
-                                className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
-                                onClick={() => {
-                                  localStorage.setItem("opening_id", row.original.id);
-                                  navigate("/edit_opening");
-                                }}
-                              >
-                                Edit
-                              </button>
-                            )}
-
-                            {/* Delete — Admin only (1) */}
-                            {permissionid === "1" && (
-                              <button
-                                className="px-2 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
-                                onClick={() => {
-                                  setSelectedOpeningId(row.original.id);
-                                  setShowDeleteModal(true);
-                                }}
-                              >
-                                Delete
-                              </button>
-                            )}
-
-                          </div>
+                    {table.getRowModel().rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={columns.length + 1} className="px-6 py-10 text-center text-gray-400 text-sm">
+                          {showTrash ? "No closed openings found." : "No openings found."}
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      table.getRowModel().rows.map((row) => (
+                        <tr key={row.id} className="hover:bg-gray-50 transition">
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+
+                          <td className="px-2 py-4 text-sm">
+                            <div className="flex flex-row gap-2 mt-1">
+
+                              {/* View — all roles */}
+                              <button
+                                onClick={() => {
+                                  navigate("/view_opening");
+                                  localStorage.setItem("opening_id", row.original.id);
+                                }}
+                                className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+                              >
+                                View
+                              </button>
+
+                              {/* Edit — Admin (1), HR (2), Manager (3); hidden in Trash view */}
+                              {!showTrash && (permissionid === "1" || permissionid === "2" || permissionid === "3") && (
+                                <button
+                                  className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
+                                  onClick={() => {
+                                    localStorage.setItem("opening_id", row.original.id);
+                                    navigate("/edit_opening");
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                              )}
+
+                              {/* Delete / Restore — Admin only (1) */}
+                              {permissionid === "1" && (
+                                showTrash ? (
+                                  <button
+                                    className="px-2 py-1 rounded border border-green-400 text-green-600 hover:bg-green-50 text-xs transition cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedOpeningId(row.original.id);
+                                      setShowRestoreModal(true);
+                                    }}
+                                  >
+                                    Restore
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="px-2 py-1 rounded border border-red-400 text-red-600 hover:bg-red-50 text-xs transition cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedOpeningId(row.original.id);
+                                      setShowDeleteModal(true);
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                )
+                              )}
+
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -246,6 +325,36 @@ const getAllOpenings = async (pid = permissionid) => {
                 <button
                   className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md"
                   onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Restore Confirmation Modal */}
+        {showRestoreModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden" }}
+          >
+            <div className="bg-white rounded-lg shadow-lg text-center" style={{ width: "350px", padding: "24px" }}>
+              <h2 className="text-lg font-semibold text-blue-700 mb-4">Confirm Restore</h2>
+              <p className="text-gray-700 mb-6">Restore this opening to Active?</p>
+              <div className="flex justify-center gap-4">
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+                  onClick={() => {
+                    restoreOpening(selectedOpeningId);
+                    setShowRestoreModal(false);
+                  }}
+                >
+                  Yes, Restore
+                </button>
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md"
+                  onClick={() => setShowRestoreModal(false)}
                 >
                   Cancel
                 </button>
