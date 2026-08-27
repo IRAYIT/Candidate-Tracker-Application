@@ -1,4 +1,4 @@
-const BASE_URL = 'https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net';
+const BASE_URL = 'https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net';
 
 export async function fetchOpeningByKey(publicUrlKey) {
   const response = await fetch(`${BASE_URL}/api/v1/openings/public/${publicUrlKey}`);
