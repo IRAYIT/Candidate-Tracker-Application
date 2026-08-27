@@ -61,7 +61,7 @@ function Forgotpassword() {
     setLoading(true);
 
     axios
-      .post("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/forgotPassword", {
+      .post("https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/user/forgotPassword", {
         email,
         password: newPassword,
       })

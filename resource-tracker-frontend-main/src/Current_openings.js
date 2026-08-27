@@ -37,8 +37,8 @@ function Current_openings() {
 
   const getAllOpenings = async (pid = permissionid) => {
     const url = pid === "1"
-      ? `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/all`
-      : `https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings`;
+      ? `https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/openings/all`
+      : `https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/openings`;
     const res = await axios.get(url);
 
     // Sort: ACTIVE first, TERMINATED after
@@ -78,7 +78,7 @@ function Current_openings() {
   const deleteopening = (openingId) => {
     setLoading(true);
     axios
-      .delete(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/${openingId}`)
+      .delete(`https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/openings/${openingId}`)
       .then((res) => {
         if (res.status === 200) {
           getAllOpenings();
@@ -91,7 +91,7 @@ function Current_openings() {
   const restoreOpening = (openingId) => {
     setLoading(true);
     axios
-      .patch(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/openings/restore/${openingId}`)
+      .patch(`https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/openings/restore/${openingId}`)
       .then((res) => {
         if (res.status === 200) {
           getAllOpenings();

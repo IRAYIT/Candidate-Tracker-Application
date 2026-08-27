@@ -39,7 +39,7 @@ function Login() {
     setLoading(true);
 
     axios
-      .post("https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/user/login", payload)
+      .post("https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/user/login", payload)
       .then((res) => {
         if (res.status === 200) {
           localStorage.setItem("employeeid", res.data.id);
