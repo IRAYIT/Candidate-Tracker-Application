@@ -40,7 +40,7 @@ function SetNewPassword() {
 
     setLoading(true);
     axios
-      .post("https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/v1/user/setNewPassword", {
+      .post("https://api.i-raysolutions.com/api/v1/user/setNewPassword", {
         email: email,
         newPassword: newPassword,
       })

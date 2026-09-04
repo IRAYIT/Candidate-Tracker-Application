@@ -715,7 +715,7 @@ function ApplicationForm({ publicUrlKey, country = 'IN' }) {
     try {
       setSubmitting(true);
       const response = await fetch(
-        `https://candidate-tracker-iray-bhgbahe3bjame4gv.centralindia-01.azurewebsites.net/api/public/apply/${publicUrlKey}`,
+        `https://api.i-raysolutions.com/api/public/apply/${publicUrlKey}`,
         { method: 'POST', body: formData }
       );
 
