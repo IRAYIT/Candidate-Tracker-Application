@@ -3,7 +3,7 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/public/apply";
+const BASE_URL = "https://api.i-raysolutions.com/api/public/apply";
 
 const isOldFormat = (languagesKnown) => {
   if (!languagesKnown) return false;
@@ -16,14 +16,24 @@ function CandidateView() {
 
   useEffect(() => {
     const candidateId = localStorage.getItem("view_candidate_id");
+    const isDeleted =
+      localStorage.getItem("view_deleted_candidate") === "true";
+  
     if (candidateId) {
-      fetch(`${BASE_URL}/get/${candidateId}`)
+  
+      const url = isDeleted
+        ? `${BASE_URL}/deleted/${candidateId}`
+        : `${BASE_URL}/get/${candidateId}`;
+  
+      fetch(url)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch candidate");
           return res.json();
         })
         .then((data) => setCandidate(data))
-        .catch((err) => console.error("Error fetching candidate:", err));
+        .catch((err) =>
+          console.error("Error fetching candidate:", err)
+        );
     }
   }, []);
 

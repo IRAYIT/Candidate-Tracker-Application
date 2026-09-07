@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import { ClipLoader } from "react-spinners";
 import { highlightMatch } from "./column";
 
-const BASE_URL = "https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/public/apply";
+const BASE_URL = "https://api.i-raysolutions.com/api/public/apply";
 const STATUS_OPTIONS = ["APPLIED", "SHORTLISTED", "REJECTED", "INTERVIEW","SELECTED"];
 
 // Sort candidates alphabetically by first name
@@ -105,7 +105,7 @@ function AppliedCandidates() {
     try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/public/apply/byOpening/${openingId}`);
+        const res = await fetch(`https://api.i-raysolutions.com/api/public/apply/byOpening/${openingId}`);
         if (!res.ok) throw new Error("Failed to fetch candidates");
         const data = await res.json();
         setCandidates(sortByFirstName(data));
@@ -195,6 +195,7 @@ function AppliedCandidates() {
 
   const handleView = (candidateId) => {
     localStorage.setItem("view_candidate_id", candidateId);
+    localStorage.setItem("view_deleted_candidate", showDeleted ? "true" : "false");
     navigate("/candidate-view");
   };
 

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API_BASE = "https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/";
+const API_BASE = "https://api.i-raysolutions.com/";
 
 // ─── Company Name by Country ──────────────────────────────────────────────────
 const COMPANY_BY_COUNTRY = {

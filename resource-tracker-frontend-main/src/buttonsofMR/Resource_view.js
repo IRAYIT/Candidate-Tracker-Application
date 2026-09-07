@@ -20,7 +20,7 @@ function Resource_view() {
     if (!sid) return;
 
     axios
-      .get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/${sid}`)
+      .get(`https://api.i-raysolutions.com/api/v1/resource/${sid}`)
       .then((res) => {
         const data = res.data;
         const permMap = { 1: "Admin", 2: "HR", 3: "Manager", 4: "Employee" };
@@ -31,7 +31,7 @@ function Resource_view() {
         if (data.permissionId === 3) {
           setLoadingEmployees(true);
           axios
-            .get(`https://candidate-tracker-app-f9bsavbvf8anayfy.centralindia-01.azurewebsites.net/api/v1/resource/getAllResourcesByManagerId/${sid}`)
+            .get(`https://api.i-raysolutions.com/api/v1/resource/getAllResourcesByManagerId/${sid}`)
             .then((empRes) => setAssignedEmployees(empRes.data ?? []))
             .catch((err) => console.error("Error fetching employees:", err))
             .finally(() => setLoadingEmployees(false));
