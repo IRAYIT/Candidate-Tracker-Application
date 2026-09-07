@@ -17,6 +17,8 @@ function View_opening() {
   const [status, setStatus]                 = useState('');
   const [location, setLocation]             = useState('');
   const [description, setDescription]       = useState('');
+  const [publicUrl, setPublicUrl] = useState('');
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 const userRole = parseInt(localStorage.getItem("permissionid"));
 
@@ -37,8 +39,19 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
         setStatus(res.data.status);
         setLocation(res.data.location);
         setDescription(res.data.description);
+        setPublicUrl(res.data.publicUrl);
       });
   }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(publicUrl).then(() => {
+      setCopied(true);
+  
+      setTimeout(() => {
+        setCopied(false);
+      }, 1000);
+    });
+  };
 
   const ReadField = ({ label, value }) => (
     <div>
@@ -140,6 +153,33 @@ const userRole = parseInt(localStorage.getItem("permissionid"));
 
               <div className="w-full">
                 <ReadField label="Status *" value={status} />
+              </div>
+
+              <div className="w-full">
+                <label className="font-semibold mb-1 block">
+                  Job Opening url
+                </label>
+
+                <div className="flex items-center border-2 border-yellow-400 rounded w-full bg-gray-50">
+                  <input
+                    type="text"
+                    value={publicUrl ?? ''}
+                    readOnly
+                    className="p-2 flex-1 bg-gray-50 text-gray-700 outline-none"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className={`px-4 py-2 mr-1 rounded font-semibold text-sm transition ${
+                      copied
+                        ? "bg-green-600 text-white"
+                        : "bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-400 text-white hover:from-blue-700 hover:via-blue-500 hover:to-yellow-500"
+                    }`}
+                  >
+                    {copied ? "✓ Copied" : "Copy"}
+                  </button>
+                </div>
               </div>
 
               <div className="w-full">

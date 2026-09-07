@@ -195,6 +195,7 @@ function AppliedCandidates() {
 
   const handleView = (candidateId) => {
     localStorage.setItem("view_candidate_id", candidateId);
+    localStorage.setItem("view_deleted_candidate", showDeleted ? "true" : "false");
     navigate("/candidate-view");
   };
 

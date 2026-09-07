@@ -16,14 +16,24 @@ function CandidateView() {
 
   useEffect(() => {
     const candidateId = localStorage.getItem("view_candidate_id");
+    const isDeleted =
+      localStorage.getItem("view_deleted_candidate") === "true";
+  
     if (candidateId) {
-      fetch(`${BASE_URL}/get/${candidateId}`)
+  
+      const url = isDeleted
+        ? `${BASE_URL}/deleted/${candidateId}`
+        : `${BASE_URL}/get/${candidateId}`;
+  
+      fetch(url)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch candidate");
           return res.json();
         })
         .then((data) => setCandidate(data))
-        .catch((err) => console.error("Error fetching candidate:", err));
+        .catch((err) =>
+          console.error("Error fetching candidate:", err)
+        );
     }
   }, []);
 

@@ -70,7 +70,9 @@ function Current_openings() {
   const data = useMemo(
     () =>
       openings.filter((o) =>
-        showTrash ? o.status === "TERMINATED" : o.status !== "TERMINATED"
+        showTrash
+        ? o.status === "CLOSED" || o.status === "TERMINATED"
+        : o.status !== "CLOSED" && o.status !== "TERMINATED"
       ),
     [openings, showTrash]
   );

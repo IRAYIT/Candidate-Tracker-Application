@@ -105,10 +105,22 @@ export const OPENINGCOLUMNS = (permissionid, searchQuery = "") => [
     header: 'STATUS', 
     accessorKey: 'status',
     cell: ({ getValue }) => {
+      // const status = getValue();
+      // if (status === "TERMINATED") return <span className="text-red-500 font-semibold">Closed</span>;
+      // if (status === "ACTIVE") return <span className="text-green-500 font-semibold">Active</span>;
+      // return status;
       const status = getValue();
-      if (status === "TERMINATED") return <span className="text-red-500 font-semibold">Closed</span>;
-      if (status === "ACTIVE") return <span className="text-green-500 font-semibold">Active</span>;
-      return status;
+
+    return (
+      <span
+        className={
+          status === "ACTIVE" ? "text-green-500 font-semibold" : status === "TERMINATED" ? "text-red-500 font-semibold"
+            : "text-gray-700"
+        }
+      >
+        {status}
+      </span>
+    );
     }
   },
   {
