@@ -682,8 +682,8 @@ function Resource_edit() {
                         <option value="">Select Role</option>
                         <option value="Admin">Admin</option>
                         <option value="HR">HR</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Employee">Employee</option>
+                        {/* <option value="Manager">Manager</option>
+                        <option value="Employee">Employee</option> */}
                       </select>
                     )}
                     {errors.selectedRole && loggedInRole !== 4 && (
