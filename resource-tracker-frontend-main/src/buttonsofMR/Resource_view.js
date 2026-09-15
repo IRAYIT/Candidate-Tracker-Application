@@ -40,6 +40,8 @@ function Resource_view() {
       .catch((err) => console.error("Error fetching resource:", err));
   }, []);
 
+  // NOTE: Skill field is hidden from the UI (see below), but this derived
+  // value is kept in case the field is re-enabled later.
   const skillsArray = resData?.skill
     ? resData.skill.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
@@ -78,32 +80,16 @@ function Resource_view() {
                   <Field label="Phone" value={resData.phone || ""} />
                 </div>
 
-                {/* Row 3 – Technology & Skills */}
+                {/* Row 3 – Technology & Experience */}
+                {/* Skill field is hidden per request; Experience now shares this row instead. */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <Field label="Technology" value={resData.technology} />
-                  <div className="w-full md:w-[48%]">
-                    <label className="font-semibold block text-gray-700 mb-1">Skill</label>
-                    <div className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 min-h-[38px] flex flex-wrap gap-2">
-                      {skillsArray.map((skill, i) => (
-                        <span
-                          key={i}
-                          className="inline-flex items-center bg-white border border-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <Field label="Experience" value={resData.experience} />
                 </div>
 
-                {/* Row 4 – Employment */}
+                {/* Row 4 – Employment Type & Role */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <Field label="Employment Type" value={resData.employmentType} />
-                  <Field label="Experience"       value={resData.experience}     />
-                </div>
-
-                {/* Row 5 – Role & Assigned Employees */}
-                <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold block text-gray-700 mb-1">Employment Role</label>
                     <input
@@ -113,7 +99,11 @@ function Resource_view() {
                       className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
                     />
                   </div>
-                  {role === "Manager" && (
+                </div>
+
+                {/* Row 5 – Assigned Employees (Manager only) */}
+                {role === "Manager" && (
+                  <div className="flex flex-wrap gap-4 justify-between">
                     <div className="w-full md:w-[48%]">
                       <label className="font-semibold block text-gray-700 mb-1">Assigned Employees</label>
                       <input
@@ -131,19 +121,10 @@ function Resource_view() {
                         className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm"
                       />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Row 6 – Comments */}
-                <div>
-                  <label className="font-semibold block text-gray-700 mb-1">Comments</label>
-                  <textarea
-                    value={resData.comments || ""}
-                    disabled
-                    rows={3}
-                    className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm resize-none cursor-default"
-                  />
-                </div>
+                {/* Skill and Comments rows are hidden per request. */}
 
                 {/* Buttons */}
                 <div className="flex gap-4 p-4 items-center justify-center mt-8">

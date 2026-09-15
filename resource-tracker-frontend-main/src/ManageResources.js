@@ -237,7 +237,7 @@ function ManageResources() {
                             )}
 
                             {/* Attachments — Admin only (1) */}
-                            {permissionid === "1" && (
+                            {/* {permissionid === "1" && (
                               <button
                                 className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-100 text-xs transition cursor-pointer"
                                 onClick={() => {
@@ -247,7 +247,7 @@ function ManageResources() {
                               >
                                 Attachments
                               </button>
-                            )}
+                            )} */}
 
                             {/* Delete — Admin only (1) */}
                             {permissionid === "1" && (

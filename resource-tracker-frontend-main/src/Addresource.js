@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 
 // ─── Skill options list ───────────────────────────────────────────────────────
+// NOTE: Skills field is currently hidden from the UI (see below). This list and
+// the SkillTagInput component are kept in place in case the field is re-enabled.
 const SKILL_OPTIONS = [
   "Java", "Spring Boot", "Spring MVC", "Spring Security", "Spring Cloud",
   "Hibernate", "JPA", "JDBC", "Maven", "Gradle", "JUnit", "Mockito",
@@ -125,6 +127,8 @@ function ErrorPopup({ message, onClose }) {
 }
 
 // ─── SkillTagInput Component ──────────────────────────────────────────────────
+// NOTE: Currently unused in the rendered form (Skills field is hidden), but kept
+// here in case the field is re-enabled later.
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -311,6 +315,8 @@ function Addresource() {
   const [phone, setPhone] = useState('');
   const [phoneDialCode, setPhoneDialCode] = useState('+91');
   const [technology, setTechnology] = useState('');
+  // Skills, Resume, and Comments fields are hidden from the UI (see render below).
+  // State is kept so the payload can still send explicit nulls for these fields.
   const [skill, setSkill] = useState('');
   const [employmentType, setEmploymentType] = useState('Freelancing');
   const [experience, setExperience] = useState('');
@@ -378,12 +384,11 @@ function Addresource() {
     } else if (!/^\d{7,15}$/.test(phone.trim())) {
       newErrors.phone = 'Mobile must be between 7 and 15 digits.';
     }
-    if (!skill?.trim()) newErrors.skill = 'Skills are required.';
+    // Skills and Resume are hidden from the UI, so they're no longer validated.
     if (!technology?.trim()) newErrors.technology = 'Technology is required.';
     if (!employmentType?.trim()) newErrors.employmentType = 'Employment type is required.';
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = 'Valid experience is required.';
-    if (!file || file.length === 0) newErrors.file = 'Resume file is required.';
     if (!status) newErrors.status = 'Status is required.';
     return newErrors;
   };
@@ -420,13 +425,10 @@ function Addresource() {
     setLoading(true);
 
     const formData = new FormData();
-    if (file.length > 0) {
-      for (let i = 0; i < file.length; i++) {
-        formData.append('attachments', file[i]);
-      }
-    } else {
-      formData.append('attachments', file);
-    }
+    // Resume upload is hidden in the UI, so there are no real files to attach.
+    // The backend still requires the 'attachments' part to be present, so we
+    // send an empty placeholder file to satisfy it.
+    formData.append('attachments', new Blob([]), 'empty.txt');
 
     const roleToPermissionId = { Admin: 1, HR: 2, Manager: 3, Employee: 4 };
     const basedonrole = roleToPermissionId[selectedRole] ?? null;
@@ -446,12 +448,12 @@ function Addresource() {
       name,
       startDate: startdate,
       endDate: enddate,
-      skill,
+      skill: null,
       technology: finalTechnology,
       experience,
       assignedResourceIds: [],
       selectedRole,
-      comments,
+      comments: null,
       employmentType,
       phone: `${phoneDialCode} ${phone}`,
       manager: null,
@@ -656,17 +658,8 @@ function Addresource() {
                     </div>
                   </div>
 
-                  {/* Skills + Experience */}
+                  {/* Experience + Technology */}
                   <div className="flex flex-wrap gap-4 justify-between">
-                    <div className="w-full md:w-[48%]">
-                      <label className="font-semibold mb-1 block">Skills <span className="text-pink-800">*</span></label>
-                      <SkillTagInput
-                        value={skill}
-                        onChange={(val) => { setSkill(val); if (errors.skill) setErrors(prev => ({ ...prev, skill: '' })); }}
-                        error={errors.skill}
-                      />
-                      {errors.skill && <p className="text-red-600 text-sm mt-1">{errors.skill}</p>}
-                    </div>
                     <div className="w-full md:w-[48%]">
                       <label className="font-semibold mb-1 block">Experience <span className="text-pink-800">*</span></label>
                       <input
@@ -678,10 +671,7 @@ function Addresource() {
                       />
                       {errors.experience && <p className="text-red-600 text-sm mt-1">{errors.experience}</p>}
                     </div>
-                  </div>
 
-                  {/* Technology + Employment Type */}
-                  <div className="flex flex-wrap gap-4 justify-between">
                     <div className="w-full md:w-[48%]">
                       <label className="font-semibold mb-1 block">Technology <span className="text-pink-800">*</span></label>
                       <select
@@ -769,7 +759,10 @@ function Addresource() {
                       )}
                       {errors.technology && <p className="text-red-600 text-sm mt-1">{errors.technology}</p>}
                     </div>
+                  </div>
 
+                  {/* Employment Type + Employment Role */}
+                  <div className="flex flex-wrap gap-4 justify-between">
                     <div className="w-full md:w-[48%]">
                       <label className="font-semibold mb-1 block">Employment Type <span className="text-pink-800">*</span></label>
                       <select
@@ -779,29 +772,28 @@ function Addresource() {
                       >
                         <option value="">-- Select Type --</option>
                         <option value="Freelancing">Freelancing</option>
-                        <option value="Consultant">Consultant</option>
+                        {/* <option value="Consultant">Consultant</option> */}
                         <option value="Sweden-FullTime">Sweden-FullTime</option>
                         <option value="India-FullTime">India-FullTime</option>
                         <option value="USA-FullTime">USA-FullTime</option>
                       </select>
                       {errors.employmentType && <p className="text-red-600 text-sm mt-1">{errors.employmentType}</p>}
                     </div>
-                  </div>
 
-                  {/* Employment Role */}
-                  <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">Employment Role <span className="text-pink-800">*</span></label>
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => handleRoleChange(e.target.value)}
-                      className="ar-field"
-                    >
-                      <option value="">Select Role</option>
-                      <option value="Admin">Admin</option>
-                      <option value="HR">HR</option>
-                      {/* <option value="Manager">Manager</option>
-                      <option value="Employee">Employee</option> */}
-                    </select>
+                    <div className="w-full md:w-[48%]">
+                      <label className="font-semibold mb-1 block">Employment Role <span className="text-pink-800">*</span></label>
+                      <select
+                        value={selectedRole}
+                        onChange={(e) => handleRoleChange(e.target.value)}
+                        className="ar-field"
+                      >
+                        <option value="">Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="HR">HR</option>
+                        {/* <option value="Manager">Manager</option>
+                        <option value="Employee">Employee</option> */}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Manager Mapping */}
@@ -843,29 +835,7 @@ function Addresource() {
                     </div>
                   )}
 
-                  {/* Resume Upload */}
-                  <div>
-                    <label className="font-semibold mb-1 block">Upload Resume <span className="text-pink-800">*</span></label>
-                    <input
-                      type="file"
-                      multiple
-                      onChange={(e) => { setFile(e.target.files); if (errors.file) setErrors(prev => ({ ...prev, file: '' })); }}
-                      className={`ar-field mt-2${errors.file ? ' ar-error' : ''}`}
-                    />
-                    {errors.file && <p className="text-red-600 text-sm mt-1">{errors.file}</p>}
-                  </div>
-
-                  {/* Comments */}
-                  <div>
-                    <label className="font-semibold mb-1 block">Comments</label>
-                    <textarea
-                      value={comments}
-                      onChange={(e) => setComments(e.target.value)}
-                      placeholder="Enter comments (optional)"
-                      rows={3}
-                      className="ar-field"
-                    />
-                  </div>
+                  {/* Resume Upload and Comments fields are hidden per request. */}
 
                   {/* Buttons */}
                   <div className="flex gap-4 p-4 items-center justify-center mt-8">

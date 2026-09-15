@@ -5,6 +5,8 @@ import { ClipLoader } from "react-spinners";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
+// NOTE: Skill list is currently unused in the rendered form (Skills field is
+// hidden), but kept in place in case the field is re-enabled later.
 const SKILL_OPTIONS = [
   "Java", "Spring Boot", "Spring MVC", "Spring Security", "Spring Cloud",
   "Hibernate", "JPA", "JDBC", "Maven", "Gradle", "JUnit", "Mockito",
@@ -131,6 +133,8 @@ function TechnologySelect({ value, onChange, className }) {
   );
 }
 
+// NOTE: Currently unused in the rendered form (Skills field is hidden), but
+// kept here in case the field is re-enabled later.
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -280,6 +284,8 @@ function EditProfile() {
   const [phone, setPhone]                       = useState("");
   const [technology, setTechnology]             = useState("");
   const [customTechnology, setCustomTechnology] = useState('');
+  // Skills and Comments fields are hidden from the UI (see render below).
+  // State is kept so the payload can still send explicit nulls for these fields.
   const [skill, setSkill]                       = useState("");
   const [employmenttype, setEmploymenttype]     = useState("");
   const [experience, setExperience]             = useState("");
@@ -383,14 +389,13 @@ function EditProfile() {
     if (!lastName?.trim())       newErrors.lastName      = "Last name is required.";
     if (!email?.trim())          newErrors.email         = "Email is required.";
     if (!phone?.trim())          newErrors.phone         = "Mobile is required.";
-    if (!skill?.trim())          newErrors.skill         = "Skills are required.";
+    // Skills field is hidden from the UI, so it's no longer validated.
     if (!technology?.trim())     newErrors.technology    = "Technology is required.";
     if (!employmenttype?.trim()) newErrors.employmentType = "Employment type is required.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
       newErrors.experience = "Valid experience is required.";
     if (loggedInRole !== 4 && !selectedRole)
       newErrors.selectedRole = "Employment role is required.";
-    if (!status)                 newErrors.status        = "Status is required.";
     return newErrors;
   };
 
@@ -416,7 +421,7 @@ function EditProfile() {
       linkedin: "",
       startDate: startdate,
       endDate: enddate,
-      skill,
+      skill: null,
       technology: finalTechnology,
       experience,
       employmentType: employmenttype,
@@ -424,7 +429,7 @@ function EditProfile() {
       email,
       client: isClient,
       status,
-      comments: comments || "",
+      comments: null,
       assignedResourceIds: selectedRole === 'Manager' ? mappedResources.map(r => r.id) : [],
       createdAt: new Date(),
       createdBy: creatorName,
@@ -491,7 +496,8 @@ function EditProfile() {
                   </div>
                 </div>
 
-                {/* Row 3: Phone + Skill */}
+                {/* Row 3: Phone + Experience */}
+                {/* Skill field is hidden per request; Experience now shares this row instead. */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Phone *</label>
@@ -506,13 +512,13 @@ function EditProfile() {
                     {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Skill *</label>
-                    <SkillTagInput value={skill} onChange={(val) => { setSkill(val); setErrors(prev => ({ ...prev, skill: '' })); }} error={errors.skill} />
-                    {errors.skill && <p className="text-red-600 text-sm mt-1">{errors.skill}</p>}
+                    <label className="font-semibold mb-1 block">Experience *</label>
+                    <input type="text" value={experience} onChange={(e) => { setExperience(e.target.value); setErrors(prev => ({ ...prev, experience: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
+                    {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
                 </div>
 
-                {/* Row 4: Technology + Experience */}
+                {/* Row 4: Technology + Employment Type */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Technology *</label>
@@ -535,27 +541,21 @@ function EditProfile() {
                     {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Experience *</label>
-                    <input type="text" value={experience} onChange={(e) => { setExperience(e.target.value); setErrors(prev => ({ ...prev, experience: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
-                    {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
-                  </div>
-                </div>
-
-                {/* Row 5: Employment Type + Employment Role */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Type *</label>
                     <select value={employmenttype} onChange={(e) => { setEmploymenttype(e.target.value); setErrors(prev => ({ ...prev, employmentType: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full">
                       <option value="">-- Select Type --</option>
                       <option value="Freelancing">Freelancing</option>
-                      <option value="Consultant">Consultant</option>
+                      {/* <option value="Consultant">Consultant</option> */}
                       <option value="Internship">Internship</option>
                       <option value="Sweden-FullTime">Sweden-FullTime</option>
                       <option value="India-FullTime">India-FullTime</option>
                     </select>
                     {errors.employmentType && <p className="text-red-600 text-sm">{errors.employmentType}</p>}
                   </div>
+                </div>
 
+                {/* Row 5: Employment Role */}
+                <div className="flex flex-wrap gap-4 justify-between">
                   {/* ✅ Employment Role — read-only for role 4, editable for others */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Role {loggedInRole !== 4 && '*'}</label>
@@ -572,8 +572,8 @@ function EditProfile() {
                         <option value="">Select Role</option>
                         <option value="Admin">Admin</option>
                         <option value="HR">HR</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Employee">Employee</option>
+                        {/* <option value="Manager">Manager</option>
+                        <option value="Employee">Employee</option> */}
                       </select>
                     )}
                     {errors.selectedRole && loggedInRole !== 4 && (
@@ -581,6 +581,8 @@ function EditProfile() {
                     )}
                   </div>
                 </div>
+
+                {/* Status field is hidden per request; the payload sends a fixed default. */}
 
                 {/* Manager Mapping — only for non-role-4 managers */}
                 {selectedRole === 'Manager' && loggedInRole !== 4 && (
@@ -619,20 +621,7 @@ function EditProfile() {
                   </div>
                 )}
 
-                {/* Status */}
-                <div>
-                  <label className="font-semibold mb-1 block">Status *</label>
-                  <input type="text" value={status} onChange={(e) => { setStatus(e.target.value); setErrors(prev => ({ ...prev, status: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
-                  {errors.status && <p className="text-red-600 text-sm">{errors.status}</p>}
-                </div>
-
-                {/* Comments */}
-                <div>
-                  <label className="font-semibold mb-1 block">Comments</label>
-                  <textarea value={comments} onChange={(e) => setComments(e.target.value)}
-                    placeholder="Enter comments" rows={3}
-                    className="border-2 border-yellow-400 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 focus:ring-yellow-200" />
-                </div>
+                {/* Skills and Comments fields are hidden per request. */}
 
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center mt-8">

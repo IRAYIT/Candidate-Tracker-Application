@@ -11,6 +11,8 @@ const PHONE_COUNTRIES = [
 ];
 
 // ─── Read-only Skill Tag Display ──────────────────────────────────────────────
+// NOTE: Currently unused (Skill row is hidden from the profile view), but kept
+// in place in case the field is re-enabled later.
 function SkillTagDisplay({ value }) {
   const skills = value
     ? value.split(',').map(s => s.trim()).filter(Boolean)
@@ -122,7 +124,8 @@ function MyProfile() {
                   </div>
                 </div>
 
-                {/* Row 3: Phone + Skill */}
+                {/* Row 3: Phone + Experience */}
+                {/* Skill field is hidden per request; Experience now shares this row instead. */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className={labelClass}>Phone</label>
@@ -145,51 +148,32 @@ function MyProfile() {
                     </div>
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className={labelClass}>Skill</label>
-                    <SkillTagDisplay value={resData.skill} />
+                    <label className={labelClass}>Experience</label>
+                    <input type="text" value={resData.experience || ''} disabled className={disabledInput} />
                   </div>
                 </div>
 
-                {/* Row 4: Technology + Experience */}
+                {/* Row 4: Technology + Employment Type */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className={labelClass}>Technology</label>
                     <input type="text" value={resData.technology || ''} disabled className={disabledInput} />
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className={labelClass}>Experience</label>
-                    <input type="text" value={resData.experience || ''} disabled className={disabledInput} />
-                  </div>
-                </div>
-
-                {/* Row 5: Employment Type + Employment Role */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
                     <label className={labelClass}>Employment Type</label>
                     <input type="text" value={resData.employmentType || ''} disabled className={disabledInput} />
                   </div>
+                </div>
+
+                {/* Row 5: Employment Role */}
+                <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className={labelClass}>Employment Role</label>
                     <input type="text" value={role} disabled className={disabledInput} />
                   </div>
                 </div>
 
-                {/* Row 6: Status */}
-                <div>
-                  <label className={labelClass}>Status</label>
-                  <input type="text" value={resData.status || ''} disabled className={disabledInput} />
-                </div>
-
-                {/* Row 7: Comments */}
-                <div>
-                  <label className={labelClass}>Comments</label>
-                  <textarea
-                    value={resData.comments || ''}
-                    disabled
-                    rows={3}
-                    className="w-full border-2 border-yellow-400 p-2 rounded bg-gray-100 text-gray-800 text-sm resize-none cursor-not-allowed"
-                  />
-                </div>
+                {/* Skill, Status, and Comments rows are hidden per request. */}
 
               </div>
             )}

@@ -5,6 +5,8 @@ import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// NOTE: Skill list is currently unused in the rendered form (Skills field is
+// hidden), but kept in place in case the field is re-enabled later.
 const SKILL_OPTIONS = [
   "Java", "Spring Boot", "Spring MVC", "Spring Security", "Spring Cloud",
   "Hibernate", "JPA", "JDBC", "Maven", "Gradle", "JUnit", "Mockito",
@@ -134,6 +136,8 @@ function TechnologySelect({ value, onChange, error, className }) {
   );
 }
 
+// NOTE: Currently unused in the rendered form (Skills field is hidden), but
+// kept here in case the field is re-enabled later.
 function SkillTagInput({ value, onChange, error }) {
   const [inputValue, setInputValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -391,6 +395,8 @@ function Resource_edit() {
   const [phoneDialCode, setPhoneDialCode]       = useState('+91');
   const [errors, setErrors]                     = useState({});
   const [technology, setTechnology]             = useState("");
+  // Skills and Comments fields are hidden from the UI (see render below).
+  // State is kept so the payload can still send explicit nulls for these fields.
   const [skill, setSkill]                       = useState("");
   const [employmenttype, setEmploymenttype]     = useState("");
   const [experience, setExperience]             = useState("");
@@ -499,7 +505,7 @@ function Resource_edit() {
     if (!lastName?.trim())       newErrors.lastName       = "Last name is required.";
     if (!email?.trim())          newErrors.email          = "Email is required.";
     if (!phone?.trim())          newErrors.phone          = "Mobile is required.";
-    if (!skill?.trim())          newErrors.skill          = "Skills are required.";
+    // Skills field is hidden from the UI, so it's no longer validated.
     if (!technology?.trim())     newErrors.technology     = "Technology is required.";
     if (!employmenttype?.trim()) newErrors.employmentType = "Employment type is required.";
     if (!experience?.toString().trim() || isNaN(experience) || experience < 0)
@@ -533,7 +539,7 @@ function Resource_edit() {
       linkedin: "",
       startDate: startdate,
       endDate: enddate,
-      skill,
+      skill: null,
       technology: finalTechnology,
       experience,
       employmentType: employmenttype,
@@ -541,7 +547,7 @@ function Resource_edit() {
       email,
       client: isClient,
       status,
-      comments: comments || "",
+      comments: null,
       assignedResourceIds: selectedRole === 'Manager' ? assignedEmployees.map(e => e.id) : [],
       createdAt: new Date(),
       createdBy: creatorName,
@@ -606,7 +612,8 @@ function Resource_edit() {
                   </div>
                 </div>
 
-                {/* Row 3: Phone + Skill */}
+                {/* Row 3: Phone + Experience */}
+                {/* Skill field is hidden per request; Experience now shares this row instead. */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Phone *</label>
@@ -619,13 +626,13 @@ function Resource_edit() {
                     {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Skill *</label>
-                    <SkillTagInput value={skill} onChange={(val) => { setSkill(val); setErrors(p => ({ ...p, skill: '' })); }} error={errors.skill} />
-                    {errors.skill && <p className="text-red-600 text-sm mt-1">{errors.skill}</p>}
+                    <label className="font-semibold mb-1 block">Experience *</label>
+                    <input type="text" value={experience} onChange={(e) => { setExperience(e.target.value); setErrors(p => ({ ...p, experience: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
+                    {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
                   </div>
                 </div>
 
-                {/* Row 4: Technology + Experience */}
+                {/* Row 4: Technology + Employment Type */}
                 <div className="flex flex-wrap gap-4 justify-between">
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Technology *</label>
@@ -649,27 +656,21 @@ function Resource_edit() {
                     {errors.technology && <p className="text-red-600 text-sm">{errors.technology}</p>}
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="font-semibold mb-1 block">Experience *</label>
-                    <input type="text" value={experience} onChange={(e) => { setExperience(e.target.value); setErrors(p => ({ ...p, experience: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full" />
-                    {errors.experience && <p className="text-red-600 text-sm">{errors.experience}</p>}
-                  </div>
-                </div>
-
-                {/* Row 5: Employment Type + Employment Role */}
-                <div className="flex flex-wrap gap-4 justify-between">
-                  <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Type *</label>
                     <select value={employmenttype} onChange={(e) => { setEmploymenttype(e.target.value); setErrors(p => ({ ...p, employmentType: '' })); }} className="border-2 border-yellow-400 p-2 rounded w-full">
                       <option value="">-- Select Type --</option>
                       <option value="Freelancing">Freelancing</option>
-                      <option value="Consultant">Consultant</option>
+                      {/* <option value="Consultant">Consultant</option> */}
                       <option value="Sweden-FullTime">Sweden-FullTime</option>
                       <option value="India-FullTime">India-FullTime</option>
                       <option value="USA-FullTime">USA-FullTime</option>
                     </select>
                     {errors.employmentType && <p className="text-red-600 text-sm">{errors.employmentType}</p>}
                   </div>
+                </div>
 
+                {/* Row 5: Employment Role */}
+                <div className="flex flex-wrap gap-4 justify-between">
                   {/* ✅ Employment Role — read-only for permissionid 4, editable for others */}
                   <div className="w-full md:w-[48%]">
                     <label className="font-semibold mb-1 block">Employment Role {loggedInRole !== 4 && '*'}</label>
@@ -711,17 +712,7 @@ function Resource_edit() {
                   </div>
                 )}
 
-                {/* Comments */}
-                <div>
-                  <label className="font-semibold mb-1 block">Comments</label>
-                  <textarea
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    placeholder="Enter comments (optional)"
-                    rows={3}
-                    className="border-2 border-yellow-400 p-2 rounded w-full text-sm focus:outline-none focus:ring-2 focus:ring-yellow-200"
-                  />
-                </div>
+                {/* Skills and Comments fields are hidden per request. */}
 
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center mt-8">
