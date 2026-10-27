@@ -51,6 +51,16 @@ function Forgotpassword() {
 
   const strength = getPasswordStrength(newPassword);
 
+  const toMessage = (data, fallback) => {
+    if (data === null || data === undefined || data === "") return fallback;
+    if (typeof data === "string") return data;
+    if (typeof data === "object") {
+      const m = data.message || data.error || data.msg || data.detail;
+      return typeof m === "string" && m ? m : fallback;
+    }
+    return String(data);
+  };
+
   // ── Step 1: Send OTP ──────────────────────────────────────────
   const handleSendOtp = () => {
     setError("");
@@ -62,18 +72,18 @@ function Forgotpassword() {
     axios
       .post(`https://api.i-raysolutions.com/api/v1/user/sendOtp?email=${email}`)
       .then((res) => {
-        if (res.data === "OTP sent to your email") {
+        const msg = toMessage(res.data, "");
+        if (/otp sent/i.test(msg)) {
           setStep(2);
           setResendTimer(30);
-          setOtpTimer(15 * 60); // 15 minutes in seconds
+          setOtpTimer(15 * 60);
         } else {
-          setError(res.data);
+          setError(msg || "Could not send OTP. Please try again.");
         }
         setLoading(false);
       })
       .catch((err) => {
-        const msg = err?.response?.data?.message || err?.response?.data || "No account found with this email.";
-        setError(msg);
+        setError(toMessage(err?.response?.data, "No account found with this email."));
         setLoading(false);
       });
   };
@@ -87,17 +97,14 @@ function Forgotpassword() {
     axios
       .post(`https://api.i-raysolutions.com/api/v1/user/verifyOtp?email=${email}&otp=${otp}`)
       .then((res) => {
-        if (res.data === "OTP Verified") {
+        const msg = toMessage(res.data, "");
+        if (/verified/i.test(msg) && !/not|invalid|fail/i.test(msg)) {
           setStep(3);
         } else {
-          setError("Invalid OTP. Please try again.");
+          setError(msg || "Invalid OTP. Please try again.");
         }
         setLoading(false);
       })
-      .catch(() => {
-        setError("Invalid OTP. Please try again.");
-        setLoading(false);
-      });
   };
 
   // ── Step 3: Reset Password ────────────────────────────────────
@@ -114,16 +121,16 @@ function Forgotpassword() {
         password: newPassword,
       })
       .then((res) => {
-        if (res.data === "Password Changed Successfully") {
+        const msg = toMessage(res.data, "");
+        if (/(changed|reset|updated) successfully/i.test(msg)) {
           setSuccess(true);
         } else {
-          setError(res.data);
+          setError(msg || "Could not reset password. Please try again.");
         }
         setLoading(false);
       })
       .catch((err) => {
-        const msg = err?.response?.data?.message || err?.response?.data || "Something went wrong. Please try again.";
-        setError(msg);
+        setError(toMessage(err?.response?.data, "Something went wrong. Please try again."));
         setLoading(false);
       });
   };
